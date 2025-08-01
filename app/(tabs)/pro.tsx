@@ -124,18 +124,17 @@ export default function ProScreen() {
               <Text style={styles.price}>£5</Text>
               <Text style={styles.priceSubtext}>one-time purchase</Text>
             </View>
-            <TouchableOpacity style={styles.purchaseButton}>
-              <TouchableOpacity 
-                style={[styles.purchaseButton, isLoading && styles.purchaseButtonDisabled]} 
-                onPress={handlePurchase}
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <ActivityIndicator color="white" size="small" />
-                ) : (
-                  <Text style={styles.purchaseButtonText}>Purchase Pro</Text>
-                )}
-              </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.purchaseButton, isLoading && styles.purchaseButtonDisabled]} 
+              onPress={handlePurchase}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <ActivityIndicator color="white" size="small" />
+              ) : (
+                <Text style={styles.purchaseButtonText}>Purchase Pro</Text>
+              )}
+            </TouchableOpacity>
             <Text style={styles.purchaseText}>Lifetime access to all features</Text>
           </View>
         </View>
