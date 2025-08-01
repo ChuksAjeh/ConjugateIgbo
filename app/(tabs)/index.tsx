@@ -17,6 +17,7 @@ import { getRandomVerb, checkConjugation, IgboVerb } from '@/data/igboVerbs';
 import { useSettings } from '@/hooks/useSettings';
 import { useProgress } from '@/hooks/useProgress';
 import { usePurchases } from '@/hooks/usePurchases';
+import { useTheme } from '@/components/ThemeProvider';
 
 const { width } = Dimensions.get('window');
 
@@ -37,19 +38,19 @@ export default function PracticeScreen() {
   const [selectedPronoun, setSelectedPronoun] = useState(() => pronouns[Math.floor(Math.random() * pronouns.length)]);
   const [showAnswer, setShowAnswer] = useState(false);
   const [fadeAnim] = useState(new Animated.Value(0));
-  const [dailyProgress, setDailyProgress] = useState(23);
   const [showConjugations, setShowConjugations] = useState(false);
   const [activeTab, setActiveTab] = useState<'indicative' | 'subjunctive' | 'others'>('indicative');
   
   const { settings } = useSettings();
   const { updateProgress } = useProgress();
   const { isProUser } = usePurchases();
+  const { theme, isDark } = useTheme();
+  const { statistics } = useProgress();
 
   const correctAnswer = currentVerb.conjugations[selectedTense]?.[selectedPronoun] || 'N/A';
 
   const handleRevealAnswer = () => {
     setShowAnswer(true);
-    setDailyProgress(prev => Math.min(prev + 1, 100));
     updateProgress(currentVerb.id, true);
     
     Animated.timing(fadeAnim, {
@@ -91,60 +92,72 @@ export default function PracticeScreen() {
       animationType="slide"
       presentationStyle="pageSheet"
     >
-      <SafeAreaView style={styles.modalContainer}>
-        <View style={styles.modalHeader}>
-          <Text style={styles.modalTitle}>All Conjugations</Text>
+      <SafeAreaView style={[styles.modalContainer, { backgroundColor: theme.colors.background }]}>
+        <View style={[styles.modalHeader, { backgroundColor: theme.colors.surface, borderBottomColor: theme.colors.border }]}>
+          <Text style={[styles.modalTitle, { color: theme.colors.text }]}>All Conjugations</Text>
           <TouchableOpacity onPress={() => setShowConjugations(false)}>
-            <X size={24} color="#374151" />
+            <X size={24} color={theme.colors.text} />
           </TouchableOpacity>
         </View>
 
         {/* Tab Navigation */}
-        <View style={styles.tabContainer}>
+        <View style={[styles.tabContainer, { backgroundColor: isDark ? '#374151' : '#f3f4f6' }]}>
           <TouchableOpacity
-            style={[styles.tab, activeTab === 'indicative' && styles.activeTab]}
+            style={[styles.tab, activeTab === 'indicative' && { ...styles.activeTab, backgroundColor: theme.colors.surface }]}
             onPress={() => setActiveTab('indicative')}
           >
-            <Text style={[styles.tabText, activeTab === 'indicative' && styles.activeTabText]}>
+            <Text style={[
+              styles.tabText, 
+              { color: theme.colors.textSecondary },
+              activeTab === 'indicative' && { color: theme.colors.text }
+            ]}>
               Indicative
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.tab, activeTab === 'subjunctive' && styles.activeTab]}
+            style={[styles.tab, activeTab === 'subjunctive' && { ...styles.activeTab, backgroundColor: theme.colors.surface }]}
             onPress={() => setActiveTab('subjunctive')}
           >
-            <Text style={[styles.tabText, activeTab === 'subjunctive' && styles.activeTabText]}>
+            <Text style={[
+              styles.tabText, 
+              { color: theme.colors.textSecondary },
+              activeTab === 'subjunctive' && { color: theme.colors.text }
+            ]}>
               Subjunctive
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.tab, activeTab === 'others' && styles.activeTab]}
+            style={[styles.tab, activeTab === 'others' && { ...styles.activeTab, backgroundColor: theme.colors.surface }]}
             onPress={() => setActiveTab('others')}
           >
-            <Text style={[styles.tabText, activeTab === 'others' && styles.activeTabText]}>
+            <Text style={[
+              styles.tabText, 
+              { color: theme.colors.textSecondary },
+              activeTab === 'others' && { color: theme.colors.text }
+            ]}>
               Others
             </Text>
           </TouchableOpacity>
         </View>
         <ScrollView style={styles.modalContent}>
           <View style={styles.verbDetailHeader}>
-            <Text style={styles.verbDetailInfinitive}>{currentVerb.infinitive}</Text>
-            <Text style={styles.verbDetailMeaning}>"{currentVerb.meaning}"</Text>
+            <Text style={[styles.verbDetailInfinitive, { color: theme.colors.text }]}>{currentVerb.infinitive}</Text>
+            <Text style={[styles.verbDetailMeaning, { color: theme.colors.textSecondary }]}>"{currentVerb.meaning}"</Text>
           </View>
 
           {activeTab === 'indicative' && (
             <>
               {['present', 'past', 'future'].map((tense) => (
                 currentVerb.conjugations[tense] && (
-                  <View key={tense} style={styles.tenseSection}>
+                  <View key={tense} style={[styles.tenseSection, { backgroundColor: theme.colors.surface }]}>
                     <Text style={[styles.tenseTitle, { color: getTenseBadgeColor(tense) }]}>
                       {tense.charAt(0).toUpperCase() + tense.slice(1)} Tense
                     </Text>
                     <View style={styles.conjugationTable}>
                       {Object.entries(currentVerb.conjugations[tense]).map(([pronoun, conjugation]) => (
-                        <View key={pronoun} style={styles.conjugationRow}>
-                          <Text style={styles.pronounText}>{pronounLabels[pronoun]}:</Text>
-                          <Text style={styles.conjugationText}>{conjugation}</Text>
+                        <View key={pronoun} style={[styles.conjugationRow, { borderBottomColor: theme.colors.border }]}>
+                          <Text style={[styles.pronounText, { color: theme.colors.textSecondary }]}>{pronounLabels[pronoun]}:</Text>
+                          <Text style={[styles.conjugationText, { color: theme.colors.text }]}>{conjugation}</Text>
                         </View>
                       ))}
                     </View>
@@ -158,15 +171,15 @@ export default function PracticeScreen() {
             <>
               {['subjunctive'].map((tense) => (
                 currentVerb.conjugations[tense] && (
-                  <View key={tense} style={styles.tenseSection}>
+                  <View key={tense} style={[styles.tenseSection, { backgroundColor: theme.colors.surface }]}>
                     <Text style={[styles.tenseTitle, { color: getTenseBadgeColor(tense) }]}>
                       {tense.charAt(0).toUpperCase() + tense.slice(1)} Tense
                     </Text>
                     <View style={styles.conjugationTable}>
                       {Object.entries(currentVerb.conjugations[tense]).map(([pronoun, conjugation]) => (
-                        <View key={pronoun} style={styles.conjugationRow}>
-                          <Text style={styles.pronounText}>{pronounLabels[pronoun]}:</Text>
-                          <Text style={styles.conjugationText}>{conjugation}</Text>
+                        <View key={pronoun} style={[styles.conjugationRow, { borderBottomColor: theme.colors.border }]}>
+                          <Text style={[styles.pronounText, { color: theme.colors.textSecondary }]}>{pronounLabels[pronoun]}:</Text>
+                          <Text style={[styles.conjugationText, { color: theme.colors.text }]}>{conjugation}</Text>
                         </View>
                       ))}
                     </View>
@@ -178,18 +191,18 @@ export default function PracticeScreen() {
 
           {activeTab === 'others' && (
             <View style={styles.comingSoonContainer}>
-              <Text style={styles.comingSoonText}>Imperative and Gerund forms</Text>
-              <Text style={styles.comingSoonSubtext}>Coming soon in a future update</Text>
+              <Text style={[styles.comingSoonText, { color: theme.colors.textSecondary }]}>Imperative and Gerund forms</Text>
+              <Text style={[styles.comingSoonSubtext, { color: theme.colors.textSecondary }]}>Coming soon in a future update</Text>
             </View>
           )}
 
           {currentVerb.examples && (
             <View style={styles.examplesSection}>
-              <Text style={styles.examplesTitle}>Examples</Text>
+              <Text style={[styles.examplesTitle, { color: theme.colors.text }]}>Examples</Text>
               {currentVerb.examples.map((example, index) => (
-                <View key={index} style={styles.exampleItem}>
-                  <Text style={styles.exampleIgbo}>{example.igbo}</Text>
-                  <Text style={styles.exampleEnglish}>"{example.english}"</Text>
+                <View key={index} style={[styles.exampleItem, { backgroundColor: theme.colors.surface }]}>
+                  <Text style={[styles.exampleIgbo, { color: theme.colors.text }]}>{example.igbo}</Text>
+                  <Text style={[styles.exampleEnglish, { color: theme.colors.textSecondary }]}>"{example.english}"</Text>
                 </View>
               ))}
             </View>
@@ -200,15 +213,15 @@ export default function PracticeScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
       {/* Daily Goal Progress Bar */}
-      <View style={styles.progressContainer}>
-        <Text style={styles.progressTitle}>Daily Goal</Text>
+      <View style={[styles.progressContainer, { backgroundColor: theme.colors.surface, borderBottomColor: theme.colors.border }]}>
+        <Text style={[styles.progressTitle, { color: theme.colors.text }]}>Daily Goal</Text>
         <View style={styles.progressBarContainer}>
-          <View style={styles.progressBar}>
-            <View style={[styles.progressFill, { width: `${(dailyProgress / settings.dailyGoal) * 100}%` }]} />
+          <View style={[styles.progressBar, { backgroundColor: isDark ? '#374151' : '#f3f4f6' }]}>
+            <View style={[styles.progressFill, { width: `${(statistics.dailyGoalProgress / settings.dailyGoal) * 100}%` }]} />
           </View>
-          <Text style={styles.progressText}>{dailyProgress}/{settings.dailyGoal}</Text>
+          <Text style={[styles.progressText, { color: theme.colors.textSecondary }]}>{statistics.dailyGoalProgress}/{settings.dailyGoal}</Text>
         </View>
       </View>
 
@@ -216,7 +229,7 @@ export default function PracticeScreen() {
         <ScrollView showsVerticalScrollIndicator={false}>
           {/* Main Card */}
           <View style={styles.cardContainer}>
-            <View style={[styles.card, showAnswer && styles.cardRevealed]}>
+            <View style={[styles.card, showAnswer && styles.cardRevealed, { backgroundColor: theme.colors.surface }]}>
               {/* Tense Badge */}
               <View style={[styles.tenseBadge, { backgroundColor: getTenseBadgeColor(selectedTense) }]}>
                 <Text style={styles.tenseBadgeText}>
@@ -226,17 +239,17 @@ export default function PracticeScreen() {
 
               {/* Verb Information */}
               <View style={styles.verbSection}>
-                <Text style={[styles.verbInfinitive, showAnswer && styles.verbInfinitiveSmall]}>
+                <Text style={[styles.verbInfinitive, showAnswer && styles.verbInfinitiveSmall, { color: theme.colors.text }]}>
                   {currentVerb.infinitive}
                 </Text>
-                <Text style={[styles.verbMeaning, showAnswer && styles.verbMeaningSmall]}>
+                <Text style={[styles.verbMeaning, showAnswer && styles.verbMeaningSmall, { color: theme.colors.textSecondary }]}>
                   "{currentVerb.meaning}"
                 </Text>
               </View>
 
               {/* Pronoun Prompt */}
               <View style={styles.promptSection}>
-                <Text style={[styles.promptText, showAnswer && styles.promptTextSmall]}>
+                <Text style={[styles.promptText, showAnswer && styles.promptTextSmall, { color: theme.colors.textSecondary }]}>
                   Conjugate for:
                 </Text>
                 <Text style={[styles.pronounText, showAnswer && styles.pronounTextSmall]}>
@@ -263,11 +276,11 @@ export default function PracticeScreen() {
 
           {/* Example Usage */}
           {currentVerb.examples && showAnswer && (
-            <Animated.View style={[styles.examplesContainer, { opacity: fadeAnim }]}>
-              <Text style={styles.examplesTitle}>Example:</Text>
+            <Animated.View style={[styles.examplesContainer, { opacity: fadeAnim, backgroundColor: theme.colors.surface }]}>
+              <Text style={[styles.examplesTitle, { color: theme.colors.text }]}>Example:</Text>
               <View style={styles.exampleItem}>
-                <Text style={styles.exampleIgbo}>{currentVerb.examples[0].igbo}</Text>
-                <Text style={styles.exampleEnglish}>"{currentVerb.examples[0].english}"</Text>
+                <Text style={[styles.exampleIgbo, { color: theme.colors.text }]}>{currentVerb.examples[0].igbo}</Text>
+                <Text style={[styles.exampleEnglish, { color: theme.colors.textSecondary }]}>"{currentVerb.examples[0].english}"</Text>
               </View>
             </Animated.View>
           )}
@@ -282,17 +295,17 @@ export default function PracticeScreen() {
 
           <View style={styles.secondaryButtons}>
             <TouchableOpacity 
-              style={styles.secondaryButton} 
+              style={[styles.secondaryButton, { backgroundColor: theme.colors.surface }]} 
               onPress={() => setShowConjugations(true)}
             >
-              <Book size={20} color="#6b7280" />
+              <Book size={20} color={theme.colors.textSecondary} />
             </TouchableOpacity>
 
             <TouchableOpacity 
-              style={styles.secondaryButton} 
+              style={[styles.secondaryButton, { backgroundColor: theme.colors.surface }]} 
               onPress={handlePlayAudio}
             >
-              <Volume2 size={20} color="#6b7280" />
+              <Volume2 size={20} color={theme.colors.textSecondary} />
             </TouchableOpacity>
           </View>
         </View>
@@ -306,19 +319,15 @@ export default function PracticeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
   },
   progressContainer: {
-    backgroundColor: 'white',
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
   },
   progressTitle: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#374151',
     marginBottom: 8,
     fontFamily: 'Inter-SemiBold',
   },
@@ -330,7 +339,6 @@ const styles = StyleSheet.create({
   progressBar: {
     flex: 1,
     height: 8,
-    backgroundColor: '#f3f4f6',
     borderRadius: 4,
     overflow: 'hidden',
   },
@@ -342,7 +350,6 @@ const styles = StyleSheet.create({
   progressText: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#6b7280',
     fontFamily: 'Inter-SemiBold',
   },
   content: {
@@ -353,7 +360,6 @@ const styles = StyleSheet.create({
     paddingTop: 20,
   },
   card: {
-    backgroundColor: 'white',
     borderRadius: 20,
     padding: 24,
     elevation: 8,
@@ -389,7 +395,6 @@ const styles = StyleSheet.create({
   verbInfinitive: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#1f2937',
     marginBottom: 8,
     fontFamily: 'Inter-Bold',
   },
@@ -399,7 +404,6 @@ const styles = StyleSheet.create({
   },
   verbMeaning: {
     fontSize: 16,
-    color: '#6b7280',
     fontStyle: 'italic',
     textAlign: 'center',
     fontFamily: 'Inter-Regular',
@@ -414,7 +418,6 @@ const styles = StyleSheet.create({
   },
   promptText: {
     fontSize: 14,
-    color: '#6b7280',
     marginBottom: 8,
     fontFamily: 'Inter-Regular',
   },
@@ -493,7 +496,6 @@ const styles = StyleSheet.create({
     gap: 20,
   },
   secondaryButton: {
-    backgroundColor: 'white',
     padding: 16,
     borderRadius: 12,
     elevation: 2,
@@ -503,7 +505,6 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
   },
   examplesContainer: {
-    backgroundColor: 'white',
     borderRadius: 16,
     padding: 16,
     marginHorizontal: 20,
@@ -513,7 +514,6 @@ const styles = StyleSheet.create({
   examplesTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#374151',
     marginBottom: 12,
     fontFamily: 'Inter-SemiBold',
   },
@@ -522,21 +522,18 @@ const styles = StyleSheet.create({
   },
   exampleIgbo: {
     fontSize: 16,
-    color: '#1f2937',
     fontWeight: '500',
     marginBottom: 4,
     fontFamily: 'Inter-SemiBold',
   },
   exampleEnglish: {
     fontSize: 14,
-    color: '#6b7280',
     fontStyle: 'italic',
     textAlign: 'center',
     fontFamily: 'Inter-Regular',
   },
   tabContainer: {
     flexDirection: 'row',
-    backgroundColor: '#f3f4f6',
     margin: 20,
     borderRadius: 12,
     padding: 4,
@@ -549,7 +546,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   activeTab: {
-    backgroundColor: 'white',
     elevation: 2,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
@@ -558,12 +554,8 @@ const styles = StyleSheet.create({
   },
   tabText: {
     fontSize: 14,
-    color: '#6b7280',
     fontWeight: '500',
     fontFamily: 'Inter-SemiBold',
-  },
-  activeTabText: {
-    color: '#1f2937',
   },
   comingSoonContainer: {
     alignItems: 'center',
@@ -571,33 +563,27 @@ const styles = StyleSheet.create({
   },
   comingSoonText: {
     fontSize: 18,
-    color: '#6b7280',
     fontWeight: '500',
     marginBottom: 8,
     fontFamily: 'Inter-SemiBold',
   },
   comingSoonSubtext: {
     fontSize: 14,
-    color: '#9ca3af',
     fontFamily: 'Inter-Regular',
   },
   modalContainer: {
     flex: 1,
-    backgroundColor: '#f8fafc',
   },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 20,
-    backgroundColor: 'white',
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
   },
   modalTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#1f2937',
     fontFamily: 'Inter-Bold',
   },
   modalContent: {
@@ -611,18 +597,15 @@ const styles = StyleSheet.create({
   verbDetailInfinitive: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#1f2937',
     fontFamily: 'Inter-Bold',
   },
   verbDetailMeaning: {
     fontSize: 18,
-    color: '#6b7280',
     fontStyle: 'italic',
     marginTop: 8,
     fontFamily: 'Inter-Regular',
   },
   tenseSection: {
-    backgroundColor: 'white',
     borderRadius: 16,
     padding: 20,
     marginBottom: 16,
@@ -646,18 +629,15 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 8,
     borderBottomWidth: 1,
-    borderBottomColor: '#f3f4f6',
   },
   pronounText: {
     fontSize: 16,
-    color: '#6b7280',
     fontWeight: '500',
     minWidth: 80,
     fontFamily: 'Inter-SemiBold',
   },
   conjugationText: {
     fontSize: 16,
-    color: '#1f2937',
     fontWeight: '600',
     fontFamily: 'Inter-SemiBold',
   },
@@ -667,7 +647,6 @@ const styles = StyleSheet.create({
   examplesTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#1f2937',
     marginBottom: 16,
     fontFamily: 'Inter-Bold',
   },

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { useColorScheme } from 'react-native';
+import { useColorScheme, StatusBar } from 'react-native';
 import { useSettings } from '@/hooks/useSettings';
 
 export interface Theme {
@@ -14,6 +14,8 @@ export interface Theme {
     success: string;
     warning: string;
     error: string;
+    card: string;
+    headerBackground: string;
   };
 }
 
@@ -29,21 +31,25 @@ const lightTheme: Theme = {
     success: '#10b981',
     warning: '#f59e0b',
     error: '#ef4444',
+    card: '#ffffff',
+    headerBackground: '#3b82f6',
   },
 };
 
 const darkTheme: Theme = {
   colors: {
-    background: '#0f172a',
-    surface: '#1e293b',
+    background: '#111827',
+    surface: '#1f2937',
     primary: '#60a5fa',
-    secondary: '#94a3b8',
-    text: '#f1f5f9',
-    textSecondary: '#94a3b8',
-    border: '#334155',
-    success: '#34d399',
-    warning: '#fbbf24',
-    error: '#f87171',
+    secondary: '#9ca3af',
+    text: '#f9fafb',
+    textSecondary: '#d1d5db',
+    border: '#374151',
+    success: '#10b981',
+    warning: '#f59e0b',
+    error: '#ef4444',
+    card: '#1f2937',
+    headerBackground: '#1f2937',
   },
 };
 
@@ -82,6 +88,9 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const theme = isDark ? darkTheme : lightTheme;
 
+  useEffect(() => {
+    StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
+  }, [isDark]);
   return (
     <ThemeContext.Provider value={{ theme, isDark }}>
       {children}
