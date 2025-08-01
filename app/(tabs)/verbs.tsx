@@ -347,7 +347,7 @@ export default function VerbsScreen() {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flex: 1
   },
   header: {
     paddingTop: 20,
