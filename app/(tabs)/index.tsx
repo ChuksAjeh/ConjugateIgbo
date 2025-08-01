@@ -211,7 +211,7 @@ export default function PracticeScreen() {
         <ScrollView showsVerticalScrollIndicator={false}>
           {/* Main Card */}
           <View style={styles.cardContainer}>
-            <View style={styles.card}>
+            <View style={[styles.card, showAnswer && styles.cardRevealed]}>
               {/* Tense Badge */}
               <View style={[styles.tenseBadge, { backgroundColor: getTenseBadgeColor(selectedTense) }]}>
                 <Text style={styles.tenseBadgeText}>
@@ -221,27 +221,35 @@ export default function PracticeScreen() {
 
               {/* Verb Information */}
               <View style={styles.verbSection}>
-                <Text style={styles.verbInfinitive}>{currentVerb.infinitive}</Text>
-                <Text style={styles.verbMeaning}>"{currentVerb.meaning}"</Text>
+                <Text style={[styles.verbInfinitive, showAnswer && styles.verbInfinitiveSmall]}>
+                  {currentVerb.infinitive}
+                </Text>
+                <Text style={[styles.verbMeaning, showAnswer && styles.verbMeaningSmall]}>
+                  "{currentVerb.meaning}"
+                </Text>
               </View>
 
               {/* Pronoun Prompt */}
               <View style={styles.promptSection}>
-                <Text style={styles.promptText}>Conjugate for:</Text>
-                <Text style={styles.pronounText}>
+                <Text style={[styles.promptText, showAnswer && styles.promptTextSmall]}>
+                  Conjugate for:
+                </Text>
+                <Text style={[styles.pronounText, showAnswer && styles.pronounTextSmall]}>
                   {pronounLabels[selectedPronoun]}
                 </Text>
               </View>
 
               {/* Answer Section */}
-              <View style={styles.answerSection}>
+              <View style={[styles.answerSection, showAnswer && styles.answerSectionSmall]}>
                 {!showAnswer ? (
                   <TouchableOpacity style={styles.revealButton} onPress={handleRevealAnswer}>
                     <Text style={styles.revealButtonText}>Tap to Reveal</Text>
                   </TouchableOpacity>
                 ) : (
                   <Animated.View style={[styles.answerContainer, { opacity: fadeAnim }]}>
-                    <Text style={styles.answerText}>{correctAnswer}</Text>
+                    <Text style={[styles.answerText, styles.answerTextSmall]}>
+                      {correctAnswer}
+                    </Text>
                   </Animated.View>
                 )}
               </View>
@@ -351,6 +359,10 @@ const styles = StyleSheet.create({
     position: 'relative',
     minHeight: 320,
   },
+  cardRevealed: {
+    minHeight: 240,
+    padding: 16,
+  },
   tenseBadge: {
     position: 'absolute',
     top: 16,
@@ -376,12 +388,20 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     fontFamily: 'Inter-Bold',
   },
+  verbInfinitiveSmall: {
+    fontSize: 22,
+    marginBottom: 4,
+  },
   verbMeaning: {
     fontSize: 16,
     color: '#6b7280',
     fontStyle: 'italic',
     textAlign: 'center',
     fontFamily: 'Inter-Regular',
+  },
+  verbMeaningSmall: {
+    fontSize: 14,
+    marginBottom: 8,
   },
   promptSection: {
     alignItems: 'center',
@@ -393,17 +413,27 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     fontFamily: 'Inter-Regular',
   },
+  promptTextSmall: {
+    fontSize: 12,
+    marginBottom: 4,
+  },
   pronounText: {
     fontSize: 20,
     fontWeight: '600',
     color: '#3b82f6',
     fontFamily: 'Inter-SemiBold',
   },
+  pronounTextSmall: {
+    fontSize: 16,
+  },
   answerSection: {
     alignItems: 'center',
     minHeight: 60,
     justifyContent: 'center',
     marginBottom: 16,
+  },
+  answerSectionSmall: {
+    minHeight: 40,
   },
   revealButton: {
     backgroundColor: '#3b82f6',
@@ -426,6 +456,9 @@ const styles = StyleSheet.create({
     color: '#10b981',
     textAlign: 'center',
     fontFamily: 'Inter-Bold',
+  },
+  answerTextSmall: {
+    fontSize: 18,
   },
   actionButtonsContainer: {
     paddingHorizontal: 20,
