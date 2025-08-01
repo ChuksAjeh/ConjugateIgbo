@@ -135,6 +135,7 @@ export default function ProScreen() {
                 <Text style={styles.purchaseButtonText}>Purchase Pro</Text>
               )}
             </TouchableOpacity>
+            </TouchableOpacity>
             <Text style={styles.purchaseText}>Lifetime access to all features</Text>
           </View>
         </View>
