@@ -37,7 +37,7 @@ export default function PracticeScreen() {
   const [selectedPronoun, setSelectedPronoun] = useState(() => pronouns[Math.floor(Math.random() * pronouns.length)]);
   const [showAnswer, setShowAnswer] = useState(false);
   const [fadeAnim] = useState(new Animated.Value(0));
-  const [dailyProgress, setDailyProgress] = useState(23); // Mock progress out of 100
+  const [dailyProgress, setDailyProgress] = useState(23);
   const [showConjugations, setShowConjugations] = useState(false);
   const [activeTab, setActiveTab] = useState<'indicative' | 'subjunctive' | 'others'>('indicative');
   
@@ -206,9 +206,9 @@ export default function PracticeScreen() {
         <Text style={styles.progressTitle}>Daily Goal</Text>
         <View style={styles.progressBarContainer}>
           <View style={styles.progressBar}>
-            <View style={[styles.progressFill, { width: `${dailyProgress}%` }]} />
+            <View style={[styles.progressFill, { width: `${(dailyProgress / settings.dailyGoal) * 100}%` }]} />
           </View>
-          <Text style={styles.progressText}>{dailyProgress}/100</Text>
+          <Text style={styles.progressText}>{dailyProgress}/{settings.dailyGoal}</Text>
         </View>
       </View>
 

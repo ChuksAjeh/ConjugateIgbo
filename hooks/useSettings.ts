@@ -34,6 +34,7 @@ const defaultSettings: AppSettings = {
   dialect: 'central',
   displayMode: 'Verb and translation',
   highlightMistakes: true,
+  rateAnswers: false,
   enabledTenses: {
     present: true,
     past: true,
