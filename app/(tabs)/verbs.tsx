@@ -73,7 +73,6 @@ export default function VerbsScreen() {
         default:
           return 0;
       }
-    });
   }, [searchQuery, selectedFilter, sortBy, verbs]);
 
   const renderVerbItem = ({ item }: { item: IgboVerb }) => (
