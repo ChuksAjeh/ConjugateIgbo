@@ -1,0 +1,80 @@
+import { Tabs } from 'expo-router';
+import { Book, Settings, Crown, Chrome as Home, TrendingUp, CreditCard } from 'lucide-react-native';
+
+export default function TabLayout() {
+  return (
+    <Tabs
+      screenOptions={{
+        headerShown: false,
+        tabBarActiveTintColor: '#2563eb',
+        tabBarInactiveTintColor: '#64748b',
+        tabBarStyle: {
+          backgroundColor: '#ffffff',
+          borderTopWidth: 1,
+          borderTopColor: '#e2e8f0',
+          paddingBottom: 5,
+          paddingTop: 5,
+          height: 60,
+        },
+        tabBarLabelStyle: {
+          fontSize: 12,
+          fontWeight: '500',
+        },
+      }}>
+      <Tabs.Screen
+        name="index"
+        options={{
+          title: 'Practice',
+          tabBarIcon: ({ size, color }) => (
+            <Home size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="flashcards"
+        options={{
+          title: 'Cards',
+          tabBarIcon: ({ size, color }) => (
+            <CreditCard size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="pro"
+        options={{
+          title: 'Get Pro',
+          tabBarIcon: ({ size, color }) => (
+            <Crown size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="verbs"
+        options={{
+          title: 'Verbs',
+          tabBarIcon: ({ size, color }) => (
+            <Book size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="progress"
+        options={{
+          title: 'Progress',
+          tabBarIcon: ({ size, color }) => (
+            <TrendingUp size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="settings"
+        options={{
+          title: 'Settings',
+          tabBarIcon: ({ size, color }) => (
+            <Settings size={size} color={color} />
+          ),
+        }}
+      />
+    </Tabs>
+  );
+}
