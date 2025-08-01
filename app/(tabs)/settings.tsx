@@ -25,7 +25,8 @@ import {
   MessageCircle, 
   ChevronRight,
   X,
-  Lock
+  Lock,
+  Globe
 } from 'lucide-react-native';
 import { useSettings } from '@/hooks/useSettings';
 
@@ -34,6 +35,7 @@ export default function SettingsScreen() {
   const [showTimeModal, setShowTimeModal] = useState(false);
   const [showGoalModal, setShowGoalModal] = useState(false);
   const [showDisplayModal, setShowDisplayModal] = useState(false);
+  const [showDialectModal, setShowDialectModal] = useState(false);
 
   const isPro = false; // This would come from your purchase state
 
@@ -151,6 +153,13 @@ export default function SettingsScreen() {
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* General */}
         <SettingsSection title="General">
+          <SettingsItem
+            icon={Globe}
+            title="Dialect"
+            subtitle={`Currently: ${settings.dialect.charAt(0).toUpperCase() + settings.dialect.slice(1)} Igbo`}
+            onPress={() => setShowDialectModal(true)}
+          />
+          
           <SettingsItem
             icon={Moon}
             title="Appearance"
@@ -421,6 +430,53 @@ export default function SettingsScreen() {
           </View>
         </SafeAreaView>
       </Modal>
+
+      {/* Dialect Modal */}
+      <Modal
+        visible={showDialectModal}
+        animationType="slide"
+        presentationStyle="pageSheet"
+      >
+        <SafeAreaView style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>Select Dialect</Text>
+            <TouchableOpacity onPress={() => setShowDialectModal(false)}>
+              <X size={24} color="#374151" />
+            </TouchableOpacity>
+          </View>
+          <View style={styles.modalContent}>
+            {[
+              { key: 'central', label: 'Central Igbo', description: 'Standard Igbo (Owerri/Umuahia)' },
+              { key: 'delta', label: 'Delta Igbo', description: 'Western Igbo dialect' },
+              { key: 'anambra', label: 'Anambra Igbo', description: 'Northern Igbo dialect' },
+              { key: 'imo', label: 'Imo Igbo', description: 'Central-Southern dialect' },
+              { key: 'abia', label: 'Abia Igbo', description: 'Eastern dialect' },
+            ].map((dialect) => (
+              <TouchableOpacity
+                key={dialect.key}
+                style={[
+                  styles.dialectOption,
+                  settings.dialect === dialect.key && styles.selectedOption
+                ]}
+                onPress={() => {
+                  updateSettings({ dialect: dialect.key as any });
+                  setShowDialectModal(false);
+                }}
+              >
+                <View>
+                  <Text style={[
+                    styles.dialectLabel,
+                    settings.dialect === dialect.key && styles.selectedOptionText
+                  ]}>
+                    {dialect.label}
+                  </Text>
+                  <Text style={styles.dialectDescription}>{dialect.description}</Text>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </SafeAreaView>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -621,5 +677,25 @@ const styles = StyleSheet.create({
     color: '#3b82f6',
     fontWeight: '500',
     fontFamily: 'Inter-SemiBold',
+  },
+  dialectOption: {
+    backgroundColor: 'white',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 8,
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  dialectLabel: {
+    fontSize: 16,
+    color: '#374151',
+    fontWeight: '500',
+    fontFamily: 'Inter-SemiBold',
+  },
+  dialectDescription: {
+    fontSize: 14,
+    color: '#6b7280',
+    marginTop: 2,
+    fontFamily: 'Inter-Regular',
   },
 });

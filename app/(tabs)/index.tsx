@@ -9,6 +9,7 @@ import {
   SafeAreaView,
   Modal,
   ScrollView,
+  TouchableWithoutFeedback,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { RotateCcw, Volume2, Book, X } from 'lucide-react-native';
@@ -37,6 +38,7 @@ export default function PracticeScreen() {
   const [fadeAnim] = useState(new Animated.Value(0));
   const [dailyProgress, setDailyProgress] = useState(23); // Mock progress out of 100
   const [showConjugations, setShowConjugations] = useState(false);
+  const [activeTab, setActiveTab] = useState<'indicative' | 'subjunctive' | 'others'>('indicative');
   
   const { settings } = useSettings();
   const { updateProgress } = useProgress();
@@ -92,27 +94,89 @@ export default function PracticeScreen() {
           </TouchableOpacity>
         </View>
 
+        {/* Tab Navigation */}
+        <View style={styles.tabContainer}>
+          <TouchableOpacity
+            style={[styles.tab, activeTab === 'indicative' && styles.activeTab]}
+            onPress={() => setActiveTab('indicative')}
+          >
+            <Text style={[styles.tabText, activeTab === 'indicative' && styles.activeTabText]}>
+              Indicative
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.tab, activeTab === 'subjunctive' && styles.activeTab]}
+            onPress={() => setActiveTab('subjunctive')}
+          >
+            <Text style={[styles.tabText, activeTab === 'subjunctive' && styles.activeTabText]}>
+              Subjunctive
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.tab, activeTab === 'others' && styles.activeTab]}
+            onPress={() => setActiveTab('others')}
+          >
+            <Text style={[styles.tabText, activeTab === 'others' && styles.activeTabText]}>
+              Others
+            </Text>
+          </TouchableOpacity>
+        </View>
         <ScrollView style={styles.modalContent}>
           <View style={styles.verbDetailHeader}>
             <Text style={styles.verbDetailInfinitive}>{currentVerb.infinitive}</Text>
             <Text style={styles.verbDetailMeaning}>"{currentVerb.meaning}"</Text>
           </View>
 
-          {Object.entries(currentVerb.conjugations).map(([tense, conjugations]) => (
-            <View key={tense} style={styles.tenseSection}>
-              <Text style={[styles.tenseTitle, { color: getTenseBadgeColor(tense) }]}>
-                {tense.charAt(0).toUpperCase() + tense.slice(1)} Tense
-              </Text>
-              <View style={styles.conjugationTable}>
-                {Object.entries(conjugations).map(([pronoun, conjugation]) => (
-                  <View key={pronoun} style={styles.conjugationRow}>
-                    <Text style={styles.pronounText}>{pronounLabels[pronoun]}:</Text>
-                    <Text style={styles.conjugationText}>{conjugation}</Text>
+          {activeTab === 'indicative' && (
+            <>
+              {['present', 'past', 'future'].map((tense) => (
+                currentVerb.conjugations[tense] && (
+                  <View key={tense} style={styles.tenseSection}>
+                    <Text style={[styles.tenseTitle, { color: getTenseBadgeColor(tense) }]}>
+                      {tense.charAt(0).toUpperCase() + tense.slice(1)} Tense
+                    </Text>
+                    <View style={styles.conjugationTable}>
+                      {Object.entries(currentVerb.conjugations[tense]).map(([pronoun, conjugation]) => (
+                        <View key={pronoun} style={styles.conjugationRow}>
+                          <Text style={styles.pronounText}>{pronounLabels[pronoun]}:</Text>
+                          <Text style={styles.conjugationText}>{conjugation}</Text>
+                        </View>
+                      ))}
+                    </View>
                   </View>
-                ))}
-              </View>
+                )
+              ))}
+            </>
+          )}
+
+          {activeTab === 'subjunctive' && (
+            <>
+              {['subjunctive'].map((tense) => (
+                currentVerb.conjugations[tense] && (
+                  <View key={tense} style={styles.tenseSection}>
+                    <Text style={[styles.tenseTitle, { color: getTenseBadgeColor(tense) }]}>
+                      {tense.charAt(0).toUpperCase() + tense.slice(1)} Tense
+                    </Text>
+                    <View style={styles.conjugationTable}>
+                      {Object.entries(currentVerb.conjugations[tense]).map(([pronoun, conjugation]) => (
+                        <View key={pronoun} style={styles.conjugationRow}>
+                          <Text style={styles.pronounText}>{pronounLabels[pronoun]}:</Text>
+                          <Text style={styles.conjugationText}>{conjugation}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  </View>
+                )
+              ))}
+            </>
+          )}
+
+          {activeTab === 'others' && (
+            <View style={styles.comingSoonContainer}>
+              <Text style={styles.comingSoonText}>Imperative and Gerund forms</Text>
+              <Text style={styles.comingSoonSubtext}>Coming soon in a future update</Text>
             </View>
-          ))}
+          )}
 
           {currentVerb.examples && (
             <View style={styles.examplesSection}>
@@ -422,6 +486,53 @@ const styles = StyleSheet.create({
     color: '#6b7280',
     fontStyle: 'italic',
     textAlign: 'center',
+    fontFamily: 'Inter-Regular',
+  },
+  tabContainer: {
+    flexDirection: 'row',
+    backgroundColor: '#f3f4f6',
+    margin: 20,
+    borderRadius: 12,
+    padding: 4,
+  },
+  tab: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  activeTab: {
+    backgroundColor: 'white',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+  },
+  tabText: {
+    fontSize: 14,
+    color: '#6b7280',
+    fontWeight: '500',
+    fontFamily: 'Inter-SemiBold',
+  },
+  activeTabText: {
+    color: '#1f2937',
+  },
+  comingSoonContainer: {
+    alignItems: 'center',
+    paddingVertical: 60,
+  },
+  comingSoonText: {
+    fontSize: 18,
+    color: '#6b7280',
+    fontWeight: '500',
+    marginBottom: 8,
+    fontFamily: 'Inter-SemiBold',
+  },
+  comingSoonSubtext: {
+    fontSize: 14,
+    color: '#9ca3af',
     fontFamily: 'Inter-Regular',
   },
   modalContainer: {
