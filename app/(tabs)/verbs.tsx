@@ -343,9 +343,6 @@ export default function VerbsScreen() {
       </Modal>
     </SafeAreaView>
   );
-}
-
-const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
