@@ -12,11 +12,13 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { Volume2, RotateCcw, ArrowLeft, ArrowRight } from 'lucide-react-native';
 import { mnemonicCards, MnemonicCard } from '@/data/mnemonicCards';
+import { useTheme } from '@/components/ThemeProvider';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = width - 40;
 
 export default function FlashcardsScreen() {
+  const { theme, isDark } = useTheme();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [flippedCards, setFlippedCards] = useState<Set<number>>(new Set());
   const flatListRef = useRef<FlatList>(null);
@@ -147,25 +149,25 @@ export default function FlashcardsScreen() {
               },
             ]}
           >
-            <View style={styles.cardBackContent}>
-              <Text style={styles.mnemonicTitle}>Memory Aid</Text>
+            <View style={[styles.cardBackContent, { backgroundColor: theme.colors.surface }]}>
+              <Text style={[styles.mnemonicTitle, { color: theme.colors.text }]}>Memory Aid</Text>
               
-              <View style={styles.mnemonicBox}>
-                <Text style={styles.mnemonicText}>{item.mnemonic}</Text>
+              <View style={[styles.mnemonicBox, { backgroundColor: isDark ? '#374151' : '#f3f4f6' }]}>
+                <Text style={[styles.mnemonicText, { color: theme.colors.text }]}>{item.mnemonic}</Text>
               </View>
 
               <View style={styles.allVerbsList}>
-                <Text style={styles.allverbsTitle}>All Verbs in This Group:</Text>
+                <Text style={[styles.allverbsTitle, { color: theme.colors.text }]}>All Verbs in This Group:</Text>
                 {item.verbs.map((verb, verbIndex) => (
-                  <View key={verbIndex} style={styles.verbDetailItem}>
-                    <Text style={styles.verbDetailIgbo}>{verb.igbo}</Text>
-                    <Text style={styles.verbDetailEnglish}>{verb.english}</Text>
-                    <Text style={styles.verbDetailPronunciation}>/{verb.pronunciation}/</Text>
+                  <View key={verbIndex} style={[styles.verbDetailItem, { backgroundColor: isDark ? '#4b5563' : '#f9fafb' }]}>
+                    <Text style={[styles.verbDetailIgbo, { color: theme.colors.text }]}>{verb.igbo}</Text>
+                    <Text style={[styles.verbDetailEnglish, { color: theme.colors.textSecondary }]}>{verb.english}</Text>
+                    <Text style={[styles.verbDetailPronunciation, { color: theme.colors.textSecondary }]}>/{verb.pronunciation}/</Text>
                   </View>
                 ))}
               </View>
 
-              <Text style={styles.tapBackHint}>Tap to flip back</Text>
+              <Text style={[styles.tapBackHint, { color: theme.colors.textSecondary }]}>Tap to flip back</Text>
             </View>
           </Animated.View>
         </TouchableOpacity>
@@ -174,9 +176,9 @@ export default function FlashcardsScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <LinearGradient
-        colors={['#7c3aed', '#5b21b6']}
+        colors={isDark ? ['#5b21b6', '#4c1d95'] : ['#7c3aed', '#5b21b6']}
         style={styles.header}
       >
         <Text style={styles.headerTitle}>Mnemonic Flashcards</Text>
@@ -203,10 +205,10 @@ export default function FlashcardsScreen() {
       {/* Navigation Controls */}
       <View style={styles.navigationContainer}>
         <TouchableOpacity
-          style={styles.navButton}
+          style={[styles.navButton, { backgroundColor: theme.colors.surface }]}
           onPress={() => navigateToCard('prev')}
         >
-          <ArrowLeft size={24} color="#7c3aed" />
+          <ArrowLeft size={24} color={theme.colors.primary} />
         </TouchableOpacity>
 
         <View style={styles.progressIndicator}>
@@ -215,17 +217,18 @@ export default function FlashcardsScreen() {
               key={index}
               style={[
                 styles.progressDot,
-                index === currentIndex && styles.progressDotActive,
+                { backgroundColor: isDark ? '#4b5563' : '#d1d5db' },
+                index === currentIndex && { backgroundColor: theme.colors.primary },
               ]}
             />
           ))}
         </View>
 
         <TouchableOpacity
-          style={styles.navButton}
+          style={[styles.navButton, { backgroundColor: theme.colors.surface }]}
           onPress={() => navigateToCard('next')}
         >
-          <ArrowRight size={24} color="#7c3aed" />
+          <ArrowRight size={24} color={theme.colors.primary} />
         </TouchableOpacity>
       </View>
 
@@ -247,7 +250,6 @@ export default function FlashcardsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
   },
   header: {
     paddingTop: 20,
@@ -296,7 +298,6 @@ const styles = StyleSheet.create({
   },
   cardBack: {
     zIndex: 1,
-    backgroundColor: 'white',
   },
   cardGradient: {
     flex: 1,
@@ -361,23 +362,21 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 24,
     justifyContent: 'space-between',
+    borderRadius: 20,
   },
   mnemonicTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#1f2937',
     textAlign: 'center',
     marginBottom: 16,
   },
   mnemonicBox: {
-    backgroundColor: '#f3f4f6',
     padding: 20,
     borderRadius: 12,
     marginBottom: 20,
   },
   mnemonicText: {
     fontSize: 16,
-    color: '#374151',
     textAlign: 'center',
     lineHeight: 24,
     fontStyle: 'italic',
@@ -388,11 +387,9 @@ const styles = StyleSheet.create({
   allverbsTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#374151',
     marginBottom: 12,
   },
   verbDetailItem: {
-    backgroundColor: '#f9fafb',
     padding: 12,
     borderRadius: 8,
     marginBottom: 8,
@@ -400,22 +397,18 @@ const styles = StyleSheet.create({
   verbDetailIgbo: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#1f2937',
   },
   verbDetailEnglish: {
     fontSize: 14,
-    color: '#6b7280',
     marginTop: 2,
   },
   verbDetailPronunciation: {
     fontSize: 12,
-    color: '#9ca3af',
     fontStyle: 'italic',
     marginTop: 2,
   },
   tapBackHint: {
     fontSize: 12,
-    color: '#9ca3af',
     textAlign: 'center',
     fontStyle: 'italic',
   },
@@ -429,7 +422,6 @@ const styles = StyleSheet.create({
   navButton: {
     padding: 12,
     borderRadius: 12,
-    backgroundColor: 'white',
     elevation: 2,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -444,11 +436,9 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#d1d5db',
     marginHorizontal: 3,
   },
   progressDotActive: {
-    backgroundColor: '#7c3aed',
   },
   resetButton: {
     flexDirection: 'row',

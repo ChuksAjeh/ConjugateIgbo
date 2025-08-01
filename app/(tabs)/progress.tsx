@@ -8,13 +8,15 @@ import {
   Dimensions,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Calendar, Target, Trophy, TrendingUp, Clock, Star } from 'lucide-react-native';
+import { Calendar, Target, TrendingUp, Clock } from 'lucide-react-native';
 import { useProgress } from '@/hooks/useProgress';
+import { useTheme } from '@/components/ThemeProvider';
 
 const { width } = Dimensions.get('window');
 
 export default function ProgressScreen() {
   const { progress, statistics } = useProgress();
+  const { theme, isDark } = useTheme();
 
   const StatCard = ({ 
     title, 
@@ -50,12 +52,12 @@ export default function ProgressScreen() {
     progress: number; 
     color: string; 
   }) => (
-    <View style={styles.progressBarContainer}>
+    <View style={[styles.progressBarContainer, { backgroundColor: theme.colors.surface }]}>
       <View style={styles.progressBarHeader}>
-        <Text style={styles.progressBarLabel}>{label}</Text>
-        <Text style={styles.progressBarPercentage}>{Math.round(progress * 100)}%</Text>
+        <Text style={[styles.progressBarLabel, { color: theme.colors.text }]}>{label}</Text>
+        <Text style={[styles.progressBarPercentage, { color: theme.colors.textSecondary }]}>{Math.round(progress * 100)}%</Text>
       </View>
-      <View style={styles.progressBarTrack}>
+      <View style={[styles.progressBarTrack, { backgroundColor: isDark ? '#374151' : '#f3f4f6' }]}>
         <View 
           style={[
             styles.progressBarFill, 
@@ -67,9 +69,9 @@ export default function ProgressScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <LinearGradient
-        colors={['#f59e0b', '#d97706']}
+        colors={isDark ? ['#1f2937', '#111827'] : ['#f59e0b', '#d97706']}
         style={styles.header}
       >
         <Text style={styles.headerTitle}>Your Progress</Text>
@@ -88,14 +90,6 @@ export default function ProgressScreen() {
             gradientColors={['#3b82f6', '#1d4ed8']}
           />
           
-          <StatCard
-            title="Accuracy Rate"
-            value={`${Math.round(statistics.accuracyRate * 100)}%`}
-            subtitle="correct answers"
-            icon={Trophy}
-            color="#10b981"
-            gradientColors={['#10b981', '#059669']}
-          />
 
           <StatCard
             title="Current Streak"
@@ -108,7 +102,7 @@ export default function ProgressScreen() {
 
           <StatCard
             title="Study Time"
-            value={`${Math.round(statistics.totalStudyTime / 60)}h`}
+            value={`${Math.round(statistics.totalStudyTime)}h`}
             subtitle="total time"
             icon={Clock}
             color="#f59e0b"
@@ -118,7 +112,7 @@ export default function ProgressScreen() {
 
         {/* Progress by Tense */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Progress by Tense</Text>
+          <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Progress by Tense</Text>
           <View style={styles.progressSection}>
             <ProgressBar 
               label="Present Tense" 
@@ -143,33 +137,15 @@ export default function ProgressScreen() {
           </View>
         </View>
 
-        {/* Recent Achievements */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Recent Achievements</Text>
-          <View style={styles.achievementsContainer}>
-            {statistics.recentAchievements.map((achievement, index) => (
-              <View key={index} style={styles.achievementItem}>
-                <View style={[styles.achievementIcon, { backgroundColor: achievement.color }]}>
-                  <Star size={20} color="white" />
-                </View>
-                <View style={styles.achievementContent}>
-                  <Text style={styles.achievementTitle}>{achievement.title}</Text>
-                  <Text style={styles.achievementDescription}>{achievement.description}</Text>
-                  <Text style={styles.achievementDate}>{achievement.date}</Text>
-                </View>
-              </View>
-            ))}
-          </View>
-        </View>
 
         {/* Weekly Progress Chart */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>This Week's Activity</Text>
-          <View style={styles.chartContainer}>
+          <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>This Week's Activity</Text>
+          <View style={[styles.chartContainer, { backgroundColor: theme.colors.surface }]}>
             <View style={styles.chartBars}>
               {statistics.weeklyProgress.map((day, index) => (
                 <View key={index} style={styles.chartBarContainer}>
-                  <View style={styles.chartBar}>
+                  <View style={[styles.chartBar, { backgroundColor: isDark ? '#374151' : '#f3f4f6' }]}>
                     <View 
                       style={[
                         styles.chartBarFill,
@@ -180,8 +156,8 @@ export default function ProgressScreen() {
                       ]} 
                     />
                   </View>
-                  <Text style={styles.chartBarLabel}>{day.day}</Text>
-                  <Text style={styles.chartBarValue}>{day.practiced}</Text>
+                  <Text style={[styles.chartBarLabel, { color: theme.colors.textSecondary }]}>{day.day}</Text>
+                  <Text style={[styles.chartBarValue, { color: theme.colors.textSecondary }]}>{day.practiced}</Text>
                 </View>
               ))}
             </View>
@@ -190,14 +166,14 @@ export default function ProgressScreen() {
 
         {/* Study Goals */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Study Goals</Text>
+          <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Study Goals</Text>
           <View style={styles.goalsContainer}>
-            <View style={styles.goalItem}>
+            <View style={[styles.goalItem, { backgroundColor: theme.colors.surface }]}>
               <View style={styles.goalHeader}>
                 <Calendar size={20} color="#3b82f6" />
-                <Text style={styles.goalTitle}>Daily Practice</Text>
+                <Text style={[styles.goalTitle, { color: theme.colors.text }]}>Daily Practice</Text>
               </View>
-              <Text style={styles.goalDescription}>Practice 10 verbs every day</Text>
+              <Text style={[styles.goalDescription, { color: theme.colors.textSecondary }]}>Practice 10 verbs every day</Text>
               <ProgressBar 
                 label={`${statistics.dailyGoalProgress}/10 verbs today`}
                 progress={statistics.dailyGoalProgress / 10}
@@ -205,15 +181,15 @@ export default function ProgressScreen() {
               />
             </View>
 
-            <View style={styles.goalItem}>
+            <View style={[styles.goalItem, { backgroundColor: theme.colors.surface }]}>
               <View style={styles.goalHeader}>
                 <Target size={20} color="#10b981" />
-                <Text style={styles.goalTitle}>Accuracy Goal</Text>
+                <Text style={[styles.goalTitle, { color: theme.colors.text }]}>Weekly Streak</Text>
               </View>
-              <Text style={styles.goalDescription}>Maintain 80% accuracy rate</Text>
+              <Text style={[styles.goalDescription, { color: theme.colors.textSecondary }]}>Keep your daily practice streak going</Text>
               <ProgressBar 
-                label={`${Math.round(statistics.accuracyRate * 100)}% accuracy`}
-                progress={statistics.accuracyRate}
+                label={`${statistics.currentStreak} days streak`}
+                progress={Math.min(statistics.currentStreak / 7, 1)}
                 color="#10b981"
               />
             </View>
@@ -227,7 +203,6 @@ export default function ProgressScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
   },
   header: {
     paddingTop: 20,
@@ -259,7 +234,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   statCard: {
-    width: (width - 52) / 2,
+    width: (width - 64) / 2,
     borderRadius: 16,
     padding: 16,
     elevation: 4,
@@ -295,11 +270,9 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#1f2937',
     marginBottom: 16,
   },
   progressSection: {
-    backgroundColor: 'white',
     borderRadius: 16,
     padding: 20,
     elevation: 2,
@@ -310,6 +283,8 @@ const styles = StyleSheet.create({
   },
   progressBarContainer: {
     marginBottom: 20,
+    padding: 16,
+    borderRadius: 12,
   },
   progressBarHeader: {
     flexDirection: 'row',
@@ -319,17 +294,14 @@ const styles = StyleSheet.create({
   },
   progressBarLabel: {
     fontSize: 16,
-    color: '#374151',
     fontWeight: '500',
   },
   progressBarPercentage: {
     fontSize: 14,
-    color: '#6b7280',
     fontWeight: '500',
   },
   progressBarTrack: {
     height: 8,
-    backgroundColor: '#f3f4f6',
     borderRadius: 4,
     overflow: 'hidden',
   },
@@ -337,49 +309,7 @@ const styles = StyleSheet.create({
     height: '100%',
     borderRadius: 4,
   },
-  achievementsContainer: {
-    backgroundColor: 'white',
-    borderRadius: 16,
-    padding: 20,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  achievementItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  achievementIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 16,
-  },
-  achievementContent: {
-    flex: 1,
-  },
-  achievementTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1f2937',
-    marginBottom: 2,
-  },
-  achievementDescription: {
-    fontSize: 14,
-    color: '#6b7280',
-    marginBottom: 2,
-  },
-  achievementDate: {
-    fontSize: 12,
-    color: '#9ca3af',
-  },
   chartContainer: {
-    backgroundColor: 'white',
     borderRadius: 16,
     padding: 20,
     elevation: 2,
@@ -401,7 +331,6 @@ const styles = StyleSheet.create({
   chartBar: {
     width: 24,
     height: 80,
-    backgroundColor: '#f3f4f6',
     borderRadius: 4,
     marginBottom: 8,
     justifyContent: 'flex-end',
@@ -413,19 +342,16 @@ const styles = StyleSheet.create({
   },
   chartBarLabel: {
     fontSize: 12,
-    color: '#6b7280',
     marginBottom: 2,
   },
   chartBarValue: {
     fontSize: 10,
-    color: '#9ca3af',
     fontWeight: '500',
   },
   goalsContainer: {
     gap: 16,
   },
   goalItem: {
-    backgroundColor: 'white',
     borderRadius: 16,
     padding: 20,
     elevation: 2,
@@ -442,12 +368,10 @@ const styles = StyleSheet.create({
   goalTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1f2937',
     marginLeft: 8,
   },
   goalDescription: {
     fontSize: 14,
-    color: '#6b7280',
     marginBottom: 16,
   },
 });

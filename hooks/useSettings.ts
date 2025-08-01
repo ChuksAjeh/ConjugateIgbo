@@ -30,7 +30,7 @@ const defaultSettings: AppSettings = {
   audioEnabled: true,
   autoPronounce: false,
   dailyGoal: 100,
-  appearance: 'system',
+  appearance: 'light',
   dialect: 'central',
   displayMode: 'Verb and translation',
   highlightMistakes: true,

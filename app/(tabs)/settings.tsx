@@ -9,55 +9,102 @@ import {
   SafeAreaView,
   Alert,
   Modal,
+  ActivityIndicator,
+  TextInput,
+  Platform,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { 
   Moon, 
   Sun, 
   Bell, 
-  Clock, 
   Target, 
   Volume2, 
   Type, 
   Eye, 
-  Star, 
-  RefreshCw, 
   MessageCircle, 
   ChevronRight,
   X,
   Lock,
-  Globe
+  Globe,
+  ShoppingBag,
+  Smartphone
 } from 'lucide-react-native';
 import { useSettings } from '@/hooks/useSettings';
+import { usePurchases } from '@/hooks/usePurchases';
 
 export default function SettingsScreen() {
   const { settings, updateSettings, resetSettings } = useSettings();
-  const [showTimeModal, setShowTimeModal] = useState(false);
+  const { isProUser, restorePurchases, isLoading } = usePurchases();
+  const [showReminderModal, setShowReminderModal] = useState(false);
   const [showGoalModal, setShowGoalModal] = useState(false);
   const [showDisplayModal, setShowDisplayModal] = useState(false);
   const [showDialectModal, setShowDialectModal] = useState(false);
+  const [showAppearanceModal, setShowAppearanceModal] = useState(false);
+  const [tempGoal, setTempGoal] = useState(settings.dailyGoal.toString());
+  const [tempTime, setTempTime] = useState(settings.notifications.reminderTime);
 
-  const isPro = false; // This would come from your purchase state
+  const handleRestorePurchases = async () => {
+    try {
+      const success = await restorePurchases();
+      if (success) {
+        Alert.alert(
+          'Purchases Restored!',
+          'Your Pro features have been restored successfully.',
+          [{ text: 'Great!', style: 'default' }]
+        );
+      } else {
+        Alert.alert(
+          'No Purchases Found',
+          'We couldn\'t find any previous purchases to restore.',
+          [{ text: 'OK', style: 'default' }]
+        );
+      }
+    } catch (error) {
+      Alert.alert(
+        'Restore Failed',
+        'Unable to restore purchases. Please try again later.',
+        [{ text: 'OK', style: 'default' }]
+      );
+    }
+  };
 
-  const handleResetRatings = () => {
-    Alert.alert(
-      'Reset Ratings',
-      'Are you sure you want to reset all verb ratings? This action cannot be undone.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Reset', 
-          style: 'destructive',
-          onPress: () => {
-            Alert.alert('Success', 'All ratings have been reset.');
-          }
-        },
-      ]
-    );
+  const getAppearanceLabel = () => {
+    switch (settings.appearance) {
+      case 'light': return 'Light';
+      case 'dark': return 'Dark';
+      case 'system': return 'System';
+      default: return 'Light';
+    }
   };
 
   const handleContactUs = () => {
     Alert.alert('Contact Us', 'This would open a contact form or email client.');
+  };
+
+  const handleSaveGoal = () => {
+    const goalNumber = parseInt(tempGoal);
+    if (goalNumber && goalNumber > 0 && goalNumber <= 1000) {
+      updateSettings({ dailyGoal: goalNumber });
+      setShowGoalModal(false);
+    } else {
+      Alert.alert('Invalid Goal', 'Please enter a number between 1 and 1000.');
+    }
+  };
+
+  const handleTimeChange = (hours: number, minutes: number) => {
+    const timeString = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+    setTempTime(timeString);
+  };
+
+  const handleSaveReminder = () => {
+    updateSettings({ 
+      notifications: { 
+        ...settings.notifications, 
+        reminderTime: tempTime 
+      }
+    });
+    setShowReminderModal(false);
   };
 
   const SettingsSection = ({ title, children }: { title: string; children: React.ReactNode }) => (
@@ -163,29 +210,15 @@ export default function SettingsScreen() {
           <SettingsItem
             icon={Moon}
             title="Appearance"
-            subtitle={`Currently: ${settings.appearance}`}
-            onPress={() => {
-              Alert.alert('Coming Soon', 'Appearance settings will be available in a future update.');
-            }}
+            subtitle={getAppearanceLabel()}
+            onPress={() => setShowAppearanceModal(true)}
           />
           
-          <ToggleItem
-            icon={Bell}
-            title="Daily Reminder"
-            subtitle="Get reminded to practice daily"
-            value={settings.notifications.daily}
-            onValueChange={(value) => 
-              updateSettings({ 
-                notifications: { ...settings.notifications, daily: value }
-              })
-            }
-          />
-
           <SettingsItem
-            icon={Clock}
-            title="Reminder Time"
-            subtitle="Set when to receive reminders"
-            onPress={() => setShowTimeModal(true)}
+            icon={Bell}
+            title="Daily Reminders"
+            subtitle={settings.notifications.daily ? `Enabled at ${settings.notifications.reminderTime}` : 'Disabled'}
+            onPress={() => setShowReminderModal(true)}
           />
         </SettingsSection>
 
@@ -224,7 +257,7 @@ export default function SettingsScreen() {
                 enabledTenses: { ...settings.enabledTenses, imperfect: value }
               })
             }
-            isLocked={!isPro}
+            isLocked={!isProUser}
           />
 
           <ToggleItem
@@ -236,7 +269,7 @@ export default function SettingsScreen() {
                 enabledTenses: { ...settings.enabledTenses, conditional: value }
               })
             }
-            isLocked={!isPro}
+            isLocked={!isProUser}
           />
 
           <ToggleItem
@@ -248,7 +281,7 @@ export default function SettingsScreen() {
                 enabledTenses: { ...settings.enabledTenses, future: value }
               })
             }
-            isLocked={!isPro}
+            isLocked={!isProUser}
           />
 
           <Text style={styles.subSectionTitle}>Other Tenses</Text>
@@ -262,7 +295,7 @@ export default function SettingsScreen() {
                 enabledTenses: { ...settings.enabledTenses, subjunctive: value }
               })
             }
-            isLocked={!isPro}
+            isLocked={!isProUser}
           />
 
           <ToggleItem
@@ -274,7 +307,7 @@ export default function SettingsScreen() {
                 enabledTenses: { ...settings.enabledTenses, imperative: value }
               })
             }
-            isLocked={!isPro}
+            isLocked={!isProUser}
           />
 
           <Text style={styles.subSectionTitle}>Translation and Infinitives</Text>
@@ -299,8 +332,9 @@ export default function SettingsScreen() {
           <SettingsItem
             icon={Target}
             title="Daily Goal"
-            subtitle={`${settings.dailyGoal} verbs per day`}
-            onPress={() => setShowGoalModal(true)}
+            subtitle={isProUser ? `${settings.dailyGoal} verbs per day` : '100 verbs per day (Pro required to change)'}
+            onPress={isProUser ? () => setShowGoalModal(true) : undefined}
+            isLocked={!isProUser}
           />
 
           <ToggleItem
@@ -318,24 +352,21 @@ export default function SettingsScreen() {
             value={settings.highlightMistakes}
             onValueChange={(value) => updateSettings({ highlightMistakes: value })}
           />
-
-          <ToggleItem
-            icon={Star}
-            title="Rate Answers"
-            subtitle="Rate how well you know each verb"
-            value={settings.rateAnswers}
-            onValueChange={(value) => updateSettings({ rateAnswers: value })}
-          />
-
-          <SettingsItem
-            icon={RefreshCw}
-            title="Reset Ratings"
-            subtitle="Clear all verb ratings"
-            onPress={handleResetRatings}
-          />
         </SettingsSection>
 
         {/* Feedback */}
+        <SettingsSection title="Purchases">
+          <SettingsItem
+            icon={ShoppingBag}
+            title="Restore Purchases"
+            subtitle="Restore Pro features after reinstalling"
+            onPress={handleRestorePurchases}
+            rightElement={
+              isLoading ? <ActivityIndicator size="small" color="#6b7280" /> : null
+            }
+          />
+        </SettingsSection>
+
         <SettingsSection title="Feedback">
           <SettingsItem
             icon={MessageCircle}
@@ -355,21 +386,74 @@ export default function SettingsScreen() {
         </View>
       </ScrollView>
 
-      {/* Time Modal */}
+      {/* Reminder Modal */}
       <Modal
-        visible={showTimeModal}
+        visible={showReminderModal}
         animationType="slide"
         presentationStyle="pageSheet"
       >
         <SafeAreaView style={styles.modalContainer}>
           <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Reminder Time</Text>
-            <TouchableOpacity onPress={() => setShowTimeModal(false)}>
+            <Text style={styles.modalTitle}>Daily Reminders</Text>
+            <TouchableOpacity onPress={() => setShowReminderModal(false)}>
               <X size={24} color="#374151" />
             </TouchableOpacity>
           </View>
           <View style={styles.modalContent}>
-            <Text style={styles.modalText}>Time picker would go here</Text>
+            <View style={styles.reminderToggleContainer}>
+              <Text style={styles.reminderToggleLabel}>Enable Daily Reminders</Text>
+              <Switch
+                value={settings.notifications.daily}
+                onValueChange={(value) => 
+                  updateSettings({ 
+                    notifications: { ...settings.notifications, daily: value }
+                  })
+                }
+                trackColor={{ false: '#f3f4f6', true: '#3b82f6' }}
+                thumbColor="#ffffff"
+              />
+            </View>
+            
+            {settings.notifications.daily && (
+              <View style={styles.timePickerContainer}>
+                <Text style={styles.timePickerLabel}>Reminder Time</Text>
+                <View style={styles.timePicker}>
+                  <View style={styles.timeInputContainer}>
+                    <TextInput
+                      style={styles.timeInput}
+                      value={tempTime.split(':')[0]}
+                      onChangeText={(text) => {
+                        const hours = parseInt(text) || 0;
+                        if (hours >= 0 && hours <= 23) {
+                          handleTimeChange(hours, parseInt(tempTime.split(':')[1]) || 0);
+                        }
+                      }}
+                      keyboardType="numeric"
+                      maxLength={2}
+                      placeholder="HH"
+                    />
+                    <Text style={styles.timeSeparator}>:</Text>
+                    <TextInput
+                      style={styles.timeInput}
+                      value={tempTime.split(':')[1]}
+                      onChangeText={(text) => {
+                        const minutes = parseInt(text) || 0;
+                        if (minutes >= 0 && minutes <= 59) {
+                          handleTimeChange(parseInt(tempTime.split(':')[0]) || 0, minutes);
+                        }
+                      }}
+                      keyboardType="numeric"
+                      maxLength={2}
+                      placeholder="MM"
+                    />
+                  </View>
+                  <Text style={styles.timeFormat}>24-hour format</Text>
+                </View>
+                <TouchableOpacity style={styles.saveButton} onPress={handleSaveReminder}>
+                  <Text style={styles.saveButtonText}>Save Time</Text>
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
         </SafeAreaView>
       </Modal>
@@ -388,7 +472,73 @@ export default function SettingsScreen() {
             </TouchableOpacity>
           </View>
           <View style={styles.modalContent}>
-            <Text style={styles.modalText}>Goal picker would go here</Text>
+            <Text style={styles.goalDescription}>
+              Set how many verbs you want to practice each day
+            </Text>
+            <View style={styles.goalInputContainer}>
+              <TextInput
+                style={styles.goalInput}
+                value={tempGoal}
+                onChangeText={setTempGoal}
+                keyboardType="numeric"
+                placeholder="Enter goal (1-1000)"
+                maxLength={4}
+              />
+              <Text style={styles.goalUnit}>verbs per day</Text>
+            </View>
+            <TouchableOpacity style={styles.saveButton} onPress={handleSaveGoal}>
+              <Text style={styles.saveButtonText}>Save Goal</Text>
+            </TouchableOpacity>
+          </View>
+        </SafeAreaView>
+      </Modal>
+
+      {/* Appearance Modal */}
+      <Modal
+        visible={showAppearanceModal}
+        animationType="slide"
+        presentationStyle="pageSheet"
+      >
+        <SafeAreaView style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>Appearance</Text>
+            <TouchableOpacity onPress={() => setShowAppearanceModal(false)}>
+              <X size={24} color="#374151" />
+            </TouchableOpacity>
+          </View>
+          <View style={styles.modalContent}>
+            {[
+              { key: 'light', label: 'Light', icon: Sun, description: 'Always use light theme' },
+              { key: 'dark', label: 'Dark', icon: Moon, description: 'Always use dark theme' },
+              { key: 'system', label: 'System', icon: Smartphone, description: 'Follow device settings' },
+            ].map((appearance) => (
+              <TouchableOpacity
+                key={appearance.key}
+                style={[
+                  styles.appearanceOption,
+                  settings.appearance === appearance.key && styles.selectedOption
+                ]}
+                onPress={() => {
+                  updateSettings({ appearance: appearance.key as any });
+                  setShowAppearanceModal(false);
+                }}
+              >
+                <View style={styles.appearanceOptionLeft}>
+                  <View style={styles.appearanceIcon}>
+                    <appearance.icon size={20} color="#6b7280" />
+                  </View>
+                  <View>
+                    <Text style={[
+                      styles.appearanceLabel,
+                      settings.appearance === appearance.key && styles.selectedOptionText
+                    ]}>
+                      {appearance.label}
+                    </Text>
+                    <Text style={styles.appearanceDescription}>{appearance.description}</Text>
+                  </View>
+                </View>
+              </TouchableOpacity>
+            ))}
           </View>
         </SafeAreaView>
       </Modal>
@@ -693,6 +843,148 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-SemiBold',
   },
   dialectDescription: {
+    fontSize: 14,
+    color: '#6b7280',
+    marginTop: 2,
+    fontFamily: 'Inter-Regular',
+  },
+  appearanceToggle: {
+    padding: 8,
+    borderRadius: 8,
+    backgroundColor: '#f3f4f6',
+  },
+  reminderToggleContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: 'white',
+    padding: 20,
+    borderRadius: 12,
+    marginBottom: 20,
+  },
+  reminderToggleLabel: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#1f2937',
+    fontFamily: 'Inter-SemiBold',
+  },
+  timePickerContainer: {
+    backgroundColor: 'white',
+    padding: 20,
+    borderRadius: 12,
+  },
+  timePickerLabel: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#1f2937',
+    marginBottom: 16,
+    fontFamily: 'Inter-SemiBold',
+  },
+  currentTimeText: {
+    fontSize: 14,
+    color: '#6b7280',
+    marginTop: 12,
+    textAlign: 'center',
+    fontFamily: 'Inter-Regular',
+  },
+  timePicker: {
+    alignItems: 'center',
+  },
+  timeInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  timeInput: {
+    backgroundColor: '#f3f4f6',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    width: 60,
+    fontFamily: 'Inter-Bold',
+  },
+  timeSeparator: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginHorizontal: 8,
+    fontFamily: 'Inter-Bold',
+  },
+  timeFormat: {
+    fontSize: 12,
+    color: '#6b7280',
+    fontFamily: 'Inter-Regular',
+  },
+  saveButton: {
+    backgroundColor: '#3b82f6',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+    marginTop: 20,
+  },
+  saveButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+    textAlign: 'center',
+    fontFamily: 'Inter-SemiBold',
+  },
+  goalDescription: {
+    fontSize: 16,
+    color: '#6b7280',
+    textAlign: 'center',
+    marginBottom: 24,
+    fontFamily: 'Inter-Regular',
+  },
+  goalInputContainer: {
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  goalInput: {
+    backgroundColor: '#f3f4f6',
+    borderRadius: 12,
+    padding: 16,
+    fontSize: 24,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    width: 200,
+    marginBottom: 8,
+    fontFamily: 'Inter-Bold',
+  },
+  goalUnit: {
+    fontSize: 16,
+    color: '#6b7280',
+    fontFamily: 'Inter-Regular',
+  },
+  appearanceOption: {
+    backgroundColor: 'white',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 8,
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  appearanceOptionLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  appearanceIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#f3f4f6',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  appearanceLabel: {
+    fontSize: 16,
+    color: '#374151',
+    fontWeight: '500',
+    fontFamily: 'Inter-SemiBold',
+  },
+  appearanceDescription: {
     fontSize: 14,
     color: '#6b7280',
     marginTop: 2,
