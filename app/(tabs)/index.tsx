@@ -13,7 +13,8 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { RotateCcw, Volume2, Book, X } from 'lucide-react-native';
-import { getRandomVerb, checkConjugation, IgboVerb } from '@/data/igboVerbs';
+import { checkConjugation, IgboVerb } from '@/data/igboVerbs';
+import { verbService } from '@/lib/verbService';
 import { useSettings } from '@/hooks/useSettings';
 import { useProgress } from '@/hooks/useProgress';
 import { usePurchases } from '@/hooks/usePurchases';
@@ -33,7 +34,7 @@ const pronounLabels = {
 };
 
 export default function PracticeScreen() {
-  const [currentVerb, setCurrentVerb] = useState(getRandomVerb());
+  const [currentVerb, setCurrentVerb] = useState<IgboVerb | null>(null);
   const [selectedTense, setSelectedTense] = useState(() => tenses[Math.floor(Math.random() * 2)]); // Only present and past
   const [selectedPronoun, setSelectedPronoun] = useState(() => pronouns[Math.floor(Math.random() * pronouns.length)]);
   const [showAnswer, setShowAnswer] = useState(false);
@@ -47,11 +48,27 @@ export default function PracticeScreen() {
   const { theme, isDark } = useTheme();
   const { statistics } = useProgress();
 
-  const correctAnswer = currentVerb.conjugations[selectedTense]?.[selectedPronoun] || 'N/A';
+  // Initialize with random verb
+  useEffect(() => {
+    const loadRandomVerb = async () => {
+      try {
+        const verb = await verbService.getRandomVerb();
+        setCurrentVerb(verb);
+      } catch (error) {
+        console.error('Error loading random verb:', error);
+      }
+    };
+    
+    loadRandomVerb();
+  }, []);
+
+  const correctAnswer = currentVerb?.conjugations[selectedTense]?.[selectedPronoun] || 'N/A';
 
   const handleRevealAnswer = () => {
     setShowAnswer(true);
-    updateProgress(currentVerb.id, true);
+    if (currentVerb) {
+      updateProgress(currentVerb.id, true);
+    }
     
     Animated.timing(fadeAnim, {
       toValue: 1,
@@ -60,8 +77,14 @@ export default function PracticeScreen() {
     }).start();
   };
 
-  const handleNextVerb = () => {
-    setCurrentVerb(getRandomVerb());
+  const handleNextVerb = async () => {
+    try {
+      const verb = await verbService.getRandomVerb();
+      setCurrentVerb(verb);
+    } catch (error) {
+      console.error('Error loading next verb:', error);
+      return;
+    }
     
     // If user is pro, allow all tenses, otherwise limit to present and past
     const availableTenses = isProUser ? tenses : tenses.slice(0, 2);
@@ -73,7 +96,7 @@ export default function PracticeScreen() {
 
   const handlePlayAudio = () => {
     // Audio playback would be implemented here
-    console.log('Playing audio for:', currentVerb.infinitive);
+    console.log('Playing audio for:', currentVerb?.infinitive);
   };
 
   const getTenseBadgeColor = (tense: string) => {
@@ -211,6 +234,17 @@ export default function PracticeScreen() {
       </SafeAreaView>
     </Modal>
   );
+
+  // Show loading state while verb is loading
+  if (!currentVerb) {
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
+        <View style={styles.loadingContainer}>
+          <Text style={[styles.loadingText, { color: theme.colors.text }]}>Loading verb...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
@@ -489,6 +523,15 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginLeft: 8,
     fontFamily: 'Inter-SemiBold',
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontSize: 18,
+    fontFamily: 'Inter-Regular',
+  },
   },
   secondaryButtons: {
     flexDirection: 'row',

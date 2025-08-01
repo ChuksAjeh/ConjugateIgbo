@@ -12,7 +12,8 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Search, Filter, Volume2, X, Book } from 'lucide-react-native';
-import { igboVerbs, IgboVerb } from '@/data/igboVerbs';
+import { IgboVerb } from '@/data/igboVerbs';
+import { verbService } from '@/lib/verbService';
 import { useTheme } from '@/components/ThemeProvider';
 
 type FilterType = 'all' | 'common' | 'regular' | 'irregular';
@@ -20,14 +21,33 @@ type SortType = 'alphabetical' | 'frequency' | 'difficulty';
 
 export default function VerbsScreen() {
   const { theme, isDark } = useTheme();
+  const [verbs, setVerbs] = useState<IgboVerb[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState<FilterType>('all');
   const [sortBy, setSortBy] = useState<SortType>('alphabetical');
   const [selectedVerb, setSelectedVerb] = useState<IgboVerb | null>(null);
   const [showFilters, setShowFilters] = useState(false);
 
+  // Load verbs on component mount
+  useEffect(() => {
+    const loadVerbs = async () => {
+      try {
+        setIsLoading(true);
+        const allVerbs = await verbService.getAllVerbs();
+        setVerbs(allVerbs);
+      } catch (error) {
+        console.error('Error loading verbs:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadVerbs();
+  }, []);
+
   const filteredAndSortedVerbs = useMemo(() => {
-    let filtered = igboVerbs.filter(verb => {
+    let filtered = verbs.filter(verb => {
       const matchesSearch = 
         verb.infinitive.toLowerCase().includes(searchQuery.toLowerCase()) ||
         verb.meaning.toLowerCase().includes(searchQuery.toLowerCase());
@@ -55,6 +75,7 @@ export default function VerbsScreen() {
       }
     });
   }, [searchQuery, selectedFilter, sortBy]);
+  }, [searchQuery, selectedFilter, sortBy, verbs]);
 
   const renderVerbItem = ({ item }: { item: IgboVerb }) => (
     <TouchableOpacity
@@ -156,6 +177,11 @@ export default function VerbsScreen() {
       )}
 
       {/* Verbs List */}
+      {isLoading ? (
+        <View style={styles.loadingContainer}>
+          <Text style={[styles.loadingText, { color: theme.colors.text }]}>Loading verbs...</Text>
+        </View>
+      ) : (
       <FlatList
         data={filteredAndSortedVerbs}
         renderItem={renderVerbItem}
@@ -163,6 +189,7 @@ export default function VerbsScreen() {
         style={styles.verbsList}
         showsVerticalScrollIndicator={false}
       />
+      )}
 
       {/* Filter Modal */}
       <Modal
@@ -615,5 +642,15 @@ const styles = StyleSheet.create({
   exampleEnglish: {
     fontSize: 14,
     fontStyle: 'italic',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 40,
+  },
+  loadingText: {
+    fontSize: 18,
+    fontFamily: 'Inter-Regular',
   },
 });
