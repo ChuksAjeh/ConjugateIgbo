@@ -16,13 +16,10 @@ import {
   Moon, 
   Sun, 
   Bell, 
-  Clock, 
   Target, 
   Volume2, 
   Type, 
   Eye, 
-  Star, 
-  RefreshCw, 
   MessageCircle, 
   ChevronRight,
   X,
@@ -36,7 +33,7 @@ import { usePurchases } from '@/hooks/usePurchases';
 export default function SettingsScreen() {
   const { settings, updateSettings, resetSettings } = useSettings();
   const { isProUser, restorePurchases, isLoading } = usePurchases();
-  const [showTimeModal, setShowTimeModal] = useState(false);
+  const [showReminderModal, setShowReminderModal] = useState(false);
   const [showGoalModal, setShowGoalModal] = useState(false);
   const [showDisplayModal, setShowDisplayModal] = useState(false);
   const [showDialectModal, setShowDialectModal] = useState(false);
@@ -66,21 +63,9 @@ export default function SettingsScreen() {
     }
   };
 
-  const handleResetRatings = () => {
-    Alert.alert(
-      'Reset Ratings',
-      'Are you sure you want to reset all verb ratings? This action cannot be undone.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Reset', 
-          style: 'destructive',
-          onPress: () => {
-            Alert.alert('Success', 'All ratings have been reset.');
-          }
-        },
-      ]
-    );
+  const toggleDarkMode = () => {
+    const newAppearance = settings.appearance === 'dark' ? 'light' : 'dark';
+    updateSettings({ appearance: newAppearance });
   };
 
   const handleContactUs = () => {
@@ -190,29 +175,24 @@ export default function SettingsScreen() {
           <SettingsItem
             icon={Moon}
             title="Appearance"
-            subtitle={`Currently: ${settings.appearance}`}
-            onPress={() => {
-              Alert.alert('Coming Soon', 'Appearance settings will be available in a future update.');
-            }}
-          />
-          
-          <ToggleItem
-            icon={Bell}
-            title="Daily Reminder"
-            subtitle="Get reminded to practice daily"
-            value={settings.notifications.daily}
-            onValueChange={(value) => 
-              updateSettings({ 
-                notifications: { ...settings.notifications, daily: value }
-              })
+            subtitle={settings.appearance === 'dark' ? 'Dark mode' : 'Light mode'}
+            onPress={toggleDarkMode}
+            rightElement={
+              <View style={styles.appearanceToggle}>
+                {settings.appearance === 'dark' ? (
+                  <Moon size={20} color="#6b7280" />
+                ) : (
+                  <Sun size={20} color="#6b7280" />
+                )}
+              </View>
             }
           />
-
+          
           <SettingsItem
-            icon={Clock}
-            title="Reminder Time"
-            subtitle="Set when to receive reminders"
-            onPress={() => setShowTimeModal(true)}
+            icon={Bell}
+            title="Daily Reminders"
+            subtitle={settings.notifications.daily ? `Enabled at ${settings.notifications.reminderTime}` : 'Disabled'}
+            onPress={() => setShowReminderModal(true)}
           />
         </SettingsSection>
 
@@ -326,8 +306,9 @@ export default function SettingsScreen() {
           <SettingsItem
             icon={Target}
             title="Daily Goal"
-            subtitle={`${settings.dailyGoal} verbs per day`}
-            onPress={() => setShowGoalModal(true)}
+            subtitle={isProUser ? `${settings.dailyGoal} verbs per day` : '100 verbs per day (Pro required to change)'}
+            onPress={isProUser ? () => setShowGoalModal(true) : undefined}
+            isLocked={!isProUser}
           />
 
           <ToggleItem
@@ -345,21 +326,6 @@ export default function SettingsScreen() {
             value={settings.highlightMistakes}
             onValueChange={(value) => updateSettings({ highlightMistakes: value })}
           />
-
-          <ToggleItem
-            icon={Star}
-            title="Rate Answers"
-            subtitle="Rate how well you know each verb"
-            value={settings.rateAnswers}
-            onValueChange={(value) => updateSettings({ rateAnswers: value })}
-          />
-
-          <SettingsItem
-            icon={RefreshCw}
-            title="Reset Ratings"
-            subtitle="Clear all verb ratings"
-            onPress={handleResetRatings}
-          />
         </SettingsSection>
 
         {/* Feedback */}
@@ -367,7 +333,7 @@ export default function SettingsScreen() {
           <SettingsItem
             icon={ShoppingBag}
             title="Restore Purchases"
-            subtitle="Restore your Pro features if you reinstalled the app"
+            subtitle="Restore Pro features after reinstalling"
             onPress={handleRestorePurchases}
             rightElement={
               isLoading ? <ActivityIndicator size="small" color="#6b7280" /> : null
@@ -394,21 +360,43 @@ export default function SettingsScreen() {
         </View>
       </ScrollView>
 
-      {/* Time Modal */}
+      {/* Reminder Modal */}
       <Modal
-        visible={showTimeModal}
+        visible={showReminderModal}
         animationType="slide"
         presentationStyle="pageSheet"
       >
         <SafeAreaView style={styles.modalContainer}>
           <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Reminder Time</Text>
-            <TouchableOpacity onPress={() => setShowTimeModal(false)}>
+            <Text style={styles.modalTitle}>Daily Reminders</Text>
+            <TouchableOpacity onPress={() => setShowReminderModal(false)}>
               <X size={24} color="#374151" />
             </TouchableOpacity>
           </View>
           <View style={styles.modalContent}>
-            <Text style={styles.modalText}>Time picker would go here</Text>
+            <View style={styles.reminderToggleContainer}>
+              <Text style={styles.reminderToggleLabel}>Enable Daily Reminders</Text>
+              <Switch
+                value={settings.notifications.daily}
+                onValueChange={(value) => 
+                  updateSettings({ 
+                    notifications: { ...settings.notifications, daily: value }
+                  })
+                }
+                trackColor={{ false: '#f3f4f6', true: '#3b82f6' }}
+                thumbColor="#ffffff"
+              />
+            </View>
+            
+            {settings.notifications.daily && (
+              <View style={styles.timePickerContainer}>
+                <Text style={styles.timePickerLabel}>Reminder Time</Text>
+                <Text style={styles.modalText}>Time picker would go here</Text>
+                <Text style={styles.currentTimeText}>
+                  Current time: {settings.notifications.reminderTime}
+                </Text>
+              </View>
+            )}
           </View>
         </SafeAreaView>
       </Modal>
@@ -735,6 +723,45 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#6b7280',
     marginTop: 2,
+    fontFamily: 'Inter-Regular',
+  },
+  appearanceToggle: {
+    padding: 8,
+    borderRadius: 8,
+    backgroundColor: '#f3f4f6',
+  },
+  reminderToggleContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: 'white',
+    padding: 20,
+    borderRadius: 12,
+    marginBottom: 20,
+  },
+  reminderToggleLabel: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#1f2937',
+    fontFamily: 'Inter-SemiBold',
+  },
+  timePickerContainer: {
+    backgroundColor: 'white',
+    padding: 20,
+    borderRadius: 12,
+  },
+  timePickerLabel: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#1f2937',
+    marginBottom: 16,
+    fontFamily: 'Inter-SemiBold',
+  },
+  currentTimeText: {
+    fontSize: 14,
+    color: '#6b7280',
+    marginTop: 12,
+    textAlign: 'center',
     fontFamily: 'Inter-Regular',
   },
 });
