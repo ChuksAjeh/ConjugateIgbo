@@ -1,7 +1,10 @@
 import { Tabs } from 'expo-router';
 import { Book, Settings, Crown, Chrome as Home, TrendingUp, CreditCard } from 'lucide-react-native';
+import { usePurchases } from '@/hooks/usePurchases';
 
 export default function TabLayout() {
+  const { isProUser } = usePurchases();
+
   return (
     <Tabs
       screenOptions={{
@@ -39,15 +42,17 @@ export default function TabLayout() {
           ),
         }}
       />
-      <Tabs.Screen
-        name="pro"
-        options={{
-          title: 'Get Pro',
-          tabBarIcon: ({ size, color }) => (
-            <Crown size={size} color={color} />
-          ),
-        }}
-      />
+      {!isProUser && (
+        <Tabs.Screen
+          name="pro"
+          options={{
+            title: 'Get Pro',
+            tabBarIcon: ({ size, color }) => (
+              <Crown size={size} color={color} />
+            ),
+          }}
+        />
+      )}
       <Tabs.Screen
         name="verbs"
         options={{

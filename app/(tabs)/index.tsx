@@ -16,6 +16,7 @@ import { RotateCcw, Volume2, Book, X } from 'lucide-react-native';
 import { getRandomVerb, checkConjugation, IgboVerb } from '@/data/igboVerbs';
 import { useSettings } from '@/hooks/useSettings';
 import { useProgress } from '@/hooks/useProgress';
+import { usePurchases } from '@/hooks/usePurchases';
 
 const { width } = Dimensions.get('window');
 
@@ -42,6 +43,7 @@ export default function PracticeScreen() {
   
   const { settings } = useSettings();
   const { updateProgress } = useProgress();
+  const { isProUser } = usePurchases();
 
   const correctAnswer = currentVerb.conjugations[selectedTense]?.[selectedPronoun] || 'N/A';
 
@@ -59,7 +61,10 @@ export default function PracticeScreen() {
 
   const handleNextVerb = () => {
     setCurrentVerb(getRandomVerb());
-    setSelectedTense(tenses[Math.floor(Math.random() * 2)]); // Randomize between present and past
+    
+    // If user is pro, allow all tenses, otherwise limit to present and past
+    const availableTenses = isProUser ? tenses : tenses.slice(0, 2);
+    setSelectedTense(availableTenses[Math.floor(Math.random() * availableTenses.length)]);
     setSelectedPronoun(pronouns[Math.floor(Math.random() * pronouns.length)]); // Randomize pronoun
     setShowAnswer(false);
     fadeAnim.setValue(0);

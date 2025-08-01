@@ -6,11 +6,41 @@ import {
   TouchableOpacity,
   ScrollView,
   SafeAreaView,
+  Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Crown, Check, Star, Zap, Book, Volume2 } from 'lucide-react-native';
+import { usePurchases } from '@/hooks/usePurchases';
 
 export default function ProScreen() {
+  const { isProUser, isLoading, purchasePro } = usePurchases();
+
+  const handlePurchase = async () => {
+    try {
+      const success = await purchasePro();
+      if (success) {
+        Alert.alert(
+          'Purchase Successful!',
+          'Welcome to Igbo Verb Conjugation Pro! All features are now unlocked.',
+          [{ text: 'Awesome!', style: 'default' }]
+        );
+      } else {
+        Alert.alert(
+          'Purchase Failed',
+          'Something went wrong with your purchase. Please try again.',
+          [{ text: 'OK', style: 'default' }]
+        );
+      }
+    } catch (error) {
+      Alert.alert(
+        'Purchase Error',
+        'Unable to complete purchase. Please check your connection and try again.',
+        [{ text: 'OK', style: 'default' }]
+      );
+    }
+  };
+
   const features = [
     { icon: Book, text: 'Access to 1000+ premium verbs' },
     { icon: Volume2, text: 'High-quality audio pronunciations' },
@@ -19,6 +49,44 @@ export default function ProScreen() {
     { icon: Check, text: 'Offline mode for all content' },
     { icon: Crown, text: 'Priority customer support' },
   ];
+
+  // If user is already pro, show a different screen
+  if (isProUser) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+          <LinearGradient
+            colors={['#10b981', '#059669']}
+            style={styles.header}
+          >
+            <Crown size={48} color="white" />
+            <Text style={styles.headerTitle}>You're Pro!</Text>
+            <Text style={styles.headerSubtitle}>
+              All features unlocked
+            </Text>
+          </LinearGradient>
+
+          <View style={styles.proStatusContainer}>
+            <Text style={styles.proStatusTitle}>Pro Features Active</Text>
+            {features.map((feature, index) => (
+              <View key={index} style={styles.featureItem}>
+                <View style={styles.featureIcon}>
+                  <Check size={20} color="#10b981" />
+                </View>
+                <Text style={styles.featureText}>{feature.text}</Text>
+              </View>
+            ))}
+          </View>
+
+          <View style={styles.thankYouContainer}>
+            <Text style={styles.thankYouText}>
+              Thank you for supporting Igbo language learning! 🎉
+            </Text>
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -57,8 +125,17 @@ export default function ProScreen() {
               <Text style={styles.priceSubtext}>one-time purchase</Text>
             </View>
             <TouchableOpacity style={styles.purchaseButton}>
-              <Text style={styles.purchaseButtonText}>Purchase Pro</Text>
-            </TouchableOpacity>
+              <TouchableOpacity 
+                style={[styles.purchaseButton, isLoading && styles.purchaseButtonDisabled]} 
+                onPress={handlePurchase}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <ActivityIndicator color="white" size="small" />
+                ) : (
+                  <Text style={styles.purchaseButtonText}>Purchase Pro</Text>
+                )}
+              </TouchableOpacity>
             <Text style={styles.purchaseText}>Lifetime access to all features</Text>
           </View>
         </View>
@@ -188,6 +265,9 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     width: '100%',
   },
+  purchaseButtonDisabled: {
+    opacity: 0.6,
+  },
   purchaseButtonText: {
     color: 'white',
     fontSize: 18,
@@ -229,6 +309,30 @@ const styles = StyleSheet.create({
   footerText: {
     fontSize: 14,
     color: '#6b7280',
+    textAlign: 'center',
+    fontFamily: 'Inter-Regular',
+  },
+  proStatusContainer: {
+    padding: 20,
+  },
+  proStatusTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#1f2937',
+    marginBottom: 20,
+    textAlign: 'center',
+    fontFamily: 'Inter-Bold',
+  },
+  thankYouContainer: {
+    backgroundColor: 'white',
+    margin: 20,
+    padding: 24,
+    borderRadius: 16,
+    alignItems: 'center',
+  },
+  thankYouText: {
+    fontSize: 16,
+    color: '#374151',
     textAlign: 'center',
     fontFamily: 'Inter-Regular',
   },

@@ -26,18 +26,44 @@ import {
   ChevronRight,
   X,
   Lock,
-  Globe
+  Globe,
+  ShoppingBag
 } from 'lucide-react-native';
 import { useSettings } from '@/hooks/useSettings';
+import { usePurchases } from '@/hooks/usePurchases';
 
 export default function SettingsScreen() {
   const { settings, updateSettings, resetSettings } = useSettings();
+  const { isProUser, restorePurchases, isLoading } = usePurchases();
   const [showTimeModal, setShowTimeModal] = useState(false);
   const [showGoalModal, setShowGoalModal] = useState(false);
   const [showDisplayModal, setShowDisplayModal] = useState(false);
   const [showDialectModal, setShowDialectModal] = useState(false);
 
-  const isPro = false; // This would come from your purchase state
+  const handleRestorePurchases = async () => {
+    try {
+      const success = await restorePurchases();
+      if (success) {
+        Alert.alert(
+          'Purchases Restored!',
+          'Your Pro features have been restored successfully.',
+          [{ text: 'Great!', style: 'default' }]
+        );
+      } else {
+        Alert.alert(
+          'No Purchases Found',
+          'We couldn\'t find any previous purchases to restore.',
+          [{ text: 'OK', style: 'default' }]
+        );
+      }
+    } catch (error) {
+      Alert.alert(
+        'Restore Failed',
+        'Unable to restore purchases. Please try again later.',
+        [{ text: 'OK', style: 'default' }]
+      );
+    }
+  };
 
   const handleResetRatings = () => {
     Alert.alert(
@@ -224,7 +250,7 @@ export default function SettingsScreen() {
                 enabledTenses: { ...settings.enabledTenses, imperfect: value }
               })
             }
-            isLocked={!isPro}
+            isLocked={!isProUser}
           />
 
           <ToggleItem
@@ -236,7 +262,7 @@ export default function SettingsScreen() {
                 enabledTenses: { ...settings.enabledTenses, conditional: value }
               })
             }
-            isLocked={!isPro}
+            isLocked={!isProUser}
           />
 
           <ToggleItem
@@ -248,7 +274,7 @@ export default function SettingsScreen() {
                 enabledTenses: { ...settings.enabledTenses, future: value }
               })
             }
-            isLocked={!isPro}
+            isLocked={!isProUser}
           />
 
           <Text style={styles.subSectionTitle}>Other Tenses</Text>
@@ -262,7 +288,7 @@ export default function SettingsScreen() {
                 enabledTenses: { ...settings.enabledTenses, subjunctive: value }
               })
             }
-            isLocked={!isPro}
+            isLocked={!isProUser}
           />
 
           <ToggleItem
@@ -274,7 +300,7 @@ export default function SettingsScreen() {
                 enabledTenses: { ...settings.enabledTenses, imperative: value }
               })
             }
-            isLocked={!isPro}
+            isLocked={!isProUser}
           />
 
           <Text style={styles.subSectionTitle}>Translation and Infinitives</Text>
@@ -336,6 +362,18 @@ export default function SettingsScreen() {
         </SettingsSection>
 
         {/* Feedback */}
+        <SettingsSection title="Purchases">
+          <SettingsItem
+            icon={ShoppingBag}
+            title="Restore Purchases"
+            subtitle="Restore your Pro features if you reinstalled the app"
+            onPress={handleRestorePurchases}
+            rightElement={
+              isLoading ? <ActivityIndicator size="small" color="#6b7280" /> : null
+            }
+          />
+        </SettingsSection>
+
         <SettingsSection title="Feedback">
           <SettingsItem
             icon={MessageCircle}
