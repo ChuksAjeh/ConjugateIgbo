@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   View,
   Text,
@@ -74,7 +74,6 @@ export default function VerbsScreen() {
           return 0;
       }
     });
-  }, [searchQuery, selectedFilter, sortBy]);
   }, [searchQuery, selectedFilter, sortBy, verbs]);
 
   const renderVerbItem = ({ item }: { item: IgboVerb }) => (
