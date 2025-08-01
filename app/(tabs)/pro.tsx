@@ -12,8 +12,10 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { Crown, Check, Star, Zap, Book, Volume2 } from 'lucide-react-native';
 import { usePurchases } from '@/hooks/usePurchases';
+import { useTheme } from '@/components/ThemeProvider';
 
 export default function ProScreen() {
+  const { theme, isDark } = useTheme();
   const { isProUser, isLoading, purchasePro } = usePurchases();
 
   const handlePurchase = async () => {
@@ -53,10 +55,10 @@ export default function ProScreen() {
   // If user is already pro, show a different screen
   if (isProUser) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
           <LinearGradient
-            colors={['#10b981', '#059669']}
+            colors={isDark ? ['#059669', '#047857'] : ['#10b981', '#059669']}
             style={styles.header}
           >
             <Crown size={48} color="white" />
@@ -66,20 +68,20 @@ export default function ProScreen() {
             </Text>
           </LinearGradient>
 
-          <View style={styles.proStatusContainer}>
-            <Text style={styles.proStatusTitle}>Pro Features Active</Text>
+          <View style={[styles.proStatusContainer, { backgroundColor: theme.colors.surface }]}>
+            <Text style={[styles.proStatusTitle, { color: theme.colors.text }]}>Pro Features Active</Text>
             {features.map((feature, index) => (
               <View key={index} style={styles.featureItem}>
                 <View style={styles.featureIcon}>
                   <Check size={20} color="#10b981" />
                 </View>
-                <Text style={styles.featureText}>{feature.text}</Text>
+                <Text style={[styles.featureText, { color: theme.colors.text }]}>{feature.text}</Text>
               </View>
             ))}
           </View>
 
-          <View style={styles.thankYouContainer}>
-            <Text style={styles.thankYouText}>
+          <View style={[styles.thankYouContainer, { backgroundColor: theme.colors.surface }]}>
+            <Text style={[styles.thankYouText, { color: theme.colors.text }]}>
               Thank you for supporting Igbo language learning! 🎉
             </Text>
           </View>
@@ -89,11 +91,11 @@ export default function ProScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Header */}
         <LinearGradient
-          colors={['#fbbf24', '#f59e0b']}
+          colors={isDark ? ['#f59e0b', '#d97706'] : ['#fbbf24', '#f59e0b']}
           style={styles.header}
         >
           <Crown size={48} color="white" />
@@ -105,24 +107,24 @@ export default function ProScreen() {
 
         {/* Features List */}
         <View style={styles.featuresContainer}>
-          <Text style={styles.featuresTitle}>What you'll get:</Text>
+          <Text style={[styles.featuresTitle, { color: theme.colors.text }]}>What you'll get:</Text>
           {features.map((feature, index) => (
             <View key={index} style={styles.featureItem}>
-              <View style={styles.featureIcon}>
+              <View style={[styles.featureIcon, { backgroundColor: isDark ? '#451a03' : '#fef3c7' }]}>
                 <feature.icon size={20} color="#f59e0b" />
               </View>
-              <Text style={styles.featureText}>{feature.text}</Text>
+              <Text style={[styles.featureText, { color: theme.colors.text }]}>{feature.text}</Text>
             </View>
           ))}
         </View>
 
         {/* Pricing */}
         <View style={styles.pricingContainer}>
-          <View style={styles.pricingCard}>
-            <Text style={styles.pricingTitle}>Pro Version</Text>
+          <View style={[styles.pricingCard, { backgroundColor: theme.colors.surface, borderColor: isDark ? '#f59e0b' : '#f59e0b' }]}>
+            <Text style={[styles.pricingTitle, { color: theme.colors.text }]}>Pro Version</Text>
             <View style={styles.priceContainer}>
-              <Text style={styles.price}>£5</Text>
-              <Text style={styles.priceSubtext}>one-time purchase</Text>
+              <Text style={[styles.price, { color: theme.colors.text }]}>£5</Text>
+              <Text style={[styles.priceSubtext, { color: theme.colors.textSecondary }]}>one-time purchase</Text>
             </View>
             <TouchableOpacity 
               style={[styles.purchaseButton, isLoading && styles.purchaseButtonDisabled]} 
@@ -135,21 +137,23 @@ export default function ProScreen() {
                 <Text style={styles.purchaseButtonText}>Purchase Pro</Text>
               )}
             </TouchableOpacity>
-            <Text style={styles.purchaseText}>Lifetime access to all features</Text>
+            <Text style={[styles.purchaseText, { color: theme.colors.textSecondary }]}>Lifetime access to all features</Text>
           </View>
         </View>
 
         {/* Testimonial */}
         <View style={styles.testimonialContainer}>
-          <Text style={styles.testimonialText}>
+          <View style={[styles.testimonialCard, { backgroundColor: theme.colors.surface }]}>
+            <Text style={[styles.testimonialText, { color: theme.colors.text }]}>
             "This app transformed my Igbo learning. The conjugation practice is exactly what I needed!"
-          </Text>
-          <Text style={styles.testimonialAuthor}>- Sarah, Pro User</Text>
+            </Text>
+            <Text style={[styles.testimonialAuthor, { color: theme.colors.textSecondary }]}>- Sarah, Pro User</Text>
+          </View>
         </View>
 
         {/* Footer */}
         <View style={styles.footer}>
-          <Text style={styles.footerText}>
+          <Text style={[styles.footerText, { color: theme.colors.textSecondary }]}>
             One-time purchase. Lifetime access. Start learning today!
           </Text>
         </View>
@@ -161,7 +165,6 @@ export default function ProScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
   },
   content: {
     flex: 1,
@@ -193,7 +196,6 @@ const styles = StyleSheet.create({
   featuresTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#1f2937',
     marginBottom: 20,
     fontFamily: 'Inter-Bold',
   },
@@ -206,14 +208,12 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#fef3c7',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 16,
   },
   featureText: {
     fontSize: 16,
-    color: '#374151',
     flex: 1,
     fontFamily: 'Inter-Regular',
   },
@@ -222,7 +222,6 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   pricingCard: {
-    backgroundColor: 'white',
     borderRadius: 20,
     padding: 32,
     alignItems: 'center',
@@ -232,12 +231,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     borderWidth: 2,
-    borderColor: '#f59e0b',
   },
   pricingTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#1f2937',
     marginBottom: 16,
     fontFamily: 'Inter-Bold',
   },
@@ -248,12 +245,10 @@ const styles = StyleSheet.create({
   price: {
     fontSize: 48,
     fontWeight: 'bold',
-    color: '#1f2937',
     fontFamily: 'Inter-Bold',
   },
   priceSubtext: {
     fontSize: 16,
-    color: '#6b7280',
     fontFamily: 'Inter-Regular',
   },
   purchaseButton: {
@@ -276,20 +271,19 @@ const styles = StyleSheet.create({
   },
   purchaseText: {
     fontSize: 14,
-    color: '#6b7280',
     textAlign: 'center',
     fontFamily: 'Inter-Regular',
   },
   testimonialContainer: {
-    backgroundColor: 'white',
     margin: 20,
+  },
+  testimonialCard: {
     padding: 24,
     borderRadius: 16,
     alignItems: 'center',
   },
   testimonialText: {
     fontSize: 16,
-    color: '#374151',
     textAlign: 'center',
     fontStyle: 'italic',
     marginBottom: 12,
@@ -297,7 +291,6 @@ const styles = StyleSheet.create({
   },
   testimonialAuthor: {
     fontSize: 14,
-    color: '#6b7280',
     fontWeight: '500',
     fontFamily: 'Inter-SemiBold',
   },
@@ -307,23 +300,22 @@ const styles = StyleSheet.create({
   },
   footerText: {
     fontSize: 14,
-    color: '#6b7280',
     textAlign: 'center',
     fontFamily: 'Inter-Regular',
   },
   proStatusContainer: {
     padding: 20,
+    margin: 20,
+    borderRadius: 16,
   },
   proStatusTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#1f2937',
     marginBottom: 20,
     textAlign: 'center',
     fontFamily: 'Inter-Bold',
   },
   thankYouContainer: {
-    backgroundColor: 'white',
     margin: 20,
     padding: 24,
     borderRadius: 16,
@@ -331,7 +323,6 @@ const styles = StyleSheet.create({
   },
   thankYouText: {
     fontSize: 16,
-    color: '#374151',
     textAlign: 'center',
     fontFamily: 'Inter-Regular',
   },

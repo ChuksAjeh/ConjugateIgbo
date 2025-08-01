@@ -13,11 +13,13 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { Search, Filter, Volume2, X, Book } from 'lucide-react-native';
 import { igboVerbs, IgboVerb } from '@/data/igboVerbs';
+import { useTheme } from '@/components/ThemeProvider';
 
 type FilterType = 'all' | 'common' | 'regular' | 'irregular';
 type SortType = 'alphabetical' | 'frequency' | 'difficulty';
 
 export default function VerbsScreen() {
+  const { theme, isDark } = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState<FilterType>('all');
   const [sortBy, setSortBy] = useState<SortType>('alphabetical');
@@ -56,12 +58,12 @@ export default function VerbsScreen() {
 
   const renderVerbItem = ({ item }: { item: IgboVerb }) => (
     <TouchableOpacity
-      style={styles.verbItem}
+      style={[styles.verbItem, { backgroundColor: theme.colors.surface }]}
       onPress={() => setSelectedVerb(item)}
     >
       <View style={styles.verbItemContent}>
         <View style={styles.verbItemHeader}>
-          <Text style={styles.verbInfinitive}>{item.infinitive}</Text>
+          <Text style={[styles.verbInfinitive, { color: theme.colors.text }]}>{item.infinitive}</Text>
           <View style={styles.verbBadges}>
             <View style={[styles.badge, getBadgeStyle(item.frequency)]}>
               <Text style={[styles.badgeText, getBadgeTextStyle(item.frequency)]}>
@@ -74,11 +76,11 @@ export default function VerbsScreen() {
           </View>
         </View>
         
-        <Text style={styles.verbMeaning}>"{item.meaning}"</Text>
+        <Text style={[styles.verbMeaning, { color: theme.colors.textSecondary }]}>"{item.meaning}"</Text>
         
         <View style={styles.verbMeta}>
-          <Text style={styles.verbType}>{item.type}</Text>
-          <Text style={styles.verbDifficulty}>{item.difficulty}</Text>
+          <Text style={[styles.verbType, { color: theme.colors.textSecondary }]}>{item.type}</Text>
+          <Text style={[styles.verbDifficulty, { color: theme.colors.textSecondary }]}>{item.difficulty}</Text>
         </View>
       </View>
     </TouchableOpacity>
@@ -103,9 +105,9 @@ export default function VerbsScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <LinearGradient
-        colors={['#059669', '#047857']}
+        colors={isDark ? ['#047857', '#065f46'] : ['#059669', '#047857']}
         style={styles.header}
       >
         <Text style={styles.headerTitle}>Igbo Verbs Dictionary</Text>
@@ -119,7 +121,7 @@ export default function VerbsScreen() {
         <View style={styles.searchInputContainer}>
           <Search size={20} color="#6b7280" />
           <TextInput
-            style={styles.searchInput}
+            style={[styles.searchInput, { color: theme.colors.text }]}
             placeholder="Search verbs..."
             value={searchQuery}
             onChangeText={setSearchQuery}
@@ -128,7 +130,7 @@ export default function VerbsScreen() {
         </View>
         
         <TouchableOpacity
-          style={styles.filterButton}
+          style={[styles.filterButton, { backgroundColor: theme.colors.surface }]}
           onPress={() => setShowFilters(true)}
         >
           <Filter size={20} color="#6b7280" />
@@ -138,7 +140,7 @@ export default function VerbsScreen() {
       {/* Filter Summary */}
       {(selectedFilter !== 'all' || sortBy !== 'alphabetical') && (
         <View style={styles.filterSummary}>
-          <Text style={styles.filterSummaryText}>
+          <Text style={[styles.filterSummaryText, { color: theme.colors.textSecondary }]}>
             {selectedFilter !== 'all' && `Filter: ${selectedFilter} • `}
             Sort: {sortBy}
           </Text>
@@ -148,7 +150,7 @@ export default function VerbsScreen() {
               setSortBy('alphabetical');
             }}
           >
-            <Text style={styles.clearFilters}>Clear</Text>
+            <Text style={[styles.clearFilters, { color: theme.colors.primary }]}>Clear</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -168,18 +170,18 @@ export default function VerbsScreen() {
         animationType="slide"
         presentationStyle="pageSheet"
       >
-        <SafeAreaView style={styles.modalContainer}>
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Filters & Sorting</Text>
+        <SafeAreaView style={[styles.modalContainer, { backgroundColor: theme.colors.background }]}>
+          <View style={[styles.modalHeader, { backgroundColor: theme.colors.surface, borderBottomColor: theme.colors.border }]}>
+            <Text style={[styles.modalTitle, { color: theme.colors.text }]}>Filters & Sorting</Text>
             <TouchableOpacity onPress={() => setShowFilters(false)}>
-              <X size={24} color="#374151" />
+              <X size={24} color={theme.colors.text} />
             </TouchableOpacity>
           </View>
 
           <ScrollView style={styles.modalContent}>
             {/* Filter Options */}
             <View style={styles.filterSection}>
-              <Text style={styles.filterSectionTitle}>Filter by</Text>
+              <Text style={[styles.filterSectionTitle, { color: theme.colors.text }]}>Filter by</Text>
               {[
                 { key: 'all', label: 'All Verbs' },
                 { key: 'common', label: 'Common Verbs' },
@@ -190,13 +192,15 @@ export default function VerbsScreen() {
                   key={filter.key}
                   style={[
                     styles.filterOption,
-                    selectedFilter === filter.key && styles.filterOptionActive
+                    { backgroundColor: theme.colors.surface },
+                    selectedFilter === filter.key && { ...styles.filterOptionActive, backgroundColor: isDark ? '#1e40af' : '#eff6ff', borderColor: theme.colors.primary }
                   ]}
                   onPress={() => setSelectedFilter(filter.key as FilterType)}
                 >
                   <Text style={[
                     styles.filterOptionText,
-                    selectedFilter === filter.key && styles.filterOptionTextActive
+                    { color: theme.colors.text },
+                    selectedFilter === filter.key && { color: theme.colors.primary, fontWeight: '500' }
                   ]}>
                     {filter.label}
                   </Text>
@@ -206,7 +210,7 @@ export default function VerbsScreen() {
 
             {/* Sort Options */}
             <View style={styles.filterSection}>
-              <Text style={styles.filterSectionTitle}>Sort by</Text>
+              <Text style={[styles.filterSectionTitle, { color: theme.colors.text }]}>Sort by</Text>
               {[
                 { key: 'alphabetical', label: 'Alphabetical' },
                 { key: 'frequency', label: 'Frequency' },
@@ -216,13 +220,15 @@ export default function VerbsScreen() {
                   key={sort.key}
                   style={[
                     styles.filterOption,
-                    sortBy === sort.key && styles.filterOptionActive
+                    { backgroundColor: theme.colors.surface },
+                    sortBy === sort.key && { ...styles.filterOptionActive, backgroundColor: isDark ? '#1e40af' : '#eff6ff', borderColor: theme.colors.primary }
                   ]}
                   onPress={() => setSortBy(sort.key as SortType)}
                 >
                   <Text style={[
                     styles.filterOptionText,
-                    sortBy === sort.key && styles.filterOptionTextActive
+                    { color: theme.colors.text },
+                    sortBy === sort.key && { color: theme.colors.primary, fontWeight: '500' }
                   ]}>
                     {sort.label}
                   </Text>
@@ -239,53 +245,53 @@ export default function VerbsScreen() {
         animationType="slide"
         presentationStyle="pageSheet"
       >
-        <SafeAreaView style={styles.modalContainer}>
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Verb Details</Text>
+        <SafeAreaView style={[styles.modalContainer, { backgroundColor: theme.colors.background }]}>
+          <View style={[styles.modalHeader, { backgroundColor: theme.colors.surface, borderBottomColor: theme.colors.border }]}>
+            <Text style={[styles.modalTitle, { color: theme.colors.text }]}>Verb Details</Text>
             <TouchableOpacity onPress={() => setSelectedVerb(null)}>
-              <X size={24} color="#374151" />
+              <X size={24} color={theme.colors.text} />
             </TouchableOpacity>
           </View>
 
           {selectedVerb && (
             <ScrollView style={styles.modalContent}>
               <View style={styles.verbDetailHeader}>
-                <Text style={styles.verbDetailInfinitive}>{selectedVerb.infinitive}</Text>
+                <Text style={[styles.verbDetailInfinitive, { color: theme.colors.text }]}>{selectedVerb.infinitive}</Text>
                 <TouchableOpacity style={styles.audioButtonLarge}>
                   <Volume2 size={24} color="#059669" />
                 </TouchableOpacity>
               </View>
 
-              <Text style={styles.verbDetailMeaning}>"{selectedVerb.meaning}"</Text>
+              <Text style={[styles.verbDetailMeaning, { color: theme.colors.textSecondary }]}>"{selectedVerb.meaning}"</Text>
 
-              <View style={styles.verbDetailMeta}>
+              <View style={[styles.verbDetailMeta, { backgroundColor: theme.colors.surface }]}>
                 <View style={styles.metaItem}>
-                  <Text style={styles.metaLabel}>Type:</Text>
-                  <Text style={styles.metaValue}>{selectedVerb.type}</Text>
+                  <Text style={[styles.metaLabel, { color: theme.colors.textSecondary }]}>Type:</Text>
+                  <Text style={[styles.metaValue, { color: theme.colors.text }]}>{selectedVerb.type}</Text>
                 </View>
                 <View style={styles.metaItem}>
-                  <Text style={styles.metaLabel}>Frequency:</Text>
-                  <Text style={styles.metaValue}>{selectedVerb.frequency}</Text>
+                  <Text style={[styles.metaLabel, { color: theme.colors.textSecondary }]}>Frequency:</Text>
+                  <Text style={[styles.metaValue, { color: theme.colors.text }]}>{selectedVerb.frequency}</Text>
                 </View>
                 <View style={styles.metaItem}>
-                  <Text style={styles.metaLabel}>Difficulty:</Text>
-                  <Text style={styles.metaValue}>{selectedVerb.difficulty}</Text>
+                  <Text style={[styles.metaLabel, { color: theme.colors.textSecondary }]}>Difficulty:</Text>
+                  <Text style={[styles.metaValue, { color: theme.colors.text }]}>{selectedVerb.difficulty}</Text>
                 </View>
               </View>
 
               {/* Conjugation Table */}
               <View style={styles.conjugationSection}>
-                <Text style={styles.conjugationTitle}>Conjugations</Text>
+                <Text style={[styles.conjugationTitle, { color: theme.colors.text }]}>Conjugations</Text>
                 {Object.entries(selectedVerb.conjugations).map(([tense, conjugations]) => (
-                  <View key={tense} style={styles.tenseSection}>
-                    <Text style={styles.tenseTitle}>
+                  <View key={tense} style={[styles.tenseSection, { backgroundColor: theme.colors.surface }]}>
+                    <Text style={[styles.tenseTitle, { color: theme.colors.text }]}>
                       {tense.charAt(0).toUpperCase() + tense.slice(1)} Tense
                     </Text>
                     <View style={styles.conjugationTable}>
                       {Object.entries(conjugations).map(([pronoun, conjugation]) => (
                         <View key={pronoun} style={styles.conjugationRow}>
-                          <Text style={styles.pronounText}>{pronoun}:</Text>
-                          <Text style={styles.conjugationText}>{conjugation}</Text>
+                          <Text style={[styles.pronounText, { color: theme.colors.textSecondary }]}>{pronoun}:</Text>
+                          <Text style={[styles.conjugationText, { color: theme.colors.text }]}>{conjugation}</Text>
                         </View>
                       ))}
                     </View>
@@ -296,11 +302,11 @@ export default function VerbsScreen() {
               {/* Examples */}
               {selectedVerb.examples && (
                 <View style={styles.examplesSection}>
-                  <Text style={styles.examplesTitle}>Examples</Text>
+                  <Text style={[styles.examplesTitle, { color: theme.colors.text }]}>Examples</Text>
                   {selectedVerb.examples.map((example, index) => (
-                    <View key={index} style={styles.exampleItem}>
-                      <Text style={styles.exampleIgbo}>{example.igbo}</Text>
-                      <Text style={styles.exampleEnglish}>"{example.english}"</Text>
+                    <View key={index} style={[styles.exampleItem, { backgroundColor: theme.colors.surface }]}>
+                      <Text style={[styles.exampleIgbo, { color: theme.colors.text }]}>{example.igbo}</Text>
+                      <Text style={[styles.exampleEnglish, { color: theme.colors.textSecondary }]}>"{example.english}"</Text>
                     </View>
                   ))}
                 </View>
@@ -316,7 +322,6 @@ export default function VerbsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
   },
   header: {
     paddingTop: 20,
@@ -347,7 +352,6 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'white',
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 12,
@@ -364,7 +368,6 @@ const styles = StyleSheet.create({
     color: '#374151',
   },
   filterButton: {
-    backgroundColor: 'white',
     borderRadius: 12,
     padding: 12,
     elevation: 2,
@@ -394,7 +397,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   verbItem: {
-    backgroundColor: 'white',
     borderRadius: 12,
     marginBottom: 12,
     elevation: 2,
@@ -477,21 +479,17 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     flex: 1,
-    backgroundColor: '#f8fafc',
   },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 20,
-    backgroundColor: 'white',
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
   },
   modalTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#1f2937',
   },
   modalContent: {
     flex: 1,
@@ -503,11 +501,9 @@ const styles = StyleSheet.create({
   filterSectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#374151',
     marginBottom: 16,
   },
   filterOption: {
-    backgroundColor: 'white',
     padding: 16,
     borderRadius: 12,
     marginBottom: 8,
@@ -516,14 +512,11 @@ const styles = StyleSheet.create({
   },
   filterOptionActive: {
     borderColor: '#3b82f6',
-    backgroundColor: '#eff6ff',
   },
   filterOptionText: {
     fontSize: 16,
-    color: '#374151',
   },
   filterOptionTextActive: {
-    color: '#3b82f6',
     fontWeight: '500',
   },
   verbDetailHeader: {
@@ -535,7 +528,6 @@ const styles = StyleSheet.create({
   verbDetailInfinitive: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#1f2937',
   },
   audioButtonLarge: {
     padding: 12,
@@ -544,12 +536,10 @@ const styles = StyleSheet.create({
   },
   verbDetailMeaning: {
     fontSize: 20,
-    color: '#6b7280',
     fontStyle: 'italic',
     marginBottom: 24,
   },
   verbDetailMeta: {
-    backgroundColor: 'white',
     borderRadius: 12,
     padding: 16,
     marginBottom: 24,
@@ -563,11 +553,9 @@ const styles = StyleSheet.create({
   },
   metaLabel: {
     fontSize: 16,
-    color: '#6b7280',
   },
   metaValue: {
     fontSize: 16,
-    color: '#1f2937',
     fontWeight: '500',
     textTransform: 'capitalize',
   },
@@ -577,11 +565,9 @@ const styles = StyleSheet.create({
   conjugationTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#1f2937',
     marginBottom: 16,
   },
   tenseSection: {
-    backgroundColor: 'white',
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
@@ -589,7 +575,6 @@ const styles = StyleSheet.create({
   tenseTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#374151',
     marginBottom: 12,
   },
   conjugationTable: {
@@ -602,13 +587,11 @@ const styles = StyleSheet.create({
   },
   pronounText: {
     fontSize: 14,
-    color: '#6b7280',
     fontWeight: '500',
     minWidth: 60,
   },
   conjugationText: {
     fontSize: 14,
-    color: '#1f2937',
     fontWeight: '500',
   },
   examplesSection: {
@@ -617,24 +600,20 @@ const styles = StyleSheet.create({
   examplesTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#1f2937',
     marginBottom: 16,
   },
   exampleItem: {
-    backgroundColor: 'white',
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
   },
   exampleIgbo: {
     fontSize: 16,
-    color: '#1f2937',
     fontWeight: '500',
     marginBottom: 4,
   },
   exampleEnglish: {
     fontSize: 14,
-    color: '#6b7280',
     fontStyle: 'italic',
   },
 });
