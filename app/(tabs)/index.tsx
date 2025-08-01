@@ -333,9 +333,10 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     padding: 20,
-    justifyContent: 'center',
   },
   cardContainer: {
+    flex: 1,
+    justifyContent: 'center',
     marginBottom: 32,
   },
   card: {
@@ -399,7 +400,8 @@ const styles = StyleSheet.create({
   },
   answerSection: {
     alignItems: 'center',
-    minHeight: 60,
+    minHeight: 80,
+    justifyContent: 'center',
   },
   revealButton: {
     backgroundColor: '#3b82f6',
