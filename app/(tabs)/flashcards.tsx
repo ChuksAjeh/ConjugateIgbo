@@ -10,7 +10,7 @@ import {
   Animated,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Volume2, RotateCcw, ArrowLeft, ArrowRight } from 'lucide-react-native';
+import { Volume2, RotateCcw, ArrowLeft, ArrowRight, Eye, EyeOff } from 'lucide-react-native';
 import { mnemonicCards, MnemonicCard } from '@/data/mnemonicCards';
 import { useTheme } from '@/components/ThemeProvider';
 
