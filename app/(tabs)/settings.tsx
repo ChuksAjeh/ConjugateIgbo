@@ -189,9 +189,9 @@ export default function SettingsScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={[styles.header, { backgroundColor: '#3b82f6', borderBottomColor: '#e5e7eb' }]}>
-        <Text style={[styles.headerTitle, { color: 'white' }]}>Settings</Text>
-        <Text style={[styles.headerSubtitle, { color: 'rgba(255, 255, 255, 0.8)' }]}>Customize your learning experience</Text>
+      <View style={[styles.header, { backgroundColor: theme.colors.background, borderBottomColor: theme.colors.border }]}>
+        <Text style={[styles.headerTitle, { color: theme.colors.text }]}>Settings</Text>
+        <Text style={[styles.headerSubtitle, { color: theme.colors.textSecondary }]}>Customize your learning experience</Text>
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
@@ -352,9 +352,7 @@ export default function SettingsScreen() {
         </SettingsSection>
 
         {/* Feedback */}
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: '#1f2937' }]}>Purchases</Text>
-          <View style={[styles.sectionContent, { backgroundColor: 'white' }]}>
+        <SettingsSection title="Purchases">
           <SettingsItem
             icon={ShoppingBag}
             title="Restore Purchases"
@@ -364,17 +362,19 @@ export default function SettingsScreen() {
               isLoading ? <ActivityIndicator size="small" color="#6b7280" /> : null
             }
           />
+        </SettingsSection>
+
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Feedback</Text>
+          <View style={[styles.sectionContent, { backgroundColor: theme.colors.surface }]}>
+            <SettingsItem
+              icon={MessageCircle}
+              title="Contact Us"
+              subtitle="Send feedback or get help"
+              onPress={handleContactUs}
+            />
           </View>
         </View>
-
-        <SettingsSection title="Feedback">
-          <SettingsItem
-            icon={MessageCircle}
-            title="Contact Us"
-            subtitle="Send feedback or get help"
-            onPress={handleContactUs}
-          />
-        </SettingsSection>
 
         {/* App Info */}
         <View style={styles.appInfo}>
