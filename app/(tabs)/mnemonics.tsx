@@ -32,9 +32,11 @@ export default function MnemonicsScreen() {
       return newSet;
     });
   };
+
+  return (
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+      <ScrollView style={styles.scrollView}>
       </ScrollView>
-    </SafeAreaView>
-  );
     </SafeAreaView>
   );
 }
