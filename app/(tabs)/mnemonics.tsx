@@ -38,7 +38,6 @@ export default function MnemonicsScreen() {
       <ScrollView style={styles.scrollView}>
       </ScrollView>
     </SafeAreaView>
-  );
 }
 
 const styles = StyleSheet.create({
