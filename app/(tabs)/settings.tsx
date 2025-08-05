@@ -32,10 +32,12 @@ import {
 } from 'lucide-react-native';
 import { useSettings } from '@/hooks/useSettings';
 import { usePurchases } from '@/hooks/usePurchases';
+import { useTheme } from '@/components/ThemeProvider';
 
 export default function SettingsScreen() {
   const { settings, updateSettings, resetSettings } = useSettings();
   const { isProUser, restorePurchases, isLoading } = usePurchases();
+  const { theme, isDark } = useTheme();
   const [showReminderModal, setShowReminderModal] = useState(false);
   const [showGoalModal, setShowGoalModal] = useState(false);
   const [showDisplayModal, setShowDisplayModal] = useState(false);
