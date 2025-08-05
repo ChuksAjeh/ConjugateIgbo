@@ -21,6 +21,7 @@ export default function FlashcardsScreen() {
   const { theme, isDark } = useTheme();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [flippedCards, setFlippedCards] = useState<Set<number>>(new Set());
+  const [revealedVerbs, setRevealedVerbs] = useState<Set<string>>(new Set());
   const flatListRef = useRef<FlatList>(null);
   const flipAnimations = useRef<{ [key: number]: Animated.Value }>({});
 
