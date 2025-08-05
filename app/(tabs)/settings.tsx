@@ -104,6 +104,14 @@ export default function SettingsScreen() {
         reminderTime: tempTime 
       }
     });
+    
+    // Schedule or cancel notifications based on settings
+    if (settings.notifications.daily) {
+      scheduleDailyReminder(tempTime);
+    } else {
+      cancelDailyReminder();
+    }
+    
     setShowReminderModal(false);
   };
 
@@ -189,13 +197,10 @@ export default function SettingsScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <LinearGradient
-        colors={['#6366f1', '#4f46e5']}
-        style={styles.header}
-      >
-        <Text style={styles.headerTitle}>Settings</Text>
-        <Text style={styles.headerSubtitle}>Customize your learning experience</Text>
-      </LinearGradient>
+      <View style={[styles.header, { backgroundColor: theme.colors.background, borderBottomColor: theme.colors.border }]}>
+        <Text style={[styles.headerTitle, { color: theme.colors.text }]}>Settings</Text>
+        <Text style={[styles.headerSubtitle, { color: theme.colors.textSecondary }]}>Customize your learning experience</Text>
+      </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* General */}
@@ -807,7 +812,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-Regular',
   },
   optionItem: {
-    backgroundColor: 'white',
     padding: 16,
     borderRadius: 12,
     marginBottom: 8,
@@ -815,8 +819,7 @@ const styles = StyleSheet.create({
     borderColor: 'transparent',
   },
   selectedOption: {
-    borderColor: '#3b82f6',
-    backgroundColor: '#eff6ff',
+    borderWidth: 2,
   },
   optionText: {
     fontSize: 16,

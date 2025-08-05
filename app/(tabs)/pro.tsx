@@ -94,16 +94,13 @@ export default function ProScreen() {
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Header */}
-        <LinearGradient
-          colors={isDark ? ['#f59e0b', '#d97706'] : ['#fbbf24', '#f59e0b']}
-          style={styles.header}
-        >
-          <Crown size={48} color="white" />
-          <Text style={styles.headerTitle}>Upgrade to Pro</Text>
-          <Text style={styles.headerSubtitle}>
-            Unlock all tenses and 1000+ verbs
+        <View style={[styles.header, { backgroundColor: theme.colors.background, borderBottomColor: theme.colors.border }]}>
+          <Crown size={32} color={theme.colors.success} />
+          <Text style={[styles.headerTitle, { color: theme.colors.text }]}>You're Pro!</Text>
+          <Text style={[styles.headerSubtitle, { color: theme.colors.textSecondary }]}>
+            All features unlocked
           </Text>
-        </LinearGradient>
+        </View>
 
         {/* Features List */}
         <View style={styles.featuresContainer}>
@@ -170,6 +167,25 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
+    alignItems: 'center',
+    paddingTop: 16,
+    paddingBottom: 16,
+    paddingHorizontal: 20,
+    borderBottomWidth: 1,
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginTop: 8,
+    marginBottom: 4,
+    fontFamily: 'Inter-Bold',
+  },
+  headerSubtitle: {
+    fontSize: 12,
+    textAlign: 'center',
+    fontFamily: 'Inter-Regular',
+  },
     alignItems: 'center',
     paddingVertical: 48,
     paddingHorizontal: 20,

@@ -126,15 +126,12 @@ export default function VerbsScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <LinearGradient
-        colors={isDark ? ['#047857', '#065f46'] : ['#059669', '#047857']}
-        style={styles.header}
-      >
-        <Text style={styles.headerTitle}>Igbo Verbs Dictionary</Text>
-        <Text style={styles.headerSubtitle}>
+      <View style={[styles.header, { backgroundColor: theme.colors.background, borderBottomColor: theme.colors.border }]}>
+        <Text style={[styles.headerTitle, { color: theme.colors.text }]}>Verbs</Text>
+        <Text style={[styles.headerSubtitle, { color: theme.colors.textSecondary }]}>
           {filteredAndSortedVerbs.length} verbs
         </Text>
-      </LinearGradient>
+      </View>
 
       {/* Search and Filter Bar */}
       <View style={styles.searchContainer}>
@@ -350,23 +347,22 @@ const styles = StyleSheet.create({
     flex: 1
   },
   header: {
-    paddingTop: 20,
-    paddingBottom: 30,
+    paddingTop: 16,
+    paddingBottom: 16,
     paddingHorizontal: 20,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
+    borderBottomWidth: 1,
   },
   headerTitle: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 'bold',
-    color: 'white',
     textAlign: 'center',
+    fontFamily: 'Inter-Bold',
   },
   headerSubtitle: {
-    fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.8)',
+    fontSize: 12,
     textAlign: 'center',
-    marginTop: 4,
+    marginTop: 2,
+    fontFamily: 'Inter-Regular',
   },
   searchContainer: {
     flexDirection: 'row',
