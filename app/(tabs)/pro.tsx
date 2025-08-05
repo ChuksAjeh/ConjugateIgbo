@@ -177,11 +177,8 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 24,
   },
   headerTitle: {
-    fontSize: 20,
     fontWeight: 'bold',
     textAlign: 'center',
-    marginTop: 8,
-    marginBottom: 4,
     fontFamily: 'Inter-Bold',
     fontSize: 28,
     color: 'white',
@@ -189,7 +186,6 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   headerSubtitle: {
-    fontSize: 12,
     textAlign: 'center',
     fontFamily: 'Inter-Regular',
     fontSize: 16,
