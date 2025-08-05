@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { Eye, EyeOff, RotateCcw } from 'lucide-react-native';
 import { mnemonicCards, getRandomMnemonicCard } from '@/data/mnemonicCards';
+import { useTheme } from '@/hooks/useTheme';
 
 export default function MnemonicsScreen() {
   const { theme, isDark } = useTheme();
@@ -32,6 +33,25 @@ export default function MnemonicsScreen() {
     });
   };
 
+  const hideAllMeanings = () => {
+    setRevealedVerbs(new Set());
+  };
+
+  return (
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        {/* Mnemonic Card */}
+        <View style={[styles.mnemonicCard, { backgroundColor: theme.colors.surface }]}>
+          <Text style={[styles.mnemonicTitle, { color: theme.colors.text }]}>
+            {currentCard.title}
+          </Text>
+          <Text style={[styles.mnemonicSubtitle, { color: theme.colors.textSecondary }]}>
+            {currentCard.subtitle}
+          </Text>
+          <Text style={[styles.mnemonicText, { color: theme.colors.text }]}>
+            {currentCard.mnemonic}
+          </Text>
+        </View>
 
         {/* Verbs Container */}
         <View style={[styles.verbsCard, { backgroundColor: theme.colors.surface }]}>
@@ -71,7 +91,7 @@ export default function MnemonicsScreen() {
             );
           })}
         </View>
-    setRevealedVerbs(new Set());
+
         {/* Action Buttons */}
         <View style={styles.actionButtons}>
           <TouchableOpacity
@@ -93,18 +113,18 @@ export default function MnemonicsScreen() {
           </TouchableOpacity>
         </View>
       </ScrollView>
-  };
+    </SafeAreaView>
+  );
+}
 
-  const renderVerb = (verb: { igbo: string; english: string }, index: number) => {
-    const isRevealed = revealedVerbs.has(verb.igbo);
-    
-    return (
-      <TouchableOpacity
-        key={index}
-        style={styles.verbContainer}
-        onPress={() => toggleVerbMeaning(verb.igbo)}
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  scrollView: {
+    flex: 1,
     padding: 20,
-          {verb.igbo}
+  },
   mnemonicCard: {
     borderRadius: 16,
     padding: 20,
@@ -114,7 +134,7 @@ export default function MnemonicsScreen() {
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
-        )}
+  },
   mnemonicTitle: {
     fontSize: 20,
     fontWeight: 'bold',
@@ -132,7 +152,7 @@ export default function MnemonicsScreen() {
     lineHeight: 24,
   },
   verbsCard: {
-  return (
+    borderRadius: 16,
     padding: 0,
     marginBottom: 20,
     elevation: 4,
@@ -141,17 +161,33 @@ export default function MnemonicsScreen() {
     shadowOpacity: 0.1,
     shadowRadius: 8,
     overflow: 'hidden',
-        <View style={[styles.mnemonicCard, { backgroundColor: theme.colors.surface }]}>
+  },
   verbItem: {
-            {currentCard.title}
-          </Text>
-          <Text style={[styles.mnemonicSubtitle, { color: theme.colors.textSecondary }]}>
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+  },
+  verbContent: {
+    flex: 1,
+  },
+  verbIgbo: {
+    fontSize: 18,
+    fontWeight: '600',
+    fontFamily: 'Inter-SemiBold',
+    marginBottom: 4,
+  },
+  verbEnglish: {
+    fontSize: 16,
+    fontFamily: 'Inter-Regular',
+  },
+  eyeIcon: {
+    marginLeft: 12,
+  },
   separator: {
     height: 1,
     marginHorizontal: 20,
-    marginBottom: 8,
-    fontSize: 16,
-    padding: 4,
   },
   actionButtons: {
     flexDirection: 'row',
