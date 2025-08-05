@@ -220,10 +220,8 @@ export default function SettingsScreen() {
         </SettingsSection>
 
         {/* Practice */}
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: '#1f2937' }]}>Practice</Text>
-          <View style={[styles.sectionContent, { backgroundColor: 'white' }]}>
-            <Text style={[styles.subSectionTitle, { color: '#6b7280' }]}>Indicative Tenses</Text>
+        <SettingsSection title="Practice">
+          <Text style={styles.subSectionTitle}>Indicative Tenses</Text>
           
           <ToggleItem
             icon={Target}
@@ -351,11 +349,12 @@ export default function SettingsScreen() {
             value={settings.highlightMistakes}
             onValueChange={(value) => updateSettings({ highlightMistakes: value })}
           />
-          </View>
-        </View>
+        </SettingsSection>
 
         {/* Feedback */}
-        <SettingsSection title="Purchases">
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: '#1f2937' }]}>Purchases</Text>
+          <View style={[styles.sectionContent, { backgroundColor: 'white' }]}>
           <SettingsItem
             icon={ShoppingBag}
             title="Restore Purchases"
@@ -365,7 +364,8 @@ export default function SettingsScreen() {
               isLoading ? <ActivityIndicator size="small" color="#6b7280" /> : null
             }
           />
-        </SettingsSection>
+          </View>
+        </View>
 
         <SettingsSection title="Feedback">
           <SettingsItem
