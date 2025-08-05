@@ -104,14 +104,6 @@ export default function SettingsScreen() {
         reminderTime: tempTime 
       }
     });
-    
-    // Schedule or cancel notifications based on settings
-    if (settings.notifications.daily) {
-      scheduleDailyReminder(tempTime);
-    } else {
-      cancelDailyReminder();
-    }
-    
     setShowReminderModal(false);
   };
 
@@ -197,9 +189,9 @@ export default function SettingsScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={[styles.header, { backgroundColor: theme.colors.background, borderBottomColor: theme.colors.border }]}>
-        <Text style={[styles.headerTitle, { color: theme.colors.text }]}>Settings</Text>
-        <Text style={[styles.headerSubtitle, { color: theme.colors.textSecondary }]}>Customize your learning experience</Text>
+      <View style={[styles.header, { backgroundColor: '#3b82f6', borderBottomColor: '#e5e7eb' }]}>
+        <Text style={[styles.headerTitle, { color: 'white' }]}>Settings</Text>
+        <Text style={[styles.headerSubtitle, { color: 'rgba(255, 255, 255, 0.8)' }]}>Customize your learning experience</Text>
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
@@ -228,8 +220,10 @@ export default function SettingsScreen() {
         </SettingsSection>
 
         {/* Practice */}
-        <SettingsSection title="Practice">
-          <Text style={styles.subSectionTitle}>Indicative Tenses</Text>
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: '#1f2937' }]}>Practice</Text>
+          <View style={[styles.sectionContent, { backgroundColor: 'white' }]}>
+            <Text style={[styles.subSectionTitle, { color: '#6b7280' }]}>Indicative Tenses</Text>
           
           <ToggleItem
             icon={Target}
@@ -357,7 +351,8 @@ export default function SettingsScreen() {
             value={settings.highlightMistakes}
             onValueChange={(value) => updateSettings({ highlightMistakes: value })}
           />
-        </SettingsSection>
+          </View>
+        </View>
 
         {/* Feedback */}
         <SettingsSection title="Purchases">
@@ -812,6 +807,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-Regular',
   },
   optionItem: {
+    backgroundColor: 'white',
     padding: 16,
     borderRadius: 12,
     marginBottom: 8,
@@ -819,7 +815,8 @@ const styles = StyleSheet.create({
     borderColor: 'transparent',
   },
   selectedOption: {
-    borderWidth: 2,
+    borderColor: '#3b82f6',
+    backgroundColor: '#eff6ff',
   },
   optionText: {
     fontSize: 16,
