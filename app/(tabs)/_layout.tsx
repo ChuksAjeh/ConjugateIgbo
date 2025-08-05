@@ -28,9 +28,9 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="flashcards"
+        name="mnemonics"
         options={{
-          title: 'Mnemonics',
+          title: 'Rhymes',
           tabBarIcon: ({ size, color }) => (
             <CreditCard size={size} color={color} />
           ),

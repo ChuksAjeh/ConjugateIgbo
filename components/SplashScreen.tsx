@@ -113,7 +113,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   lionEmoji: {
-    fontSize: 60,
+    fontSize: 40,
   },
   centerContent: {
     flex: 1,
