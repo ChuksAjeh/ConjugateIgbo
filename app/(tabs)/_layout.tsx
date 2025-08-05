@@ -36,6 +36,15 @@ export default function TabLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="verbs"
+        options={{
+          title: 'Verbs',
+          tabBarIcon: ({ size, color }) => (
+            <Book size={size} color={color} />
+          ),
+        }}
+      />
       {!isProUser && (
         <Tabs.Screen
           name="pro"
@@ -47,15 +56,6 @@ export default function TabLayout() {
           }}
         />
       )}
-      <Tabs.Screen
-        name="verbs"
-        options={{
-          title: 'Verbs',
-          tabBarIcon: ({ size, color }) => (
-            <Book size={size} color={color} />
-          ),
-        }}
-      />
       <Tabs.Screen
         name="progress"
         options={{

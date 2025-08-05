@@ -65,6 +65,8 @@ export default function RhymesScreen() {
       maxWidth: 380,
       justifyContent: 'center',
       alignItems: 'center',
+      minHeight: 500,
+      maxHeight: 500,
       shadowColor: '#000',
       shadowOffset: {
         width: 0,
@@ -81,9 +83,16 @@ export default function RhymesScreen() {
       marginBottom: 32,
       textAlign: 'center',
       fontFamily: 'Inter-SemiBold',
+      position: 'absolute',
+      top: 32,
+      left: 32,
+      right: 32,
     },
     verbContainer: {
       width: '100%',
+      flex: 1,
+      justifyContent: 'center',
+      paddingTop: 60,
     },
     verbButton: {
       paddingVertical: 16,
@@ -213,26 +222,28 @@ export default function RhymesScreen() {
             Rhyming Verbs: {currentCard.pattern}
           </Text>
           
-          {currentCard.verbs.map((verb, index) => {
-            const isRevealed = revealedVerbs[`${currentCardIndex}-${verb.igbo}`];
-            return (
-              <TouchableOpacity
-                key={index}
-                style={[
-                  styles.verbButton,
-                  isRevealed && styles.verbButtonRevealed
-                ]}
-                onPress={() => toggleVerbReveal(verb.igbo)}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.igboText}>{verb.igbo}</Text>
-                <Text style={styles.pronunciationText}>/{verb.pronunciation}/</Text>
-                {isRevealed && (
-                  <Text style={styles.englishText}>{verb.english}</Text>
-                )}
-              </TouchableOpacity>
-            );
-          })}
+          <View style={styles.verbContainer}>
+            {currentCard.verbs.map((verb, index) => {
+              const isRevealed = revealedVerbs[`${currentCardIndex}-${verb.igbo}`];
+              return (
+                <TouchableOpacity
+                  key={index}
+                  style={[
+                    styles.verbButton,
+                    isRevealed && styles.verbButtonRevealed
+                  ]}
+                  onPress={() => toggleVerbReveal(verb.igbo)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.igboText}>{verb.igbo}</Text>
+                  <Text style={styles.pronunciationText}>/{verb.pronunciation}/</Text>
+                  {isRevealed && (
+                    <Text style={styles.englishText}>{verb.english}</Text>
+                  )}
+                </TouchableOpacity>
+              );
+            })}
+          </View>
         </View>
 
         <View style={styles.progressContainer}>
