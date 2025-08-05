@@ -147,10 +147,20 @@ export default function PracticeScreen() {
 
               {/* Conjugated answer */}
               <View style={styles.answerSection}>
+                {/* Pronoun display */}
+                <Text style={[styles.pronounText, { color: theme.colors.textSecondary }]}>
+                  {pronounLabels[selectedPronoun]}
+                </Text>
+                
                 {showAnswer ? (
-                  <Animated.Text style={[styles.answerText, { opacity: fadeAnim, color: theme.colors.text }]}>
-                    {correctAnswer}
-                  </Animated.Text>
+                  <TouchableOpacity onPress={handleNextVerb} activeOpacity={0.7}>
+                    <Animated.Text style={[styles.answerText, { opacity: fadeAnim, color: theme.colors.text }]}>
+                      {correctAnswer}
+                    </Animated.Text>
+                    <Text style={[styles.tapToNextText, { color: theme.colors.textSecondary, opacity: fadeAnim }]}>
+                      Tap to continue
+                    </Text>
+                  </TouchableOpacity>
                 ) : (
                   <View style={styles.answerPlaceholder}>
                     <View style={[styles.answerLine, { backgroundColor: theme.colors.border }]} />
@@ -280,6 +290,19 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
     fontFamily: 'Inter-Bold',
+  },
+  pronounText: {
+    fontSize: 18,
+    fontWeight: '500',
+    textAlign: 'center',
+    marginBottom: 16,
+    fontFamily: 'Inter-SemiBold',
+  },
+  tapToNextText: {
+    fontSize: 14,
+    textAlign: 'center',
+    marginTop: 12,
+    fontFamily: 'Inter-Regular',
   },
   answerPlaceholder: {
     alignItems: 'center',
