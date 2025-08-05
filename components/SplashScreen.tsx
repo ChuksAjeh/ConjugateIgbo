@@ -38,8 +38,8 @@ export default function SplashScreen({ onFinish }: { onFinish: () => void }) {
   // Create lion face pattern
   const createLionPattern = () => {
     const lions = [];
-    const lionSize = 60;
-    const spacing = 80;
+    const lionSize = 80;
+    const spacing = 100;
     const cols = Math.ceil(width / spacing) + 1;
     const rows = Math.ceil(height / spacing) + 1;
 
@@ -113,7 +113,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   lionEmoji: {
-    fontSize: 40,
+    fontSize: 60,
   },
   centerContent: {
     flex: 1,
@@ -131,6 +131,8 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 12,
+    borderWidth: 3,
+    borderColor: 'rgba(255, 215, 0, 0.8)',
   },
   title: {
     fontSize: 36,

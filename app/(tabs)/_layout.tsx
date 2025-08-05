@@ -30,7 +30,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="flashcards"
         options={{
-          title: 'Cards',
+          title: 'Mnemonics',
           tabBarIcon: ({ size, color }) => (
             <CreditCard size={size} color={color} />
           ),
