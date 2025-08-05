@@ -32,7 +32,7 @@ export default function TabLayout() {
         options={{
           title: 'Rhymes',
           tabBarIcon: ({ size, color }) => (
-            <CreditCard size={size} color={color} />
+            <Book size={size} color={color} />
           ),
         }}
       />
