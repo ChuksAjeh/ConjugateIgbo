@@ -59,8 +59,8 @@ export default function RhymesScreen() {
     card: {
       backgroundColor: theme.colors.surface,
       borderRadius: 20,
-      padding: 32,
-      width: width - 40,
+      padding: 24,
+      width: '100%',
       maxWidth: 400,
       minHeight: 300,
       justifyContent: 'center',
@@ -73,6 +73,8 @@ export default function RhymesScreen() {
       shadowOpacity: 0.1,
       shadowRadius: 12,
       elevation: 8,
+      alignSelf: 'center',
+      marginHorizontal: 20,
     },
     cardTitle: {
       fontSize: 18,
