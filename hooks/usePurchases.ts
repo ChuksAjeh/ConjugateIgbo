@@ -149,10 +149,10 @@ export const usePurchases = () => {
       
       // Store purchase status for web (in a real app, RevenueCat handles this)
       if (isPro) {
-        localStorage.setItem('igbo_pro_purchased', 'false');
+        localStorage.setItem('igbo_pro_purchased', 'true');
       }
       
-      return isPro;
+      return false;
     } catch (error) {
       console.error('Purchase failed:', error);
       return false;
