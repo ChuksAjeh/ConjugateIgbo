@@ -56,6 +56,13 @@ export default function PracticeScreen() {
     };
     
     loadRandomVerb();
+    
+    // Cleanup function to prevent animation errors when component unmounts
+    return () => {
+      // Stop any ongoing animations
+      fadeAnim.stopAnimation();
+      fadeAnim.setValue(0);
+    };
   }, []);
 
   const correctAnswer = currentVerb?.conjugations[selectedTense]?.[selectedPronoun] || 'N/A';
@@ -168,9 +175,9 @@ export default function PracticeScreen() {
                     <Animated.Text style={[styles.answerText, { opacity: fadeAnim, color: theme.colors.text }]}>
                       {String(correctAnswer)}
                     </Animated.Text>
-                    <Text style={[styles.tapToNextText, { color: theme.colors.textSecondary, opacity: fadeAnim }]}>
+                    <Animated.Text style={[styles.tapToNextText, { color: theme.colors.textSecondary, opacity: fadeAnim }]}>
                       Tap to continue
-                    </Text>
+                    </Animated.Text>
                   </TouchableOpacity>
                 ) : (
                   <View style={styles.answerPlaceholder}>

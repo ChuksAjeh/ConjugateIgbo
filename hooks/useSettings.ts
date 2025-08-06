@@ -101,27 +101,48 @@ export const useSettings = () => {
   };
 };
 
-// Mock AsyncStorage for web compatibility
+// Mock AsyncStorage for cross-platform compatibility
+// Use in-memory storage for React Native environments
+const memoryStorage: Record<string, string> = {};
+
 const AsyncStorage = {
   getItem: async (key: string): Promise<string | null> => {
     try {
-      return localStorage.getItem(key);
+      // Try to use localStorage (for web)
+      if (typeof localStorage !== 'undefined') {
+        return localStorage.getItem(key);
+      }
+      // Fall back to in-memory storage (for React Native)
+      return memoryStorage[key] || null;
     } catch {
-      return null;
+      // Fall back to in-memory storage
+      return memoryStorage[key] || null;
     }
   },
   setItem: async (key: string, value: string): Promise<void> => {
     try {
-      localStorage.setItem(key, value);
+      // Try to use localStorage (for web)
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem(key, value);
+      }
+      // Also store in memory (for React Native)
+      memoryStorage[key] = value;
     } catch {
-      // Silently fail
+      // Fall back to in-memory storage
+      memoryStorage[key] = value;
     }
   },
   removeItem: async (key: string): Promise<void> => {
     try {
-      localStorage.removeItem(key);
+      // Try to use localStorage (for web)
+      if (typeof localStorage !== 'undefined') {
+        localStorage.removeItem(key);
+      }
+      // Also remove from memory (for React Native)
+      delete memoryStorage[key];
     } catch {
-      // Silently fail
+      // Fall back to in-memory storage
+      delete memoryStorage[key];
     }
   },
 };
