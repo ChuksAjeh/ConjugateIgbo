@@ -21,6 +21,23 @@ import { useTheme } from '@/components/ThemeProvider';
 type FilterType = 'all' | 'common' | 'regular' | 'irregular';
 type SortType = 'alphabetical' | 'frequency' | 'difficulty';
 
+// CustomSwitch component definition - moved before usage
+const CustomSwitch = ({ value, onValueChange, trackColor, thumbColor }: any) => (
+  <TouchableOpacity
+    style={[
+      styles.switch,
+      { backgroundColor: value ? trackColor.true : trackColor.false }
+    ]}
+    onPress={() => onValueChange(!value)}
+  >
+    <View style={[
+      styles.switchThumb,
+      { backgroundColor: thumbColor },
+      value && styles.switchThumbActive
+    ]} />
+  </TouchableOpacity>
+);
+
 export default function VerbsScreen() {
   const { theme, isDark } = useTheme();
   const { verbId } = useLocalSearchParams<{ verbId?: string }>();
@@ -360,7 +377,7 @@ const VerbDetailContent = ({ verb, theme }: { verb: IgboVerb; theme: any }) => {
         
         <View style={styles.toggleContainer}>
           <Text style={[styles.toggleLabel, { color: theme.colors.text }]}>Enabled for practice</Text>
-          <Switch
+          <CustomSwitch
             value={practiceEnabled}
             onValueChange={setPracticeEnabled}
             trackColor={{ false: '#374151', true: '#f59e0b' }}
@@ -405,7 +422,7 @@ const VerbDetailContent = ({ verb, theme }: { verb: IgboVerb; theme: any }) => {
         
         <View style={styles.toggleContainer}>
           <Text style={[styles.toggleLabel, { color: theme.colors.text }]}>Enabled for practice</Text>
-          <Switch
+          <CustomSwitch
             value={practiceEnabled}
             onValueChange={setPracticeEnabled}
             trackColor={{ false: '#374151', true: '#f59e0b' }}
@@ -449,7 +466,7 @@ const VerbDetailContent = ({ verb, theme }: { verb: IgboVerb; theme: any }) => {
         
         <View style={styles.toggleContainer}>
           <Text style={[styles.toggleLabel, { color: theme.colors.text }]}>Enabled for practice</Text>
-          <Switch
+          <CustomSwitch
             value={practiceEnabled}
             onValueChange={setPracticeEnabled}
             trackColor={{ false: '#374151', true: '#f59e0b' }}
@@ -508,23 +525,6 @@ const VerbDetailContent = ({ verb, theme }: { verb: IgboVerb; theme: any }) => {
     </View>
   );
 };
-
-// Switch component definition - moved before usage
-const Switch = ({ value, onValueChange, trackColor, thumbColor }: any) => (
-  <TouchableOpacity
-    style={[
-      styles.switch,
-      { backgroundColor: value ? trackColor.true : trackColor.false }
-    ]}
-    onPress={() => onValueChange(!value)}
-  >
-    <View style={[
-      styles.switchThumb,
-      { backgroundColor: thumbColor },
-      value && styles.switchThumbActive
-    ]} />
-  </TouchableOpacity>
-);
 
 const styles = StyleSheet.create({
   container: {

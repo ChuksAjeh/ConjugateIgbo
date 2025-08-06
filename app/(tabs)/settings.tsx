@@ -195,7 +195,7 @@ export default function SettingsScreen() {
       subtitle={subtitle}
       isLocked={isLocked}
       rightElement={
-        <Switch
+        <CustomSwitch
           value={value}
           onValueChange={onValueChange}
           trackColor={{ false: '#f3f4f6', true: '#3b82f6' }}
@@ -421,7 +421,7 @@ export default function SettingsScreen() {
           <View style={styles.modalContent}>
             <View style={styles.reminderToggleContainer}>
               <Text style={styles.reminderToggleLabel}>Enable Daily Reminders</Text>
-              <Switch
+              <CustomSwitch
                 value={settings.notifications.daily}
                 onValueChange={(value) => 
                   updateSettings({ 
@@ -1025,3 +1025,20 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-end',
   },
 });
+
+// CustomSwitch component definition - moved after styles
+const CustomSwitch = ({ value, onValueChange, trackColor, thumbColor }: any) => (
+  <TouchableOpacity
+    style={[
+      styles.switch,
+      { backgroundColor: value ? trackColor.true : trackColor.false }
+    ]}
+    onPress={() => onValueChange(!value)}
+  >
+    <View style={[
+      styles.switchThumb,
+      { backgroundColor: thumbColor },
+      value && styles.switchThumbActive
+    ]} />
+  </TouchableOpacity>
+);
