@@ -278,62 +278,7 @@ export default function VerbsScreen() {
 
           {selectedVerb && (
             <ScrollView style={styles.modalContent}>
-              <View style={styles.verbDetailHeader}>
-                <Text style={[styles.verbDetailInfinitive, { color: theme.colors.text }]}>{selectedVerb.infinitive}</Text>
-                <TouchableOpacity style={styles.audioButtonLarge}>
-                  <Volume2 size={24} color="#059669" />
-                </TouchableOpacity>
-              </View>
-
-              <Text style={[styles.verbDetailMeaning, { color: theme.colors.textSecondary }]}>"{selectedVerb.meaning}"</Text>
-
-              <View style={[styles.verbDetailMeta, { backgroundColor: theme.colors.surface }]}>
-                <View style={styles.metaItem}>
-                  <Text style={[styles.metaLabel, { color: theme.colors.textSecondary }]}>Type:</Text>
-                  <Text style={[styles.metaValue, { color: theme.colors.text }]}>{selectedVerb.type}</Text>
-                </View>
-                <View style={styles.metaItem}>
-                  <Text style={[styles.metaLabel, { color: theme.colors.textSecondary }]}>Frequency:</Text>
-                  <Text style={[styles.metaValue, { color: theme.colors.text }]}>{selectedVerb.frequency}</Text>
-                </View>
-                <View style={styles.metaItem}>
-                  <Text style={[styles.metaLabel, { color: theme.colors.textSecondary }]}>Difficulty:</Text>
-                  <Text style={[styles.metaValue, { color: theme.colors.text }]}>{selectedVerb.difficulty}</Text>
-                </View>
-              </View>
-
-              {/* Conjugation Table */}
-              <View style={styles.conjugationSection}>
-                <Text style={[styles.conjugationTitle, { color: theme.colors.text }]}>Conjugations</Text>
-                {Object.entries(selectedVerb.conjugations).map(([tense, conjugations]) => (
-                  <View key={tense} style={[styles.tenseSection, { backgroundColor: theme.colors.surface }]}>
-                    <Text style={[styles.tenseTitle, { color: theme.colors.text }]}>
-                      {tense.charAt(0).toUpperCase() + tense.slice(1)} Tense
-                    </Text>
-                    <View style={styles.conjugationTable}>
-                      {Object.entries(conjugations).map(([pronoun, conjugation]) => (
-                        <View key={pronoun} style={styles.conjugationRow}>
-                          <Text style={[styles.pronounText, { color: theme.colors.textSecondary }]}>{pronoun}:</Text>
-                          <Text style={[styles.conjugationText, { color: theme.colors.text }]}>{conjugation}</Text>
-                        </View>
-                      ))}
-                    </View>
-                  </View>
-                ))}
-              </View>
-
-              {/* Examples */}
-              {selectedVerb.examples && (
-                <View style={styles.examplesSection}>
-                  <Text style={[styles.examplesTitle, { color: theme.colors.text }]}>Examples</Text>
-                  {selectedVerb.examples.map((example, index) => (
-                    <View key={index} style={[styles.exampleItem, { backgroundColor: theme.colors.surface }]}>
-                      <Text style={[styles.exampleIgbo, { color: theme.colors.text }]}>{example.igbo}</Text>
-                      <Text style={[styles.exampleEnglish, { color: theme.colors.textSecondary }]}>"{example.english}"</Text>
-                    </View>
-                  ))}
-                </View>
-              )}
+              <VerbDetailContent verb={selectedVerb} theme={theme} />
             </ScrollView>
           )}
         </SafeAreaView>
@@ -341,6 +286,219 @@ export default function VerbsScreen() {
     </SafeAreaView>
   );
 }
+
+// Separate component for verb detail content
+const VerbDetailContent = ({ verb, theme }: { verb: IgboVerb; theme: any }) => {
+  const [selectedTab, setSelectedTab] = useState<'indicative' | 'subjunctive' | 'others'>('indicative');
+  const [practiceEnabled, setPracticeEnabled] = useState(true);
+
+  const TabButton = ({ 
+    title, 
+    isActive, 
+    onPress 
+  }: { 
+    title: string; 
+    isActive: boolean; 
+    onPress: () => void; 
+  }) => (
+    <TouchableOpacity style={styles.tabButton} onPress={onPress}>
+      <Text style={[
+        styles.tabButtonText,
+        { color: isActive ? '#f59e0b' : theme.colors.textSecondary },
+        isActive && styles.tabButtonTextActive
+      ]}>
+        {title}
+      </Text>
+      {isActive && <View style={styles.tabIndicator} />}
+    </TouchableOpacity>
+  );
+
+  const ConjugationRow = ({ 
+    pronoun, 
+    conjugation, 
+    isEnabled = true 
+  }: { 
+    pronoun: string; 
+    conjugation: string; 
+    isEnabled?: boolean; 
+  }) => (
+    <TouchableOpacity style={styles.conjugationRow} disabled={!isEnabled}>
+      <Text style={[styles.pronounLabel, { color: theme.colors.textSecondary }]}>{pronoun}</Text>
+      <Text style={[
+        styles.conjugationValue, 
+        { color: isEnabled ? '#ef4444' : theme.colors.textSecondary }
+      ]}>
+        {conjugation}
+      </Text>
+    </TouchableOpacity>
+  );
+
+  const renderIndicativeContent = () => (
+    <View style={styles.tabContent}>
+      <View style={styles.practiceToggle}>
+        <View style={styles.flagContainer}>
+          <Text style={styles.flagEmoji}>🇬🇧</Text>
+          <Text style={[styles.verbMeaningLarge, { color: theme.colors.text }]}>{verb.meaning}</Text>
+        </View>
+        
+        <View style={styles.toggleContainer}>
+          <Text style={[styles.toggleLabel, { color: theme.colors.text }]}>Enabled for practice</Text>
+          <Switch
+            value={practiceEnabled}
+            onValueChange={setPracticeEnabled}
+            trackColor={{ false: '#374151', true: '#f59e0b' }}
+            thumbColor="#ffffff"
+          />
+        </View>
+      </View>
+
+      <Text style={[styles.instructionText, { color: theme.colors.textSecondary }]}>
+        Tap on a conjugation row to hear its pronunciation. Swipe left to exclude it from practice.
+      </Text>
+
+      <View style={styles.tenseGroup}>
+        <Text style={[styles.tenseGroupTitle, { color: theme.colors.text }]}>Present</Text>
+        <ConjugationRow pronoun="yo" conjugation="soy" />
+        <ConjugationRow pronoun="tú" conjugation="eres" />
+        <ConjugationRow pronoun="él/ella/Ud." conjugation="es" />
+        <ConjugationRow pronoun="nosotros" conjugation="somos" />
+        <ConjugationRow pronoun="vosotros" conjugation="sois" />
+        <ConjugationRow pronoun="ellos/ellas/Uds." conjugation="son" />
+      </View>
+
+      <View style={styles.tenseGroup}>
+        <Text style={[styles.tenseGroupTitle, { color: theme.colors.text }]}>Preterite</Text>
+        <ConjugationRow pronoun="yo" conjugation="fui" />
+        <ConjugationRow pronoun="tú" conjugation="fuiste" />
+        <ConjugationRow pronoun="él/ella/Ud." conjugation="fue" />
+        <ConjugationRow pronoun="nosotros" conjugation="fuimos" />
+        <ConjugationRow pronoun="vosotros" conjugation="fuisteis" />
+        <ConjugationRow pronoun="ellos/ellas/Uds." conjugation="fueron" />
+      </View>
+    </View>
+  );
+
+  const renderSubjunctiveContent = () => (
+    <View style={styles.tabContent}>
+      <View style={styles.practiceToggle}>
+        <View style={styles.flagContainer}>
+          <Text style={styles.flagEmoji}>🇬🇧</Text>
+          <Text style={[styles.verbMeaningLarge, { color: theme.colors.text }]}>{verb.meaning}</Text>
+        </View>
+        
+        <View style={styles.toggleContainer}>
+          <Text style={[styles.toggleLabel, { color: theme.colors.text }]}>Enabled for practice</Text>
+      <Text style={[styles.instructionText, { color: theme.colors.textSecondary }]}>
+        Tap on a conjugation row to hear its pronunciation. Swipe left to exclude it from practice.
+      </Text>
+          <Switch
+      <View style={styles.tenseGroup}>
+        <Text style={[styles.tenseGroupTitle, { color: theme.colors.text }]}>Present subjunctive</Text>
+        <ConjugationRow pronoun="yo" conjugation="sea" />
+        <ConjugationRow pronoun="tú" conjugation="seas" />
+        <ConjugationRow pronoun="él/ella/Ud." conjugation="sea" />
+        <ConjugationRow pronoun="nosotros" conjugation="seamos" />
+        <ConjugationRow pronoun="vosotros" conjugation="seáis" />
+        <ConjugationRow pronoun="ellos/ellas/Uds." conjugation="sean" />
+      </View>
+            value={practiceEnabled}
+      <View style={styles.tenseGroup}>
+        <Text style={[styles.tenseGroupTitle, { color: theme.colors.text }]}>Imperfect subjunctive (-ra)</Text>
+        <ConjugationRow pronoun="yo" conjugation="fuera" />
+        <ConjugationRow pronoun="tú" conjugation="fueras" />
+        <ConjugationRow pronoun="él/ella/Ud." conjugation="fuera" />
+        <ConjugationRow pronoun="nosotros" conjugation="fuéramos" />
+        <ConjugationRow pronoun="vosotros" conjugation="fuerais" />
+        <ConjugationRow pronoun="ellos/ellas/Uds." conjugation="fueran" />
+      </View>
+    </View>
+  );
+            onValueChange={setPracticeEnabled}
+  const renderOthersContent = () => (
+    <View style={styles.tabContent}>
+      <View style={styles.practiceToggle}>
+        <View style={styles.flagContainer}>
+          <Text style={styles.flagEmoji}>🇬🇧</Text>
+          <Text style={[styles.verbMeaningLarge, { color: theme.colors.text }]}>{verb.meaning}</Text>
+        </View>
+        
+        <View style={styles.toggleContainer}>
+          <Text style={[styles.toggleLabel, { color: theme.colors.text }]}>Enabled for practice</Text>
+          <Switch
+            value={practiceEnabled}
+            onValueChange={setPracticeEnabled}
+            trackColor={{ false: '#374151', true: '#f59e0b' }}
+            thumbColor="#ffffff"
+          />
+        </View>
+      </View>
+            trackColor={{ false: '#374151', true: '#f59e0b' }}
+      <Text style={[styles.instructionText, { color: theme.colors.textSecondary }]}>
+        Tap on a conjugation row to hear its pronunciation. Swipe left to exclude it from practice.
+      </Text>
+            thumbColor="#ffffff"
+      <View style={styles.tenseGroup}>
+        <Text style={[styles.tenseGroupTitle, { color: theme.colors.text }]}>Impersonal</Text>
+        <ConjugationRow pronoun="Gerund" conjugation="siendo" />
+        <ConjugationRow pronoun="Past participle" conjugation="sido" />
+      </View>
+          />
+      <View style={styles.tenseGroup}>
+        <Text style={[styles.tenseGroupTitle, { color: theme.colors.text }]}>Imperative</Text>
+        <ConjugationRow pronoun="yo" conjugation="-" isEnabled={false} />
+        <ConjugationRow pronoun="tú" conjugation="sé" />
+        <ConjugationRow pronoun="él/ella/Ud." conjugation="sea" />
+        <ConjugationRow pronoun="nosotros" conjugation="seamos" />
+        <ConjugationRow pronoun="vosotros" conjugation="sed" />
+        <ConjugationRow pronoun="ellos/ellas/Uds." conjugation="sean" />
+      </View>
+    </View>
+  );
+        </View>
+  return (
+    <View style={styles.verbDetailContainer}>
+      <Text style={[styles.verbTitle, { color: theme.colors.text }]}>{verb.infinitive}</Text>
+      
+      <View style={styles.tabContainer}>
+        <TabButton 
+          title="Indicative" 
+          isActive={selectedTab === 'indicative'} 
+          onPress={() => setSelectedTab('indicative')} 
+        />
+        <TabButton 
+          title="Subjunctive" 
+          isActive={selectedTab === 'subjunctive'} 
+          onPress={() => setSelectedTab('subjunctive')} 
+        />
+        <TabButton 
+          title="Others" 
+          isActive={selectedTab === 'others'} 
+          onPress={() => setSelectedTab('others')} 
+        />
+      </View>
+      </View>
+      {selectedTab === 'indicative' && renderIndicativeContent()}
+      {selectedTab === 'subjunctive' && renderSubjunctiveContent()}
+      {selectedTab === 'others' && renderOthersContent()}
+    </View>
+  );
+};
+
+const Switch = ({ value, onValueChange, trackColor, thumbColor }: any) => (
+  <TouchableOpacity
+    style={[
+      styles.switch,
+      { backgroundColor: value ? trackColor.true : trackColor.false }
+    ]}
+    onPress={() => onValueChange(!value)}
+  >
+    <View style={[
+      styles.switchThumb,
+      { backgroundColor: thumbColor },
+      value && styles.switchThumbActive
+    ]} />
+  </TouchableOpacity>
+);
 
 const styles = StyleSheet.create({
   container: {
@@ -637,6 +795,123 @@ const styles = StyleSheet.create({
   exampleEnglish: {
     fontSize: 14,
     fontStyle: 'italic',
+  },
+  // New verb detail styles
+  verbDetailContainer: {
+    flex: 1,
+  },
+  verbTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 24,
+    fontFamily: 'Inter-Bold',
+  },
+  tabContainer: {
+    flexDirection: 'row',
+    marginBottom: 32,
+    borderBottomWidth: 1,
+    borderBottomColor: '#374151',
+  },
+  tabButton: {
+    flex: 1,
+    paddingVertical: 16,
+    alignItems: 'center',
+    position: 'relative',
+  },
+  tabButtonText: {
+    fontSize: 16,
+    fontWeight: '500',
+    fontFamily: 'Inter-SemiBold',
+  },
+  tabButtonTextActive: {
+    color: '#f59e0b',
+  },
+  tabIndicator: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 2,
+    backgroundColor: '#f59e0b',
+  },
+  tabContent: {
+    flex: 1,
+  },
+  practiceToggle: {
+    marginBottom: 24,
+  },
+  flagContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  flagEmoji: {
+    fontSize: 20,
+    marginRight: 8,
+  },
+  verbMeaningLarge: {
+    fontSize: 18,
+    fontWeight: '500',
+    fontFamily: 'Inter-SemiBold',
+  },
+  toggleContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  toggleLabel: {
+    fontSize: 16,
+    fontWeight: '500',
+    fontFamily: 'Inter-SemiBold',
+  },
+  switch: {
+    width: 50,
+    height: 30,
+    borderRadius: 15,
+    padding: 2,
+    justifyContent: 'center',
+  },
+  switchThumb: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    transform: [{ translateX: 0 }],
+  },
+  switchThumbActive: {
+    transform: [{ translateX: 20 }],
+  },
+  instructionText: {
+    fontSize: 14,
+    marginBottom: 32,
+    lineHeight: 20,
+    fontFamily: 'Inter-Regular',
+  },
+  tenseGroup: {
+    marginBottom: 32,
+  },
+  tenseGroupTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 16,
+    fontFamily: 'Inter-Bold',
+  },
+  conjugationRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#374151',
+  },
+  pronounLabel: {
+    fontSize: 16,
+    fontFamily: 'Inter-Regular',
+  },
+  conjugationValue: {
+    fontSize: 16,
+    fontWeight: '500',
+    fontFamily: 'Inter-SemiBold',
   },
   loadingContainer: {
     flex: 1,

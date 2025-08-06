@@ -45,17 +45,15 @@ export default function TabLayout() {
           ),
         }}
       />
-      {!isProUser && (
-        <Tabs.Screen
-          name="pro"
-          options={{
-            title: 'Get Pro',
-            tabBarIcon: ({ size, color }) => (
-              <Crown size={size} color={color} />
-            ),
-          }}
-        />
-      )}
+      <Tabs.Screen
+        name="pro"
+        options={{
+          title: isProUser ? 'Pro' : 'Get Pro',
+          tabBarIcon: ({ size, color }) => (
+            <Crown size={size} color={color} />
+          ),
+        }}
+      />
       <Tabs.Screen
         name="progress"
         options={{
