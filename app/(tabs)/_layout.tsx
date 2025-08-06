@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { Book, Settings, Crown, Chrome as Home, TrendingUp, CreditCard } from 'lucide-react-native';
+import { Book, Settings, Crown, Zap, TrendingUp, CreditCard } from 'lucide-react-native';
 import { usePurchases } from '@/hooks/usePurchases';
 import { useTheme } from '@/components/ThemeProvider';
 
@@ -23,7 +23,7 @@ export default function TabLayout() {
         options={{
           title: 'Practice',
           tabBarIcon: ({ size, color }) => (
-            <Home size={size} color={color} />
+            <Zap size={size} color={color} />
           ),
         }}
       />

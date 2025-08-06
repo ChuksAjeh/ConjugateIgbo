@@ -11,6 +11,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
+import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Search, Filter, Volume2, X, Book } from 'lucide-react-native';
 import { IgboVerb } from '@/data/igboVerbs';
@@ -281,7 +282,13 @@ export default function VerbsScreen() {
         <SafeAreaView style={[styles.modalContainer, { backgroundColor: theme.colors.background }]}>
           <View style={[styles.modalHeader, { backgroundColor: theme.colors.surface, borderBottomColor: theme.colors.border }]}>
             <Text style={[styles.modalTitle, { color: theme.colors.text }]}>Verb Details</Text>
-            <TouchableOpacity onPress={() => setSelectedVerb(null)}>
+            <TouchableOpacity onPress={() => {
+              setSelectedVerb(null);
+              if (verbId) {
+                // If we came from practice page, navigate back
+                router.back();
+              }
+            }}>
               <X size={24} color={theme.colors.text} />
             </TouchableOpacity>
           </View>
