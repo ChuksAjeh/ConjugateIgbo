@@ -34,23 +34,6 @@ import { useSettings } from '@/hooks/useSettings';
 import { usePurchases } from '@/hooks/usePurchases';
 import { useTheme } from '@/components/ThemeProvider';
 
-// Switch component definition - moved before usage
-const Switch = ({ value, onValueChange, trackColor, thumbColor }: any) => (
-  <TouchableOpacity
-    style={[
-      styles.switch,
-      { backgroundColor: value ? trackColor.true : trackColor.false }
-    ]}
-    onPress={() => onValueChange(!value)}
-  >
-    <View style={[
-      styles.switchThumb,
-      { backgroundColor: thumbColor },
-      value && styles.switchThumbActive
-    ]} />
-  </TouchableOpacity>
-);
-
 export default function SettingsScreen() {
   const { settings, updateSettings, resetSettings } = useSettings();
   const { isProUser, restorePurchases, isLoading } = usePurchases();
@@ -195,7 +178,7 @@ export default function SettingsScreen() {
       subtitle={subtitle}
       isLocked={isLocked}
       rightElement={
-        <CustomSwitch
+        <Switch
           value={value}
           onValueChange={onValueChange}
           trackColor={{ false: '#f3f4f6', true: '#3b82f6' }}
@@ -421,7 +404,7 @@ export default function SettingsScreen() {
           <View style={styles.modalContent}>
             <View style={styles.reminderToggleContainer}>
               <Text style={styles.reminderToggleLabel}>Enable Daily Reminders</Text>
-              <CustomSwitch
+              <Switch
                 value={settings.notifications.daily}
                 onValueChange={(value) => 
                   updateSettings({ 
@@ -1009,36 +992,4 @@ const styles = StyleSheet.create({
     marginTop: 2,
     fontFamily: 'Inter-Regular',
   },
-  switch: {
-    width: 50,
-    height: 30,
-    borderRadius: 15,
-    padding: 2,
-    justifyContent: 'center',
-  },
-  switchThumb: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-  },
-  switchThumbActive: {
-    alignSelf: 'flex-end',
-  },
 });
-
-// CustomSwitch component definition - moved after styles
-const CustomSwitch = ({ value, onValueChange, trackColor, thumbColor }: any) => (
-  <TouchableOpacity
-    style={[
-      styles.switch,
-      { backgroundColor: value ? trackColor.true : trackColor.false }
-    ]}
-    onPress={() => onValueChange(!value)}
-  >
-    <View style={[
-      styles.switchThumb,
-      { backgroundColor: thumbColor },
-      value && styles.switchThumbActive
-    ]} />
-  </TouchableOpacity>
-);
