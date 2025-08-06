@@ -15,7 +15,6 @@ export default function RhymesScreen() {
   const [revealedVerbs, setRevealedVerbs] = useState<VerbRevealState>({});
 
   const currentCard = rhymeCards[currentCardIndex];
-  const totalCards = rhymeCards.length;
 
   // Check if all verbs on current card are revealed
   const allVerbsRevealed = currentCard.verbs.every(verb => 
@@ -24,13 +23,13 @@ export default function RhymesScreen() {
 
   // Auto-advance to next card when all verbs are revealed
   useEffect(() => {
-    if (allVerbsRevealed && currentCardIndex < totalCards - 1) {
+    if (allVerbsRevealed && currentCardIndex < rhymeCards.length - 1) {
       const timer = setTimeout(() => {
         setCurrentCardIndex(prev => prev + 1);
       }, 1500);
       return () => clearTimeout(timer);
     }
-  }, [allVerbsRevealed, currentCardIndex, totalCards]);
+  }, [allVerbsRevealed, currentCardIndex]);
 
   const toggleVerbReveal = (verb: string) => {
     const key = `${currentCardIndex}-${verb}`;
@@ -60,13 +59,12 @@ export default function RhymesScreen() {
     card: {
       backgroundColor: theme.colors.surface,
       borderRadius: 20,
-      padding: 20,
+      padding: 32,
       width: width - 40,
       maxWidth: 380,
-      justifyContent: 'flex-start',
+      justifyContent: 'center',
       alignItems: 'center',
-      minHeight: 500,
-      maxHeight: 500,
+      minHeight: 480,
       shadowColor: '#000',
       shadowOffset: {
         width: 0,
@@ -80,18 +78,19 @@ export default function RhymesScreen() {
       fontSize: 20,
       fontWeight: '600',
       color: theme.colors.text,
-      marginBottom: 40,
+      marginBottom: 48,
       textAlign: 'center',
       fontFamily: 'Inter-SemiBold',
     },
     verbContainer: {
       width: '100%',
-      gap: 20,
+      gap: 24,
+      flex: 1,
+      justifyContent: 'center',
     },
     verbButton: {
-      paddingVertical: 12,
+      paddingVertical: 16,
       alignItems: 'center',
-      minHeight: 60,
       justifyContent: 'center',
     },
     verbButtonRevealed: {
@@ -102,7 +101,7 @@ export default function RhymesScreen() {
       fontWeight: '700',
       color: theme.colors.text,
       textAlign: 'center',
-      marginBottom: 8,
+      marginBottom: 6,
       fontFamily: 'Inter-Bold',
     },
     pronunciationText: {
@@ -110,7 +109,7 @@ export default function RhymesScreen() {
       color: theme.colors.textSecondary,
       textAlign: 'center',
       fontStyle: 'italic',
-      marginBottom: 4,
+      marginBottom: 6,
       fontFamily: 'Inter-Regular',
     },
     englishText: {
@@ -118,32 +117,6 @@ export default function RhymesScreen() {
       color: theme.colors.textSecondary,
       textAlign: 'center',
       fontFamily: 'Inter-Regular',
-    },
-    progressContainer: {
-      flexDirection: 'row',
-      justifyContent: 'center',
-      alignItems: 'center',
-      marginTop: 40,
-      marginBottom: 20,
-    },
-    progressText: {
-      fontSize: 14,
-      color: theme.colors.textSecondary,
-      marginRight: 16,
-      fontFamily: 'Inter-Regular',
-    },
-    dotsContainer: {
-      flexDirection: 'row',
-    },
-    dot: {
-      width: 8,
-      height: 8,
-      borderRadius: 4,
-      marginHorizontal: 4,
-      backgroundColor: theme.colors.textSecondary + '30',
-    },
-    activeDot: {
-      backgroundColor: theme.colors.primary,
     },
     completionMessage: {
       marginTop: 32,
@@ -174,7 +147,7 @@ export default function RhymesScreen() {
       fontSize: 14,
       color: theme.colors.textSecondary,
       textAlign: 'center',
-      marginTop: 24,
+      marginTop: 32,
       paddingHorizontal: 20,
       fontFamily: 'Inter-Regular',
     },
@@ -182,12 +155,12 @@ export default function RhymesScreen() {
       fontSize: 16,
       color: theme.colors.primary,
       textAlign: 'center',
-      marginTop: 24,
+      marginTop: 32,
       fontFamily: 'Inter-SemiBold',
     },
   });
 
-  if (currentCardIndex >= totalCards) {
+  if (currentCardIndex >= rhymeCards.length) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.content}>
