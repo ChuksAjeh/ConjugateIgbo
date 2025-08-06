@@ -509,6 +509,7 @@ const VerbDetailContent = ({ verb, theme }: { verb: IgboVerb; theme: any }) => {
   );
 };
 
+// Switch component definition - moved before usage
 const Switch = ({ value, onValueChange, trackColor, thumbColor }: any) => (
   <TouchableOpacity
     style={[

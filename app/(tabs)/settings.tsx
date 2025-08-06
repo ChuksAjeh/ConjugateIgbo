@@ -34,6 +34,23 @@ import { useSettings } from '@/hooks/useSettings';
 import { usePurchases } from '@/hooks/usePurchases';
 import { useTheme } from '@/components/ThemeProvider';
 
+// Switch component definition - moved before usage
+const Switch = ({ value, onValueChange, trackColor, thumbColor }: any) => (
+  <TouchableOpacity
+    style={[
+      styles.switch,
+      { backgroundColor: value ? trackColor.true : trackColor.false }
+    ]}
+    onPress={() => onValueChange(!value)}
+  >
+    <View style={[
+      styles.switchThumb,
+      { backgroundColor: thumbColor },
+      value && styles.switchThumbActive
+    ]} />
+  </TouchableOpacity>
+);
+
 export default function SettingsScreen() {
   const { settings, updateSettings, resetSettings } = useSettings();
   const { isProUser, restorePurchases, isLoading } = usePurchases();
@@ -617,22 +634,6 @@ export default function SettingsScreen() {
               >
                 <View>
                   <Text style={[
-                    styles.dialectLabel,
-                    settings.dialect === dialect.key && styles.selectedOptionText
-                  ]}>
-                    {dialect.label}
-                  </Text>
-                  <Text style={styles.dialectDescription}>{dialect.description}</Text>
-                </View>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </SafeAreaView>
-      </Modal>
-    </SafeAreaView>
-  );
-}
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
