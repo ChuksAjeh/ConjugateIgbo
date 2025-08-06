@@ -120,7 +120,7 @@ export default function PracticeScreen() {
       {/* Daily Goal Progress Bar */}
       <View style={[styles.progressContainer, { backgroundColor: theme.colors.background, borderBottomColor: theme.colors.border }]}>
         <Text style={[styles.progressTitle, { color: theme.colors.textSecondary }]}>Daily goal</Text>
-        <Text style={[styles.progressCount, { color: theme.colors.textSecondary }]}>{statistics.dailyGoalProgress} / {settings.dailyGoal}</Text>
+        <Text style={[styles.progressCount, { color: theme.colors.textSecondary }]}>{String(statistics.dailyGoalProgress)} / {String(settings.dailyGoal)}</Text>
       </View>
 
       <View style={styles.content}>
@@ -130,12 +130,12 @@ export default function PracticeScreen() {
             <View style={[styles.card, { backgroundColor: theme.colors.surface }]}>
               {/* English meaning at top */}
               <Text style={[styles.englishMeaning, { color: theme.colors.textSecondary }]}>
-                {currentVerb.meaning}
+                {String(currentVerb.meaning)}
               </Text>
 
               {/* Main Igbo verb */}
               <Text style={[styles.igboVerb, { color: theme.colors.text }]}>
-                {currentVerb.infinitive}
+                {String(currentVerb.infinitive)}
               </Text>
 
               {/* Tense badge */}
@@ -155,7 +155,7 @@ export default function PracticeScreen() {
                 {showAnswer ? (
                   <TouchableOpacity onPress={handleNextVerb} activeOpacity={0.7}>
                     <Animated.Text style={[styles.answerText, { opacity: fadeAnim, color: theme.colors.text }]}>
-                      {correctAnswer}
+                      {String(correctAnswer)}
                     </Animated.Text>
                     <Text style={[styles.tapToNextText, { color: theme.colors.textSecondary, opacity: fadeAnim }]}>
                       Tap to continue
