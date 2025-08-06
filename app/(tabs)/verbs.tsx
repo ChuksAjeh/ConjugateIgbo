@@ -400,7 +400,6 @@ const VerbDetailContent = ({ verb, theme }: { verb: IgboVerb; theme: any }) => {
       <Text style={[styles.instructionText, { color: theme.colors.textSecondary }]}>
         Tap on a conjugation row to hear its pronunciation. Swipe left to exclude it from practice.
       </Text>
-
       <View style={styles.tenseGroup}>
         <Text style={[styles.tenseGroupTitle, { color: theme.colors.text }]}>Present subjunctive</Text>
         <ConjugationRow pronoun="yo" conjugation="sea" />
