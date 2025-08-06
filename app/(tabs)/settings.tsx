@@ -32,10 +32,12 @@ import {
 } from 'lucide-react-native';
 import { useSettings } from '@/hooks/useSettings';
 import { usePurchases } from '@/hooks/usePurchases';
+import { useTheme } from '@/components/ThemeProvider';
 
 export default function SettingsScreen() {
   const { settings, updateSettings, resetSettings } = useSettings();
   const { isProUser, restorePurchases, isLoading } = usePurchases();
+  const { theme, isDark } = useTheme();
   const [showReminderModal, setShowReminderModal] = useState(false);
   const [showGoalModal, setShowGoalModal] = useState(false);
   const [showDisplayModal, setShowDisplayModal] = useState(false);
@@ -189,13 +191,10 @@ export default function SettingsScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <LinearGradient
-        colors={['#6366f1', '#4f46e5']}
-        style={styles.header}
-      >
-        <Text style={styles.headerTitle}>Settings</Text>
-        <Text style={styles.headerSubtitle}>Customize your learning experience</Text>
-      </LinearGradient>
+      <View style={[styles.header, { backgroundColor: theme.colors.background, borderBottomColor: theme.colors.border }]}>
+        <Text style={[styles.headerTitle, { color: theme.colors.text }]}>Settings</Text>
+        <Text style={[styles.headerSubtitle, { color: theme.colors.textSecondary }]}>Customize your learning experience</Text>
+      </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* General */}
@@ -367,14 +366,17 @@ export default function SettingsScreen() {
           />
         </SettingsSection>
 
-        <SettingsSection title="Feedback">
-          <SettingsItem
-            icon={MessageCircle}
-            title="Contact Us"
-            subtitle="Send feedback or get help"
-            onPress={handleContactUs}
-          />
-        </SettingsSection>
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Feedback</Text>
+          <View style={[styles.sectionContent, { backgroundColor: theme.colors.surface }]}>
+            <SettingsItem
+              icon={MessageCircle}
+              title="Contact Us"
+              subtitle="Send feedback or get help"
+              onPress={handleContactUs}
+            />
+          </View>
+        </View>
 
         {/* App Info */}
         <View style={styles.appInfo}>

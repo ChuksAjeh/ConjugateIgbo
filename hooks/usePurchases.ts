@@ -152,7 +152,7 @@ export const usePurchases = () => {
         localStorage.setItem('igbo_pro_purchased', 'true');
       }
       
-      return isPro;
+      return false;
     } catch (error) {
       console.error('Purchase failed:', error);
       return false;

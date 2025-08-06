@@ -70,13 +70,12 @@ export default function ProgressScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <LinearGradient
-        colors={isDark ? ['#1f2937', '#111827'] : ['#f59e0b', '#d97706']}
-        style={styles.header}
-      >
-        <Text style={styles.headerTitle}>Your Progress</Text>
-        <Text style={styles.headerSubtitle}>Keep up the great work!</Text>
-      </LinearGradient>
+      <View style={[styles.header, { backgroundColor: theme.colors.background, borderBottomColor: theme.colors.border }]}>
+        <Text style={[styles.headerTitle, { color: theme.colors.text }]}>Progress</Text>
+        <Text style={[styles.headerSubtitle, { color: theme.colors.textSecondary }]}>
+          Keep up the great work!
+        </Text>
+      </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Statistics Overview */}
@@ -205,23 +204,22 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    paddingTop: 20,
-    paddingBottom: 30,
+    paddingTop: 16,
+    paddingBottom: 16,
     paddingHorizontal: 20,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
+    borderBottomWidth: 1,
   },
   headerTitle: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 'bold',
-    color: 'white',
     textAlign: 'center',
+    fontFamily: 'Inter-Bold',
   },
   headerSubtitle: {
-    fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.8)',
+    fontSize: 12,
     textAlign: 'center',
-    marginTop: 4,
+    marginTop: 2,
+    fontFamily: 'Inter-Regular',
   },
   content: {
     flex: 1,
