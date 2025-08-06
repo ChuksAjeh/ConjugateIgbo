@@ -13,6 +13,8 @@ export default function RhymesScreen() {
   const { theme } = useTheme();
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [revealedVerbs, setRevealedVerbs] = useState<VerbRevealState>({});
+  
+  const totalCards = rhymeCards.length;
 
   const currentCard = rhymeCards[currentCardIndex];
 
