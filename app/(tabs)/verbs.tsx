@@ -388,10 +388,19 @@ const VerbDetailContent = ({ verb, theme }: { verb: IgboVerb; theme: any }) => {
         
         <View style={styles.toggleContainer}>
           <Text style={[styles.toggleLabel, { color: theme.colors.text }]}>Enabled for practice</Text>
+          <Switch
+            value={practiceEnabled}
+            onValueChange={setPracticeEnabled}
+            trackColor={{ false: '#374151', true: '#f59e0b' }}
+            thumbColor="#ffffff"
+          />
+        </View>
+      </View>
+
       <Text style={[styles.instructionText, { color: theme.colors.textSecondary }]}>
         Tap on a conjugation row to hear its pronunciation. Swipe left to exclude it from practice.
       </Text>
-          <Switch
+
       <View style={styles.tenseGroup}>
         <Text style={[styles.tenseGroupTitle, { color: theme.colors.text }]}>Present subjunctive</Text>
         <ConjugationRow pronoun="yo" conjugation="sea" />
@@ -401,7 +410,7 @@ const VerbDetailContent = ({ verb, theme }: { verb: IgboVerb; theme: any }) => {
         <ConjugationRow pronoun="vosotros" conjugation="seáis" />
         <ConjugationRow pronoun="ellos/ellas/Uds." conjugation="sean" />
       </View>
-            value={practiceEnabled}
+
       <View style={styles.tenseGroup}>
         <Text style={[styles.tenseGroupTitle, { color: theme.colors.text }]}>Imperfect subjunctive (-ra)</Text>
         <ConjugationRow pronoun="yo" conjugation="fuera" />
@@ -413,7 +422,7 @@ const VerbDetailContent = ({ verb, theme }: { verb: IgboVerb; theme: any }) => {
       </View>
     </View>
   );
-            onValueChange={setPracticeEnabled}
+
   const renderOthersContent = () => (
     <View style={styles.tabContent}>
       <View style={styles.practiceToggle}>
@@ -432,17 +441,17 @@ const VerbDetailContent = ({ verb, theme }: { verb: IgboVerb; theme: any }) => {
           />
         </View>
       </View>
-            trackColor={{ false: '#374151', true: '#f59e0b' }}
+
       <Text style={[styles.instructionText, { color: theme.colors.textSecondary }]}>
         Tap on a conjugation row to hear its pronunciation. Swipe left to exclude it from practice.
       </Text>
-            thumbColor="#ffffff"
+
       <View style={styles.tenseGroup}>
         <Text style={[styles.tenseGroupTitle, { color: theme.colors.text }]}>Impersonal</Text>
         <ConjugationRow pronoun="Gerund" conjugation="siendo" />
         <ConjugationRow pronoun="Past participle" conjugation="sido" />
       </View>
-          />
+
       <View style={styles.tenseGroup}>
         <Text style={[styles.tenseGroupTitle, { color: theme.colors.text }]}>Imperative</Text>
         <ConjugationRow pronoun="yo" conjugation="-" isEnabled={false} />
@@ -454,7 +463,7 @@ const VerbDetailContent = ({ verb, theme }: { verb: IgboVerb; theme: any }) => {
       </View>
     </View>
   );
-        </View>
+
   return (
     <View style={styles.verbDetailContainer}>
       <Text style={[styles.verbTitle, { color: theme.colors.text }]}>{verb.infinitive}</Text>
@@ -476,7 +485,7 @@ const VerbDetailContent = ({ verb, theme }: { verb: IgboVerb; theme: any }) => {
           onPress={() => setSelectedTab('others')} 
         />
       </View>
-      </View>
+
       {selectedTab === 'indicative' && renderIndicativeContent()}
       {selectedTab === 'subjunctive' && renderSubjunctiveContent()}
       {selectedTab === 'others' && renderOthersContent()}
@@ -796,123 +805,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontStyle: 'italic',
   },
-  // New verb detail styles
-  verbDetailContainer: {
-    flex: 1,
-  },
-  verbTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 24,
-    fontFamily: 'Inter-Bold',
-  },
-  tabContainer: {
-    flexDirection: 'row',
-    marginBottom: 32,
-    borderBottomWidth: 1,
-    borderBottomColor: '#374151',
-  },
-  tabButton: {
-    flex: 1,
-    paddingVertical: 16,
-    alignItems: 'center',
-    position: 'relative',
-  },
-  tabButtonText: {
-    fontSize: 16,
-    fontWeight: '500',
-    fontFamily: 'Inter-SemiBold',
-  },
-  tabButtonTextActive: {
-    color: '#f59e0b',
-  },
-  tabIndicator: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 2,
-    backgroundColor: '#f59e0b',
-  },
-  tabContent: {
-    flex: 1,
-  },
-  practiceToggle: {
-    marginBottom: 24,
-  },
-  flagContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  flagEmoji: {
-    fontSize: 20,
-    marginRight: 8,
-  },
-  verbMeaningLarge: {
-    fontSize: 18,
-    fontWeight: '500',
-    fontFamily: 'Inter-SemiBold',
-  },
-  toggleContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  toggleLabel: {
-    fontSize: 16,
-    fontWeight: '500',
-    fontFamily: 'Inter-SemiBold',
-  },
-  switch: {
-    width: 50,
-    height: 30,
-    borderRadius: 15,
-    padding: 2,
-    justifyContent: 'center',
-  },
-  switchThumb: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-    transform: [{ translateX: 0 }],
-  },
-  switchThumbActive: {
-    transform: [{ translateX: 20 }],
-  },
-  instructionText: {
-    fontSize: 14,
-    marginBottom: 32,
-    lineHeight: 20,
-    fontFamily: 'Inter-Regular',
-  },
-  tenseGroup: {
-    marginBottom: 32,
-  },
-  tenseGroupTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 16,
-    fontFamily: 'Inter-Bold',
-  },
-  conjugationRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#374151',
-  },
-  pronounLabel: {
-    fontSize: 16,
-    fontFamily: 'Inter-Regular',
-  },
-  conjugationValue: {
-    fontSize: 16,
-    fontWeight: '500',
-    fontFamily: 'Inter-SemiBold',
-  },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -922,5 +814,98 @@ const styles = StyleSheet.create({
   loadingText: {
     fontSize: 18,
     fontFamily: 'Inter-Regular',
+  },
+  verbDetailContainer: {
+    flex: 1,
+  },
+  verbTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 16,
+  },
+  tabContainer: {
+    flexDirection: 'row',
+    marginBottom: 20,
+  },
+  tabButton: {
+    flex: 1,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  tabButtonText: {
+    fontSize: 16,
+  },
+  tabButtonTextActive: {
+    fontWeight: 'bold',
+  },
+  tabIndicator: {
+    height: 2,
+    backgroundColor: '#f59e0b',
+    width: '100%',
+    marginTop: 4,
+  },
+  tabContent: {
+    flex: 1,
+  },
+  practiceToggle: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  flagContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  flagEmoji: {
+    fontSize: 20,
+    marginRight: 8,
+  },
+  verbMeaningLarge: {
+    fontSize: 18,
+    fontWeight: '500',
+  },
+  toggleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  toggleLabel: {
+    fontSize: 14,
+    marginRight: 8,
+  },
+  switch: {
+    width: 50,
+    height: 30,
+    borderRadius: 15,
+    justifyContent: 'center',
+    paddingHorizontal: 2,
+  },
+  switchThumb: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+  },
+  switchThumbActive: {
+    alignSelf: 'flex-end',
+  },
+  instructionText: {
+    fontSize: 14,
+    marginBottom: 20,
+  },
+  tenseGroup: {
+    marginBottom: 24,
+  },
+  tenseGroupTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 12,
+  },
+  pronounLabel: {
+    fontSize: 14,
+    minWidth: 100,
+  },
+  conjugationValue: {
+    fontSize: 14,
+    fontWeight: '500',
   },
 });
