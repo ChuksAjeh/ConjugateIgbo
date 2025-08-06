@@ -10,6 +10,7 @@ import {
   Modal,
   ScrollView,
 } from 'react-native';
+import { useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Search, Filter, Volume2, X, Book } from 'lucide-react-native';
 import { IgboVerb } from '@/data/igboVerbs';
@@ -21,6 +22,7 @@ type SortType = 'alphabetical' | 'frequency' | 'difficulty';
 
 export default function VerbsScreen() {
   const { theme, isDark } = useTheme();
+  const { verbId } = useLocalSearchParams<{ verbId?: string }>();
   const [verbs, setVerbs] = useState<IgboVerb[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -36,6 +38,14 @@ export default function VerbsScreen() {
         setIsLoading(true);
         const allVerbs = await verbService.getAllVerbs();
         setVerbs(allVerbs);
+        
+        // If verbId is provided, automatically show that verb's details
+        if (verbId) {
+          const targetVerb = allVerbs.find(verb => verb.id === verbId);
+          if (targetVerb) {
+            setSelectedVerb(targetVerb);
+          }
+        }
       } catch (error) {
         console.error('Error loading verbs:', error);
       } finally {
@@ -44,7 +54,7 @@ export default function VerbsScreen() {
     };
     
     loadVerbs();
-  }, []);
+  }, [verbId]);
 
   const filteredAndSortedVerbs = useMemo(() => {
     let filtered = verbs.filter(verb => {

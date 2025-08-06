@@ -10,6 +10,8 @@ import {
   ScrollView,
 } from 'react-native';
 import { RotateCcw, Volume2, Book } from 'lucide-react-native';
+import { RotateCcw, Volume2, FileText } from 'lucide-react-native';
+import { router } from 'expo-router';
 import { IgboVerb } from '@/data/igboVerbs';
 import { verbService } from '@/lib/verbService';
 import { useSettings } from '@/hooks/useSettings';
@@ -92,6 +94,16 @@ export default function PracticeScreen() {
   const handlePlayAudio = () => {
     // Audio playback would be implemented here
     console.log('Playing audio for:', currentVerb?.infinitive);
+  };
+
+  const handleShowVerbDetails = () => {
+    if (currentVerb) {
+      // Navigate to verbs tab and show this specific verb
+      router.push({
+        pathname: '/(tabs)/verbs',
+        params: { verbId: currentVerb.id }
+      });
+    }
   };
 
   const getTenseBadgeColor = (tense: string) => {
@@ -187,9 +199,9 @@ export default function PracticeScreen() {
 
           <TouchableOpacity 
             style={[styles.actionButton, { backgroundColor: theme.colors.surface }]} 
-            onPress={() => console.log('Show conjugations')}
+            onPress={handleShowVerbDetails}
           >
-            <Book size={24} color={theme.colors.textSecondary} />
+            <FileText size={24} color={theme.colors.textSecondary} />
           </TouchableOpacity>
 
           <TouchableOpacity 
