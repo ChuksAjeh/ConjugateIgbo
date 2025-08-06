@@ -805,6 +805,115 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontStyle: 'italic',
   },
+  // New verb detail styles
+  verbDetailContainer: {
+    flex: 1,
+  },
+  verbTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 24,
+    fontFamily: 'Inter-Bold',
+  },
+  tabContainer: {
+    flexDirection: 'row',
+    marginBottom: 32,
+    borderBottomWidth: 1,
+    borderBottomColor: '#374151',
+  },
+  tabButton: {
+    flex: 1,
+    paddingVertical: 16,
+    alignItems: 'center',
+    position: 'relative',
+  },
+  tabButtonText: {
+    fontSize: 16,
+    fontWeight: '500',
+    fontFamily: 'Inter-SemiBold',
+  },
+  tabButtonTextActive: {
+    color: '#f59e0b',
+  },
+  tabIndicator: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 2,
+    backgroundColor: '#f59e0b',
+  },
+  tabContent: {
+    flex: 1,
+  },
+  practiceToggle: {
+    marginBottom: 24,
+  },
+  flagContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  flagEmoji: {
+    fontSize: 20,
+    marginRight: 8,
+  },
+  verbMeaningLarge: {
+    fontSize: 18,
+    fontWeight: '500',
+    fontFamily: 'Inter-SemiBold',
+  },
+  toggleContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  toggleLabel: {
+    fontSize: 16,
+    fontWeight: '500',
+    fontFamily: 'Inter-SemiBold',
+  },
+  switch: {
+    width: 50,
+    height: 30,
+    borderRadius: 15,
+    padding: 2,
+    justifyContent: 'center',
+  },
+  switchThumb: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    transform: [{ translateX: 0 }],
+  },
+  switchThumbActive: {
+    transform: [{ translateX: 20 }],
+  },
+  instructionText: {
+    fontSize: 14,
+    marginBottom: 32,
+    lineHeight: 20,
+    fontFamily: 'Inter-Regular',
+  },
+  tenseGroup: {
+    marginBottom: 32,
+  },
+  tenseGroupTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 16,
+    fontFamily: 'Inter-Bold',
+  },
+  pronounLabel: {
+    fontSize: 16,
+    fontFamily: 'Inter-Regular',
+  },
+  conjugationValue: {
+    fontSize: 16,
+    fontWeight: '500',
+    fontFamily: 'Inter-SemiBold',
+  },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -814,98 +923,5 @@ const styles = StyleSheet.create({
   loadingText: {
     fontSize: 18,
     fontFamily: 'Inter-Regular',
-  },
-  verbDetailContainer: {
-    flex: 1,
-  },
-  verbTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 16,
-  },
-  tabContainer: {
-    flexDirection: 'row',
-    marginBottom: 20,
-  },
-  tabButton: {
-    flex: 1,
-    paddingVertical: 12,
-    alignItems: 'center',
-  },
-  tabButtonText: {
-    fontSize: 16,
-  },
-  tabButtonTextActive: {
-    fontWeight: 'bold',
-  },
-  tabIndicator: {
-    height: 2,
-    backgroundColor: '#f59e0b',
-    width: '100%',
-    marginTop: 4,
-  },
-  tabContent: {
-    flex: 1,
-  },
-  practiceToggle: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  flagContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  flagEmoji: {
-    fontSize: 20,
-    marginRight: 8,
-  },
-  verbMeaningLarge: {
-    fontSize: 18,
-    fontWeight: '500',
-  },
-  toggleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  toggleLabel: {
-    fontSize: 14,
-    marginRight: 8,
-  },
-  switch: {
-    width: 50,
-    height: 30,
-    borderRadius: 15,
-    justifyContent: 'center',
-    paddingHorizontal: 2,
-  },
-  switchThumb: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-  },
-  switchThumbActive: {
-    alignSelf: 'flex-end',
-  },
-  instructionText: {
-    fontSize: 14,
-    marginBottom: 20,
-  },
-  tenseGroup: {
-    marginBottom: 24,
-  },
-  tenseGroupTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 12,
-  },
-  pronounLabel: {
-    fontSize: 14,
-    minWidth: 100,
-  },
-  conjugationValue: {
-    fontSize: 14,
-    fontWeight: '500',
   },
 });
