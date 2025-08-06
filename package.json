@@ -5,6 +5,9 @@
   "private": true,
   "scripts": {
     "dev": "EXPO_NO_TELEMETRY=1 expo start",
+    "start": "expo start",
+    "start:clear": "expo start --clear",
+    "start:web": "expo start --web",
     "build:web": "expo export --platform web",
     "lint": "expo lint"
   },
