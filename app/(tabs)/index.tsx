@@ -9,7 +9,6 @@ import {
   SafeAreaView,
   ScrollView,
 } from 'react-native';
-import { RotateCcw, Volume2, Book } from 'lucide-react-native';
 import { RotateCcw, Volume2, FileText } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { IgboVerb } from '@/data/igboVerbs';
