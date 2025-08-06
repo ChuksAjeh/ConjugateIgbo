@@ -12,18 +12,21 @@ interface VerbRevealState {
 export default function RhymesScreen() {
   const { theme } = useTheme();
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
-  const [revealedVerbs, setRevealedVerbs] = useState<VerbRevealState>({});
+  const [revealedCount, setRevealedCount] = useState(0);
   
   const totalCards = rhymeCards.length;
 
   const currentCard = rhymeCards[currentCardIndex];
 
-  const toggleVerbReveal = (verb: string) => {
-    const key = `${currentCardIndex}-${verb}`;
-    setRevealedVerbs(prev => ({
-      ...prev,
-      [key]: !prev[key]
-    }));
+  const handleCardTap = () => {
+    if (revealedCount < currentCard.verbs.length) {
+      // Reveal next verb
+      setRevealedCount(prev => prev + 1);
+    } else {
+      // All verbs revealed, move to next card
+      setCurrentCardIndex(prev => (prev + 1) % totalCards);
+      setRevealedCount(0);
+    }
   };
 
   const styles = StyleSheet.create({
@@ -109,6 +112,14 @@ export default function RhymesScreen() {
       paddingHorizontal: 20,
       fontFamily: 'Inter-Regular',
     },
+    cardTapArea: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: 'transparent',
+    },
   });
 
   return (
@@ -121,30 +132,34 @@ export default function RhymesScreen() {
           
           <View style={styles.verbContainer}>
             {currentCard.verbs.map((verb, index) => {
-              const isRevealed = revealedVerbs[`${currentCardIndex}-${verb.igbo}`];
+              const isRevealed = index < revealedCount;
               return (
-                <TouchableOpacity
+                <View
                   key={index}
-                  style={[
-                    styles.verbButton,
-                    isRevealed && styles.verbButtonRevealed
-                  ]}
-                  onPress={() => toggleVerbReveal(verb.igbo)}
-                  activeOpacity={0.7}
+                  style={styles.verbButton}
                 >
                   <Text style={styles.igboText}>{verb.igbo}</Text>
                   <Text style={styles.pronunciationText}>/{verb.pronunciation}/</Text>
                   {isRevealed && (
                     <Text style={styles.englishText}>{verb.english}</Text>
                   )}
-                </TouchableOpacity>
+                </View>
               );
             })}
           </View>
+
+          <TouchableOpacity 
+            style={styles.cardTapArea}
+            onPress={handleCardTap}
+            activeOpacity={1}
+          />
         </View>
 
         <Text style={styles.instructionText}>
-          Tap each verb to reveal its meaning
+          {revealedCount < currentCard.verbs.length 
+            ? 'Tap to reveal next verb' 
+            : 'Tap to continue to next card'
+          }
         </Text>
       </View>
     </SafeAreaView>
