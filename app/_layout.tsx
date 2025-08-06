@@ -12,7 +12,7 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   useFrameworkReady();
-  
+
   const [fontsLoaded] = useFonts({
     'Inter-Regular': Inter_400Regular,
     'Inter-SemiBold': Inter_600SemiBold,
@@ -41,7 +41,9 @@ export default function RootLayout() {
     <ThemeProvider>
       <>
         <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="+not-found" />
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="not-found" options={{ title: 'Not Found' }} />
         </Stack>
         <StatusBar style="auto" />
       </>
