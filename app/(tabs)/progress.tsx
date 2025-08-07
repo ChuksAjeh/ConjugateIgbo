@@ -16,6 +16,16 @@ export default function ProgressScreen() {
   const { theme, isDark } = useTheme();
   const styles = createStyles(theme, isDark);
 
+  type StatCardProps = {
+    title: string;
+    value: string | number;
+    subtitle: string;
+    icon: any;
+    color: string;
+    gradientColors: readonly [string, string]; // Changed from string[]
+  };
+
+
   const StatCard = ({ 
     title, 
     value, 
@@ -23,14 +33,7 @@ export default function ProgressScreen() {
     icon: Icon, 
     color, 
     gradientColors 
-  }: {
-    title: string;
-    value: string | number;
-    subtitle: string;
-    icon: any;
-    color: string;
-    gradientColors: string[];
-  }) => (
+  }: StatCardProps) => (
     <LinearGradient colors={gradientColors} style={styles.statCard}>
       <View style={styles.statCardHeader}>
         <Icon size={24} color="white" />

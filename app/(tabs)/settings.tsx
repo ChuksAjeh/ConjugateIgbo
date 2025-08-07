@@ -560,7 +560,7 @@ export default function SettingsScreen() {
             </TouchableOpacity>
           </View>
           <View style={styles.modalContent}>
-            {['Verb and translation', 'Only translation', 'Only verb'].map((mode) => (
+            {(['Verb and translation', 'Only translation', 'Only verb'] as const).map((mode) => (
               <TouchableOpacity
                 key={mode}
                 style={[
