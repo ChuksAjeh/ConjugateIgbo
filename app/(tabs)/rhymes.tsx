@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, SafeAreaView } from 'react-native';
 import { useTheme } from '@/components/ThemeProvider';
 import { rhymeCards } from '@/data/rhymeCards';
-import { createStyles } from './mnemonicsStyles';
+import { createStyles } from './rhymesStyles';
 
 export default function RhymesScreen() {
   const { theme } = useTheme();
