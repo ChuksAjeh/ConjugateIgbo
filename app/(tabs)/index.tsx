@@ -2,9 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   View, 
   Text, 
-  StyleSheet, 
   TouchableOpacity, 
-  Dimensions, 
   Animated,
   SafeAreaView,
   ScrollView,
@@ -17,12 +15,15 @@ import { useSettings } from '@/hooks/useSettings';
 import { useProgress } from '@/hooks/useProgress';
 import { usePurchases } from '@/hooks/usePurchases';
 import { useTheme } from '@/components/ThemeProvider';
+import { styles } from './indexStyles';
 
-const { width } = Dimensions.get('window');
+// Define type-safe tenses and pronouns
+type Tense = 'present' | 'past' | 'future' | 'subjunctive';
+type Pronoun = 'm' | 'i' | 'o' | 'anyi' | 'unu' | 'ha';
 
-const tenses = ['present', 'past', 'future', 'subjunctive'];
-const pronouns = ['m', 'i', 'o', 'anyi', 'unu', 'ha'];
-const pronounLabels = {
+const tenses: Tense[] = ['present', 'past', 'future', 'subjunctive'];
+const pronouns: Pronoun[] = ['m', 'i', 'o', 'anyi', 'unu', 'ha'];
+const pronounLabels: Record<Pronoun, string> = {
   m: 'M (I)',
   i: 'I (You)',
   o: 'O (He/She)',
@@ -33,8 +34,8 @@ const pronounLabels = {
 
 export default function PracticeScreen() {
   const [currentVerb, setCurrentVerb] = useState<IgboVerb | null>(null);
-  const [selectedTense, setSelectedTense] = useState(() => tenses[Math.floor(Math.random() * 2)]); // Only present and past
-  const [selectedPronoun, setSelectedPronoun] = useState(() => pronouns[Math.floor(Math.random() * pronouns.length)]);
+  const [selectedTense, setSelectedTense] = useState<Tense>(() => tenses[Math.floor(Math.random() * 2)]); // Only present and past
+  const [selectedPronoun, setSelectedPronoun] = useState<Pronoun>(() => pronouns[Math.floor(Math.random() * pronouns.length)]);
   const [showAnswer, setShowAnswer] = useState(false);
   const [fadeAnim] = useState(new Animated.Value(0));
   
@@ -56,8 +57,16 @@ export default function PracticeScreen() {
     };
     
     loadRandomVerb();
+    
+    // Cleanup function to prevent animation errors when component unmounts
+    return () => {
+      // Stop any ongoing animations
+      fadeAnim.stopAnimation();
+      fadeAnim.setValue(0);
+    };
   }, []);
 
+  // Type-safe access to conjugations
   const correctAnswer = currentVerb?.conjugations[selectedTense]?.[selectedPronoun] || 'N/A';
 
   const handleRevealAnswer = () => {
@@ -84,8 +93,12 @@ export default function PracticeScreen() {
     
     // If user is pro, allow all tenses, otherwise limit to present and past
     const availableTenses = isProUser ? tenses : tenses.slice(0, 2);
-    setSelectedTense(availableTenses[Math.floor(Math.random() * availableTenses.length)]);
-    setSelectedPronoun(pronouns[Math.floor(Math.random() * pronouns.length)]); // Randomize pronoun
+    // Type assertion to ensure we're getting a valid Tense
+    const newTense = availableTenses[Math.floor(Math.random() * availableTenses.length)] as Tense;
+    setSelectedTense(newTense);
+    // Type assertion to ensure we're getting a valid Pronoun
+    const newPronoun = pronouns[Math.floor(Math.random() * pronouns.length)] as Pronoun;
+    setSelectedPronoun(newPronoun);
     setShowAnswer(false);
     fadeAnim.setValue(0);
   };
@@ -105,7 +118,7 @@ export default function PracticeScreen() {
     }
   };
 
-  const getTenseBadgeColor = (tense: string) => {
+  const getTenseBadgeColor = (tense: Tense) => {
     switch (tense) {
       case 'present': return '#3b82f6';
       case 'past': return '#10b981';
@@ -168,9 +181,9 @@ export default function PracticeScreen() {
                     <Animated.Text style={[styles.answerText, { opacity: fadeAnim, color: theme.colors.text }]}>
                       {String(correctAnswer)}
                     </Animated.Text>
-                    <Text style={[styles.tapToNextText, { color: theme.colors.textSecondary, opacity: fadeAnim }]}>
+                    <Animated.Text style={[styles.tapToNextText, { color: theme.colors.textSecondary, opacity: fadeAnim }]}>
                       Tap to continue
-                    </Text>
+                    </Animated.Text>
                   </TouchableOpacity>
                 ) : (
                   <View style={styles.answerPlaceholder}>
@@ -214,152 +227,3 @@ export default function PracticeScreen() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  progressContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-  },
-  progressTitle: {
-    fontSize: 16,
-    fontFamily: 'Inter-Regular',
-  },
-  progressCount: {
-    fontSize: 16,
-    fontFamily: 'Inter-Regular',
-  },
-  content: {
-    flex: 1,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    paddingHorizontal: 20,
-  },
-  cardContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 400,
-  },
-  card: {
-    width: '100%',
-    maxWidth: 350,
-    borderRadius: 24,
-    padding: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 8,
-    minHeight: 320,
-    position: 'relative',
-  },
-  englishMeaning: {
-    fontSize: 18,
-    textAlign: 'center',
-    marginBottom: 40,
-    fontFamily: 'Inter-Regular',
-  },
-  igboVerb: {
-    fontSize: 48,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 60,
-    fontFamily: 'Inter-Bold',
-  },
-  tenseBadge: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    marginBottom: 40,
-  },
-  tenseBadgeText: {
-    color: 'white',
-    fontSize: 14,
-    fontWeight: '600',
-    fontFamily: 'Inter-SemiBold',
-  },
-  answerSection: {
-    alignItems: 'center',
-    minHeight: 60,
-    justifyContent: 'center',
-  },
-  answerText: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    fontFamily: 'Inter-Bold',
-  },
-  pronounText: {
-    fontSize: 18,
-    fontWeight: '500',
-    textAlign: 'center',
-    marginBottom: 16,
-    fontFamily: 'Inter-SemiBold',
-  },
-  tapToNextText: {
-    fontSize: 14,
-    textAlign: 'center',
-    marginTop: 12,
-    fontFamily: 'Inter-Regular',
-  },
-  answerPlaceholder: {
-    alignItems: 'center',
-  },
-  answerLine: {
-    width: 200,
-    height: 2,
-    marginBottom: 20,
-  },
-  tapToShowButton: {
-    paddingVertical: 8,
-  },
-  tapToShowText: {
-    fontSize: 16,
-    fontFamily: 'Inter-Regular',
-  },
-  bottomActions: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingBottom: 40,
-    gap: 24,
-  },
-  actionButton: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 4,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    fontSize: 18,
-    fontFamily: 'Inter-Regular',
-  },
-});

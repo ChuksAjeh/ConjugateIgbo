@@ -2,24 +2,24 @@ import React from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   TouchableOpacity,
   ScrollView,
   SafeAreaView,
   Alert,
   ActivityIndicator,
-  Dimensions,
+  Dimensions
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Crown, Check } from 'lucide-react-native';
 import { usePurchases } from '@/hooks/usePurchases';
 import { useTheme } from '@/components/ThemeProvider';
-
-const { width, height } = Dimensions.get('window');
+import { createStyles } from './proStyles';
+import { useMemo } from 'react';
 
 export default function ProScreen() {
   const { theme, isDark } = useTheme();
   const { isProUser, isLoading, purchasePro, restorePurchases } = usePurchases();
+  const styles = createStyles(theme, isDark);
 
   const handlePurchase = async () => {
     try {
@@ -108,37 +108,45 @@ export default function ProScreen() {
   }
 
   // Create cat illustration with pattern background
-  const createPatternBackground = () => {
-    const patterns = [];
-    const patternSize = 40;
-    const spacing = 60;
-    const cols = Math.ceil(width / spacing) + 1;
-    const rows = Math.ceil((height * 0.4) / spacing) + 1;
 
-    for (let row = 0; row < rows; row++) {
-      for (let col = 0; col < cols; col++) {
-        const x = col * spacing - spacing / 2;
-        const y = row * spacing - spacing / 2;
-        
-        patterns.push(
-          <View
-            key={`${row}-${col}`}
-            style={[
-              styles.patternElement,
-              {
-                left: x,
-                top: y,
-                width: patternSize,
-                height: patternSize,
-              },
-            ]}
-          >
-            <Text style={styles.patternIcon}>🦁</Text>
-          </View>
-        );
+
+  const createPatternBackground = () => {
+    const { width, height } = Dimensions.get('window');
+
+    return useMemo(() => {
+      const patterns = [];
+      const patternSize = 40;
+      const spacing = 60;
+      const maxElements = 100; // Prevent too many elements
+
+      const cols = Math.min(Math.ceil(width / spacing) + 1, Math.ceil(Math.sqrt(maxElements)));
+      const rows = Math.min(Math.ceil((height * 0.4) / spacing) + 1, Math.ceil(maxElements / cols));
+
+      for (let row = 0; row < rows; row++) {
+        for (let col = 0; col < cols; col++) {
+          const x = col * spacing - spacing / 2;
+          const y = row * spacing - spacing / 2;
+
+          patterns.push(
+            <View
+              key={`${row}-${col}`}
+              style={[
+                styles.patternElement,
+                {
+                  left: x,
+                  top: y,
+                  width: patternSize,
+                  height: patternSize,
+                },
+              ]}
+            >
+              <Text style={styles.patternIcon}>🦁</Text>
+            </View>
+          );
+        }
       }
-    }
-    return patterns;
+      return patterns;
+    }, []);
   };
 
   return (
@@ -230,265 +238,3 @@ export default function ProScreen() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#1f2937',
-  },
-  content: {
-    flex: 1,
-  },
-  topSection: {
-    height: height * 0.5,
-    position: 'relative',
-    overflow: 'hidden',
-  },
-  patternContainer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    opacity: 0.3,
-  },
-  patternElement: {
-    position: 'absolute',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  patternIcon: {
-    fontSize: 20,
-    opacity: 0.6,
-  },
-  catContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  catCircle: {
-    width: 200,
-    height: 200,
-    borderRadius: 100,
-    backgroundColor: 'white',
-    padding: 8,
-    elevation: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-  },
-  catBackground: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 92,
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
-  },
-  cat: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
-  },
-  catEars: {
-    flexDirection: 'row',
-    gap: 20,
-    marginBottom: -10,
-  },
-  catEar: {
-    width: 20,
-    height: 25,
-    backgroundColor: '#000',
-    borderTopLeftRadius: 15,
-    borderTopRightRadius: 15,
-    transform: [{ rotate: '15deg' }],
-  },
-  catFace: {
-    width: 80,
-    height: 70,
-    backgroundColor: '#000',
-    borderRadius: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
-  },
-  catEyes: {
-    flexDirection: 'row',
-    gap: 16,
-    marginTop: 8,
-  },
-  catEye: {
-    width: 12,
-    height: 12,
-    backgroundColor: '#fbbf24',
-    borderRadius: 6,
-    borderWidth: 2,
-    borderColor: '#000',
-  },
-  catMouth: {
-    marginTop: 8,
-    alignItems: 'center',
-  },
-  catTongue: {
-    width: 8,
-    height: 6,
-    backgroundColor: '#ec4899',
-    borderRadius: 4,
-  },
-  catBody: {
-    width: 60,
-    height: 40,
-    backgroundColor: '#000',
-    borderRadius: 30,
-    marginTop: -5,
-  },
-  catTail: {
-    position: 'absolute',
-    right: -25,
-    top: 30,
-    width: 40,
-    height: 8,
-    backgroundColor: '#000',
-    borderRadius: 4,
-    transform: [{ rotate: '45deg' }],
-  },
-  bottomSection: {
-    backgroundColor: '#1f2937',
-    paddingHorizontal: 32,
-    paddingVertical: 40,
-    alignItems: 'center',
-    flex: 1,
-  },
-  mainTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: 'white',
-    textAlign: 'center',
-    fontFamily: 'Inter-SemiBold',
-    marginBottom: 4,
-  },
-  brandTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: 'white',
-    textAlign: 'center',
-    fontFamily: 'Inter-SemiBold',
-    marginBottom: 40,
-  },
-  featuresList: {
-    alignItems: 'flex-start',
-    marginBottom: 40,
-  },
-  featureItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  featureBullet: {
-    width: 8,
-    height: 8,
-    backgroundColor: 'white',
-    borderRadius: 4,
-    marginRight: 16,
-  },
-  featureText: {
-    fontSize: 18,
-    color: 'white',
-    fontFamily: 'Inter-Regular',
-  },
-  buyButton: {
-    backgroundColor: '#ea580c',
-    paddingHorizontal: 48,
-    paddingVertical: 16,
-    borderRadius: 25,
-    marginBottom: 24,
-    minWidth: 200,
-    alignItems: 'center',
-  },
-  buyButtonDisabled: {
-    opacity: 0.6,
-  },
-  buyButtonText: {
-    color: 'white',
-    fontSize: 18,
-    fontWeight: '600',
-    fontFamily: 'Inter-SemiBold',
-  },
-  pricingInfo: {
-    alignItems: 'center',
-    marginBottom: 60,
-  },
-  priceText: {
-    fontSize: 16,
-    color: '#9ca3af',
-    fontFamily: 'Inter-Regular',
-    marginBottom: 4,
-  },
-  subscriptionText: {
-    fontSize: 16,
-    color: '#9ca3af',
-    fontFamily: 'Inter-Regular',
-  },
-  restoreButton: {
-    paddingVertical: 12,
-  },
-  restoreButtonText: {
-    fontSize: 16,
-    color: '#ea580c',
-    fontFamily: 'Inter-Regular',
-    textAlign: 'center',
-  },
-  // Pro user styles
-  header: {
-    alignItems: 'center',
-    paddingVertical: 48,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
-  },
-  headerTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: 'white',
-    marginTop: 16,
-    marginBottom: 8,
-    fontFamily: 'Inter-Bold',
-  },
-  headerSubtitle: {
-    fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.9)',
-    fontFamily: 'Inter-Regular',
-  },
-  proStatusContainer: {
-    padding: 20,
-    margin: 20,
-    borderRadius: 16,
-  },
-  proStatusTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    textAlign: 'center',
-    fontFamily: 'Inter-Bold',
-  },
-  featureIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#dcfce7',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 16,
-  },
-  thankYouContainer: {
-    margin: 20,
-    padding: 24,
-    borderRadius: 16,
-    alignItems: 'center',
-  },
-  thankYouText: {
-    fontSize: 16,
-    textAlign: 'center',
-    fontFamily: 'Inter-Regular',
-  },
-});

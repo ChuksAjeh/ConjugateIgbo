@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { Book, Settings, Crown, Zap, TrendingUp, CreditCard } from 'lucide-react-native';
+import { Book, Settings, Crown, Zap, TrendingUp, Music } from 'lucide-react-native';
 import { usePurchases } from '@/hooks/usePurchases';
 import { useTheme } from '@/components/ThemeProvider';
 
@@ -28,11 +28,11 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="mnemonics"
+        name="rhymes"
         options={{
           title: 'Rhymes',
           tabBarIcon: ({ size, color }) => (
-            <Book size={size} color={color} />
+            <Music size={size} color={color} />
           ),
         }}
       />
