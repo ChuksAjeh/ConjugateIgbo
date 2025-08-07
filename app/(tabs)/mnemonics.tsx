@@ -4,10 +4,6 @@ import { useTheme } from '@/components/ThemeProvider';
 import { rhymeCards } from '@/data/rhymeCards';
 import { createStyles } from './mnemonicsStyles';
 
-interface VerbRevealState {
-  [key: string]: boolean;
-}
-
 export default function RhymesScreen() {
   const { theme } = useTheme();
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
@@ -35,7 +31,7 @@ export default function RhymesScreen() {
       <View style={styles.content}>
         <View style={styles.card}>
           <Text style={styles.cardTitle}>
-            Rhyming Verbs: {currentCard.pattern}
+            Rhyming Verbs: {currentCard.rhymePattern}
           </Text>
           
           <View style={styles.verbContainer}>

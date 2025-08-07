@@ -7,12 +7,14 @@ import {
   SafeAreaView,
   Alert,
   ActivityIndicator,
+  Dimensions
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Crown, Check } from 'lucide-react-native';
 import { usePurchases } from '@/hooks/usePurchases';
 import { useTheme } from '@/components/ThemeProvider';
 import { createStyles } from './proStyles';
+import { useMemo } from 'react';
 
 export default function ProScreen() {
   const { theme, isDark } = useTheme();
@@ -106,37 +108,45 @@ export default function ProScreen() {
   }
 
   // Create cat illustration with pattern background
-  const createPatternBackground = () => {
-    const patterns = [];
-    const patternSize = 40;
-    const spacing = 60;
-    const cols = Math.ceil(width / spacing) + 1;
-    const rows = Math.ceil((height * 0.4) / spacing) + 1;
 
-    for (let row = 0; row < rows; row++) {
-      for (let col = 0; col < cols; col++) {
-        const x = col * spacing - spacing / 2;
-        const y = row * spacing - spacing / 2;
-        
-        patterns.push(
-          <View
-            key={`${row}-${col}`}
-            style={[
-              styles.patternElement,
-              {
-                left: x,
-                top: y,
-                width: patternSize,
-                height: patternSize,
-              },
-            ]}
-          >
-            <Text style={styles.patternIcon}>🦁</Text>
-          </View>
-        );
+
+  const createPatternBackground = () => {
+    const { width, height } = Dimensions.get('window');
+
+    return useMemo(() => {
+      const patterns = [];
+      const patternSize = 40;
+      const spacing = 60;
+      const maxElements = 100; // Prevent too many elements
+
+      const cols = Math.min(Math.ceil(width / spacing) + 1, Math.ceil(Math.sqrt(maxElements)));
+      const rows = Math.min(Math.ceil((height * 0.4) / spacing) + 1, Math.ceil(maxElements / cols));
+
+      for (let row = 0; row < rows; row++) {
+        for (let col = 0; col < cols; col++) {
+          const x = col * spacing - spacing / 2;
+          const y = row * spacing - spacing / 2;
+
+          patterns.push(
+            <View
+              key={`${row}-${col}`}
+              style={[
+                styles.patternElement,
+                {
+                  left: x,
+                  top: y,
+                  width: patternSize,
+                  height: patternSize,
+                },
+              ]}
+            >
+              <Text style={styles.patternIcon}>🦁</Text>
+            </View>
+          );
+        }
       }
-    }
-    return patterns;
+      return patterns;
+    }, []);
   };
 
   return (
