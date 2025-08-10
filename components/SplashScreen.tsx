@@ -1,7 +1,8 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Animated, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Animated, Dimensions, Image } from 'react-native';
 
 const { width, height } = Dimensions.get('window');
+const lionImage = require('../assets/images/lion.png');
 
 export default function SplashScreen({ onFinish }: { onFinish: () => void }) {
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -35,7 +36,6 @@ export default function SplashScreen({ onFinish }: { onFinish: () => void }) {
     return () => clearTimeout(timer);
   }, [fadeAnim, scaleAnim, onFinish]);
 
-  // Create lion face pattern
   const createLionPattern = () => {
     const lions = [];
     const lionSize = 80;
@@ -47,7 +47,7 @@ export default function SplashScreen({ onFinish }: { onFinish: () => void }) {
       for (let col = 0; col < cols; col++) {
         const x = col * spacing - spacing / 2;
         const y = row * spacing - spacing / 2;
-        
+
         lions.push(
           <View
             key={`${row}-${col}`}
@@ -61,7 +61,7 @@ export default function SplashScreen({ onFinish }: { onFinish: () => void }) {
               },
             ]}
           >
-            <Text style={styles.lionEmoji}>🦁</Text>
+            <Image source={lionImage} style={styles.lionImage} />
           </View>
         );
       }
@@ -71,11 +71,9 @@ export default function SplashScreen({ onFinish }: { onFinish: () => void }) {
 
   return (
     <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
-      <View style={styles.patternContainer}>
-        {createLionPattern()}
-      </View>
-      
-      <Animated.View 
+      <View style={styles.patternContainer}>{createLionPattern()}</View>
+
+      <Animated.View
         style={[
           styles.centerContent,
           {
@@ -96,7 +94,7 @@ export default function SplashScreen({ onFinish }: { onFinish: () => void }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#3b82f6',
+    backgroundColor: '#ff7f50',
     position: 'relative',
   },
   patternContainer: {
@@ -112,8 +110,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  lionEmoji: {
-    fontSize: 40,
+  lionImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'contain',
   },
   centerContent: {
     flex: 1,
@@ -144,7 +144,7 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 28,
     fontWeight: '600',
-    color: '#3b82f6',
+    color: '#ff7f50',
     fontFamily: 'Inter-SemiBold',
   },
 });
