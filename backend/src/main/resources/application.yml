@@ -1,0 +1,18 @@
+spring:
+  config:
+    import: optional:file:.env[.properties]  # Load environment variables from .env file
+  profiles:
+    active: dev  # Default to development, overridden in prod
+  data:
+    mongodb:
+      uri: ${MONGODB_URI}
+      database: ${MONGO_DB}
+  logging:
+    level:
+      org.springframework.data.mongodb.core.MongoTemplate: DEBUG
+      org.springframework.data.mongodb.repository: DEBUG
+      org.mongodb.driver.protocol.command: DEBUG
+  server:
+    port: 8080
+    address: 0.0.0.0
+app:
