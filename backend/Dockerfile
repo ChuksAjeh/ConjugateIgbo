@@ -24,7 +24,7 @@ WORKDIR /app
 EXPOSE 8080
 
 # Copy the built JAR file from the build stage
-COPY --from=build /app/target/LanguageCurationPlatform-0.0.1-SNAPSHOT.jar /app/conjugateigbo.jar
+COPY --from=build /app/target/ConjugateIgbo-0.0.1-SNAPSHOT.jar /app/conjugateigbo.jar
 
 # ✅ Use `ENTRYPOINT` to allow runtime environment variables
 ENTRYPOINT ["sh", "-c", "java -Dspring.profiles.active=${SPRING_PROFILES_ACTIVE} -Dspring.data.mongodb.uri=${MONGODB_URI} -Dspring.data.mongodb.database=${MONGO_DB} -Dapp.api-key=${API_KEY} -jar /app/conjugateigbo.jar"]
