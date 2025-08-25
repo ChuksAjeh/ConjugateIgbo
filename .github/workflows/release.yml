@@ -1,0 +1,49 @@
+name: Create GitHub Release on Railway Production Deploy
+
+on:
+  workflow_dispatch:  # Allows only manual execution
+    inputs:
+      tag:
+        description: "Enter the release tag (e.g., v1.0.0)"
+        required: true
+        type: string
+
+jobs:
+  release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}  # Use GitHub’s built-in token
+
+      - name: Set up Git
+        run: |
+          git config --global user.name "${{ github.actor }}"
+          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+
+      - name: Validate Tag Input
+        run: |
+          echo "User-entered tag: ${{ github.event.inputs.tag }}"
+
+      - name: Create and Push Git Tag
+        run: |
+          TAG_NAME=${{ github.event.inputs.tag }}
+          git tag $TAG_NAME
+          git push origin $TAG_NAME
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Verify Tag Exists
+        run: git tag --list
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.tag }}
+          name: Release ${{ github.event.inputs.tag }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
