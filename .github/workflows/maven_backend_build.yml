@@ -1,0 +1,66 @@
+# This workflow will build a Java project with Maven, and cache/restore any dependencies to improve the workflow execution time
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-maven
+
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+name: Maven CI/CD Backend Build Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - 'backend/**'
+
+jobs:
+  build:
+    name: maven build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Set up JDK 21
+        uses: actions/setup-java@v3
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+          
+      - name: Authenticate with GCP
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+
+      - name: Retrieve MongoDB Secret from GCP
+        run: |
+          MONGO_DEV_URI=$(gcloud secrets versions access latest --secret=mongo-dev-github-uri || echo "")
+
+          if [[ -z "$MONGO_DEV_URI" ]]; then
+            echo "❌ Failed to retrieve MONGO_DEV_URI from Secret Manager"
+            exit 1  # Stop the workflow if the secret is empty
+          fi
+            
+          echo "::add-mask::$MONGO_DEV_URI"
+          echo "MONGO_DEV_URI=$MONGO_DEV_URI" >> $GITHUB_ENV
+          echo "MongoDB Dev Secret retrieved successfully"
+          
+      # - name: Set Environment Variables
+      #   env:
+      #     MONGODB_URI: ${{ secrets.MONGODB_DEV_URI }}
+      #   run: |
+      #     echo "export MONGODB_URI=${secrets.MONGODB_DEV_URI}" >> $GITHUB_ENV
+
+
+      - name: Build and Run Tests With Maven
+        run: mvn clean package --file ./backend/pom.xml -Dspring.data.mongodb.uri=${{ env.MONGO_DEV_URI }}
+
+
+      - run: echo "🍏 This job's status is ${{ job.status }}."
