@@ -1,8 +1,17 @@
 package org.conjugateigbo.core.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.conjugateigbo.core.model.dto.VerbDTO;
+import org.conjugateigbo.core.model.enums.Dialect;
+import org.conjugateigbo.core.service.VerbService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.net.URI;
+import java.time.Duration;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api")
