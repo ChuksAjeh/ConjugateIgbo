@@ -1,4 +1,4 @@
--- src/main/resources/db/migration/V2__audio_assets.sql
+-- src/main/resources/db/migration/V1.1.0__audio_assets.sql
 
 create type dialect as enum ('delta_igbo','central_igbo'); -- extend as needed
 

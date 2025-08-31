@@ -1,0 +1,44 @@
+name: React Native (mobile) — Lint & Typecheck
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths: [ 'mobile/**' ]
+  pull_request:
+    branches: [ main ]
+    paths: [ 'mobile/**' ]
+
+jobs:
+  mobile-checks:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 18 LTS
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: mobile/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint (Expo)
+        env:
+          EXPO_NO_TELEMETRY: '1'
+          CI: 'true'
+        run: npm run lint
+
+      - name: Typecheck (if tsconfig.json exists)
+        run: |
+          if [ -f tsconfig.json ]; then
+            npx -y typescript --noEmit
+          else
+            echo "No tsconfig.json; skipping typecheck."
+          fi

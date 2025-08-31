@@ -1,4 +1,4 @@
--- src/main/resources/db/migration/V1__verbs_by_dialect.sql
+-- src/main/resources/db/migration/V1.0.0__verbs_by_dialect.sql
 
 -- Delta Igbo verbs
 create table verbs_delta_igbo (
