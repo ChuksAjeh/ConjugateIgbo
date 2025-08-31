@@ -4,13 +4,11 @@ import lombok.Getter;
 import lombok.Setter;
 import org.conjugateigbo.core.model.enums.LanguageRequestStatusEnum;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
 
 @Getter
 @Setter
-@Document(collection = "languageRequests")
 public class LanguageRequestDTO {
 
     @Id
