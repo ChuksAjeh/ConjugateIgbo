@@ -1,31 +1,22 @@
-# Use a base image with Maven and JDK installed
+# ---- Build stage ----
 FROM maven:3.9.6-eclipse-temurin-21 AS build
-
-# Set the working directory in the container
 WORKDIR /app
-
-# Copy the Maven project files
 COPY pom.xml .
 COPY src ./src
+RUN mvn -q -DskipTests package
 
-# Build the Maven project, passing in the environment variable
-RUN mvn clean package
-
-# ✅ Use a full Debian-based OpenJDK image
-FROM openjdk:21-jdk-slim
-
-# ✅ Install essential networking and DNS debugging tools
-RUN apt update && apt install -y dnsutils curl wget netcat-openbsd iputils-ping
-
-# Set the working directory in the container
+# ---- Run stage ----
+FROM eclipse-temurin:21-jre
 WORKDIR /app
 
-# Expose the port that your Spring Boot application runs on
+# Sensible JVM defaults for containers
+ENV JAVA_OPTS="-XX:MaxRAMPercentage=75.0 -Dfile.encoding=UTF-8"
+
+# Spring will bind to Railway's PORT at runtime; default 8080 locally
+ENV PORT=8080
 EXPOSE 8080
 
-# Copy the built JAR file from the build stage
-COPY --from=build /app/target/ConjugateIgbo-0.0.1-SNAPSHOT.jar /app/conjugateigbo.jar
+COPY --from=build /app/target/*-SNAPSHOT.jar /app/app.jar
 
-# ✅ Use `ENTRYPOINT` to allow runtime environment variables
-ENTRYPOINT ["sh", "-c", "java -Dspring.profiles.active=${SPRING_PROFILES_ACTIVE} -Dspring.data.mongodb.uri=${MONGODB_URI} -Dspring.data.mongodb.database=${MONGO_DB} -Dapp.api-key=${API_KEY} -jar /app/conjugateigbo.jar"]
-
+# Let env decide the active profile; don't hardcode DB props here
+ENTRYPOINT ["sh","-c","java $JAVA_OPTS -jar /app/app.jar --spring.profiles.active=${SPRING_PROFILES_ACTIVE:-dev}"]

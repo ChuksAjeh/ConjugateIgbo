@@ -5,13 +5,11 @@ import lombok.Getter;
 import lombok.Setter;
 import org.conjugateigbo.core.model.enums.SentenceTypeEnum;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
 
 @Getter
 @Setter
-@Document(collection = "sentences")
 public class SentenceDTO {
     @Id
     private String id;

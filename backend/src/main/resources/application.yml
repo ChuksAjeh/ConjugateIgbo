@@ -1,18 +1,26 @@
 spring:
   config:
-    import: optional:file:.env[.properties]  # Load environment variables from .env file
+    import: optional:file:.env[.properties]   # relative to the working dir
   profiles:
-    active: dev  # Default to development, overridden in prod
-  data:
-    mongodb:
-      uri: ${MONGODB_URI}
-      database: ${MONGO_DB}
-  logging:
-    level:
-      org.springframework.data.mongodb.core.MongoTemplate: DEBUG
-      org.springframework.data.mongodb.repository: DEBUG
-      org.mongodb.driver.protocol.command: DEBUG
-  server:
-    port: 8080
-    address: 0.0.0.0
-app:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      idle-timeout: 300000
+      connection-timeout: 30000
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+
+server:
+  port: ${PORT:8080}
+  address: 0.0.0.0
