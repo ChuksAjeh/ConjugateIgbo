@@ -56,7 +56,7 @@ export default function ProScreen() {
           style={styles.successHeader}
         >
           <View style={styles.successBadge}>
-            <Crown size={32} color="#fbbf24" />
+            {patternBackground}
           </View>
           <Text style={styles.successTitle}>You're Pro! 🎉</Text>
           <Text style={styles.successSubtitle}>
@@ -98,44 +98,42 @@ export default function ProScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Hero Section */}
-        <LinearGradient
-          colors={['#1e40af', '#1d4ed8']}
-          style={styles.heroSection}
-        >
-          <View style={styles.heroContent}>
-            <View style={styles.heroBadge}>
-              <Crown size={24} color="#fbbf24" />
-              <Text style={styles.heroBadgeText}>UPGRADE</Text>
-            </View>
-            
-            <Text style={styles.heroTitle}>
-              Master All Igbo{'\n'}Dialects
-            </Text>
-            
-            <Text style={styles.heroSubtitle}>
-              Unlock the complete Igbo learning experience with all dialects, 1000+ verbs, and advanced features
-            </Text>
-          </View>
-          
-          {/* Floating elements for visual interest */}
-          <View style={styles.floatingElements}>
-            <View style={[styles.floatingElement, styles.floatingElement1]}>
-              <Text style={styles.floatingEmoji}>🦁</Text>
-            </View>
-            <View style={[styles.floatingElement, styles.floatingElement2]}>
-              <Text style={styles.floatingEmoji}>📚</Text>
-            </View>
-            <View style={[styles.floatingElement, styles.floatingElement3]}>
-              <Text style={styles.floatingEmoji}>🎯</Text>
-            </View>
-          </View>
-        </LinearGradient>
+  // Create pattern background with useMemo at component level
+  const { width, height } = Dimensions.get('window');
+  const patternBackground = useMemo(() => {
+    const patterns = [];
+    const patternSize = 40;
+    const spacing = 60;
+    const maxElements = 100; // Prevent too many elements
 
-        {/* Current Limitations */}
-        <View style={styles.limitationsSection}>
-          <Text style={styles.limitationsTitle}>You're Missing Out On:</Text>
-          
+    const cols = Math.min(Math.ceil(width / spacing) + 1, Math.ceil(Math.sqrt(maxElements)));
+    const rows = Math.min(Math.ceil((height * 0.4) / spacing) + 1, Math.ceil(maxElements / cols));
+
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < cols; col++) {
+        const x = col * spacing - spacing / 2;
+        const y = row * spacing - spacing / 2;
+
+        patterns.push(
+          <View
+            key={`${row}-${col}`}
+            style={[
+              styles.patternElement,
+              {
+                left: x,
+                top: y,
+                width: patternSize,
+                height: patternSize,
+              },
+            ]}
+          >
+            <Text style={styles.patternIcon}>🦁</Text>
+          </View>
+        );
+      }
+    }
+    return patterns;
+  }, [width, height]);
           <View style={styles.limitationsList}>
             {[
               { icon: Globe, text: 'Central, Anambra & Imo dialects', locked: true },
