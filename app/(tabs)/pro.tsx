@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -20,6 +20,43 @@ export default function ProScreen() {
   const { settings, upgradeToPremium } = useAppStore();
   const [isUpgrading, setIsUpgrading] = useState(false);
   const styles = createStyles();
+
+  // Create pattern background - must be at top level before any returns
+  const patternBackground = useMemo(() => {
+    const { width, height } = Dimensions.get('window');
+    const patterns = [];
+    const patternSize = 40;
+    const spacing = 60;
+    const maxElements = 100; // Prevent too many elements
+
+    const cols = Math.min(Math.ceil(width / spacing) + 1, Math.ceil(Math.sqrt(maxElements)));
+    const rows = Math.min(Math.ceil((height * 0.4) / spacing) + 1, Math.ceil(maxElements / cols));
+
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < cols; col++) {
+        const x = col * spacing - spacing / 2;
+        const y = row * spacing - spacing / 2;
+
+        patterns.push(
+          <View
+            key={`${row}-${col}`}
+            style={[
+              styles.patternElement,
+              {
+                left: x,
+                top: y,
+                width: patternSize,
+                height: patternSize,
+              },
+            ]}
+          >
+            <Text style={styles.patternIcon}>🦁</Text>
+          </View>
+        );
+      }
+    }
+    return patterns;
+  }, [styles.patternElement, styles.patternIcon]);
 
   const handleUpgrade = async () => {
     setIsUpgrading(true);
@@ -98,42 +135,6 @@ export default function ProScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-  // Create pattern background with useMemo at component level
-  const { width, height } = Dimensions.get('window');
-  const patternBackground = useMemo(() => {
-    const patterns = [];
-    const patternSize = 40;
-    const spacing = 60;
-    const maxElements = 100; // Prevent too many elements
-
-    const cols = Math.min(Math.ceil(width / spacing) + 1, Math.ceil(Math.sqrt(maxElements)));
-    const rows = Math.min(Math.ceil((height * 0.4) / spacing) + 1, Math.ceil(maxElements / cols));
-
-    for (let row = 0; row < rows; row++) {
-      for (let col = 0; col < cols; col++) {
-        const x = col * spacing - spacing / 2;
-        const y = row * spacing - spacing / 2;
-
-        patterns.push(
-          <View
-            key={`${row}-${col}`}
-            style={[
-              styles.patternElement,
-              {
-                left: x,
-                top: y,
-                width: patternSize,
-                height: patternSize,
-              },
-            ]}
-          >
-            <Text style={styles.patternIcon}>🦁</Text>
-          </View>
-        );
-      }
-    }
-    return patterns;
-  }, [width, height]);
           <View style={styles.limitationsList}>
             {[
               { icon: Globe, text: 'Central, Anambra & Imo dialects', locked: true },
