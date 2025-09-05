@@ -1,6 +1,6 @@
 import { StyleSheet, Dimensions } from 'react-native';
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
 export const createStyles = () => StyleSheet.create({
   container: {
@@ -10,130 +10,318 @@ export const createStyles = () => StyleSheet.create({
   content: {
     flex: 1,
   },
+  
+  // Hero Section
   heroSection: {
-    alignItems: 'center',
-    paddingVertical: 60,
+    paddingTop: 60,
+    paddingBottom: 80,
     paddingHorizontal: 20,
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  heroContent: {
+    alignItems: 'center',
+    zIndex: 2,
+  },
+  heroBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    marginBottom: 24,
+    gap: 8,
+  },
+  heroBadgeText: {
+    color: '#ffffff',
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 1,
+    fontFamily: 'Inter-Bold',
   },
   heroTitle: {
-    fontSize: 32,
+    fontSize: 36,
     fontWeight: 'bold',
     color: '#ffffff',
-    marginTop: 16,
-    marginBottom: 8,
+    textAlign: 'center',
+    marginBottom: 16,
     fontFamily: 'Inter-Bold',
+    lineHeight: 42,
   },
   heroSubtitle: {
     fontSize: 16,
     color: 'rgba(255, 255, 255, 0.9)',
     textAlign: 'center',
+    lineHeight: 24,
+    paddingHorizontal: 20,
     fontFamily: 'Inter-Regular',
   },
-  featuresSection: {
+  
+  // Floating Elements
+  floatingElements: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 1,
+  },
+  floatingElement: {
+    position: 'absolute',
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  floatingElement1: {
+    top: 40,
+    right: 30,
+  },
+  floatingElement2: {
+    top: 120,
+    left: 20,
+  },
+  floatingElement3: {
+    bottom: 40,
+    right: 50,
+  },
+  floatingEmoji: {
+    fontSize: 24,
+  },
+
+  // Limitations Section
+  limitationsSection: {
+    paddingHorizontal: 20,
+    paddingVertical: 32,
+    backgroundColor: '#ffffff',
+    marginTop: -40,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    zIndex: 3,
+  },
+  limitationsTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#1f2937',
+    textAlign: 'center',
+    marginBottom: 24,
+    fontFamily: 'Inter-Bold',
+  },
+  limitationsList: {
+    gap: 16,
+  },
+  limitationItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fef2f2',
+    padding: 16,
+    borderRadius: 12,
+    borderLeftWidth: 4,
+    borderLeftColor: '#ef4444',
+  },
+  limitationIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#fee2e2',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  limitationText: {
+    flex: 1,
+    fontSize: 15,
+    color: '#374151',
+    fontWeight: '500',
+    fontFamily: 'Inter-SemiBold',
+  },
+  lockBadge: {
+    backgroundColor: '#ef4444',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  lockText: {
+    color: '#ffffff',
+    fontSize: 10,
+    fontWeight: '700',
+    fontFamily: 'Inter-Bold',
+  },
+
+  // Comparison Section
+  comparisonSection: {
     paddingHorizontal: 20,
     paddingVertical: 32,
   },
-  featuresSectionTitle: {
-    fontSize: 24,
+  comparisonTitle: {
+    fontSize: 22,
     fontWeight: 'bold',
     color: '#1f2937',
-    marginBottom: 24,
     textAlign: 'center',
+    marginBottom: 24,
     fontFamily: 'Inter-Bold',
   },
-  featuresList: {
-    gap: 20,
-  },
-  featureItem: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
+  comparisonTable: {
     backgroundColor: '#ffffff',
-    padding: 20,
     borderRadius: 16,
+    overflow: 'hidden',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
+    shadowRadius: 12,
+    elevation: 8,
   },
-  featureIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#fef3c7',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 16,
+  comparisonHeader: {
+    flexDirection: 'row',
+    backgroundColor: '#f8fafc',
+    paddingVertical: 16,
+    paddingHorizontal: 20,
   },
-  featureContent: {
+  comparisonHeaderText: {
     flex: 1,
-  },
-  featureTitle: {
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: '600',
-    color: '#1f2937',
-    marginBottom: 4,
+    color: '#374151',
+    textAlign: 'center',
     fontFamily: 'Inter-SemiBold',
   },
-  featureDescription: {
+  comparisonRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f3f4f6',
+  },
+  featureName: {
+    flex: 1,
     fontSize: 14,
-    color: '#6b7280',
-    lineHeight: 20,
+    color: '#374151',
     fontFamily: 'Inter-Regular',
   },
+  checkContainer: {
+    flex: 1,
+    alignItems: 'center',
+  },
+
+  // Pricing Section
   pricingSection: {
     paddingHorizontal: 20,
     paddingVertical: 32,
   },
   pricingCard: {
     backgroundColor: '#ffffff',
-    borderRadius: 24,
+    borderRadius: 20,
     padding: 32,
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 8,
+    shadowRadius: 16,
+    elevation: 12,
     borderWidth: 2,
-    borderColor: '#f59e0b',
+    borderColor: '#fbbf24',
+    position: 'relative',
+  },
+  pricingBadge: {
+    position: 'absolute',
+    top: -12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    gap: 6,
+  },
+  pricingBadgeText: {
+    color: '#ffffff',
+    fontSize: 12,
+    fontWeight: '700',
+    fontFamily: 'Inter-Bold',
   },
   pricingTitle: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: 'bold',
     color: '#1f2937',
-    marginBottom: 16,
+    marginTop: 16,
+    marginBottom: 20,
     fontFamily: 'Inter-Bold',
   },
-  pricingPrice: {
-    fontSize: 48,
-    fontWeight: 'bold',
-    color: '#f59e0b',
-    fontFamily: 'Inter-Bold',
-  },
-  pricingPeriod: {
-    fontSize: 16,
-    color: '#6b7280',
+  priceContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
     marginBottom: 8,
+  },
+  priceSymbol: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#059669',
+    marginTop: 8,
+    fontFamily: 'Inter-Bold',
+  },
+  priceAmount: {
+    fontSize: 64,
+    fontWeight: 'bold',
+    color: '#059669',
+    fontFamily: 'Inter-Bold',
+  },
+  pricePeriod: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#059669',
+    marginTop: 8,
+    fontFamily: 'Inter-Bold',
+  },
+  priceDescription: {
+    fontSize: 14,
+    color: '#6b7280',
+    marginBottom: 24,
     fontFamily: 'Inter-Regular',
   },
-  pricingNote: {
+  priceFeatures: {
+    gap: 12,
+    alignItems: 'center',
+  },
+  priceFeatureItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  priceFeatureText: {
     fontSize: 14,
-    color: '#10b981',
-    fontWeight: '600',
-    marginBottom: 24,
+    color: '#374151',
+    fontWeight: '500',
     fontFamily: 'Inter-SemiBold',
   },
+
+  // CTA Section
+  ctaSection: {
+    paddingHorizontal: 20,
+    paddingVertical: 24,
+  },
   upgradeButton: {
-    backgroundColor: '#f59e0b',
-    paddingHorizontal: 48,
-    paddingVertical: 16,
-    borderRadius: 28,
-    shadowColor: '#f59e0b',
+    borderRadius: 16,
+    marginBottom: 16,
+    shadowColor: '#059669',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  upgradeButtonLoading: {
+    opacity: 0.8,
+  },
+  upgradeButtonGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 18,
+    paddingHorizontal: 32,
+    borderRadius: 16,
+    gap: 12,
   },
   upgradeButtonText: {
     color: '#ffffff',
@@ -141,68 +329,140 @@ export const createStyles = () => StyleSheet.create({
     fontWeight: 'bold',
     fontFamily: 'Inter-Bold',
   },
-  limitationsSection: {
+  loadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  loadingSpinner: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+    borderTopColor: '#ffffff',
+  },
+  restoreButton: {
+    paddingVertical: 16,
+    alignItems: 'center',
+  },
+  restoreButtonText: {
+    fontSize: 16,
+    color: '#6b7280',
+    fontFamily: 'Inter-Regular',
+  },
+
+  // Social Proof Section
+  socialProofSection: {
     paddingHorizontal: 20,
     paddingVertical: 32,
   },
-  limitationsSectionTitle: {
-    fontSize: 20,
+  socialProofTitle: {
+    fontSize: 18,
     fontWeight: 'bold',
     color: '#1f2937',
-    marginBottom: 20,
     textAlign: 'center',
+    marginBottom: 20,
     fontFamily: 'Inter-Bold',
   },
-  limitationItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  testimonialCard: {
     backgroundColor: '#ffffff',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 12,
+    borderRadius: 16,
+    padding: 24,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+    borderLeftWidth: 4,
+    borderLeftColor: '#059669',
   },
-  limitationText: {
+  testimonialText: {
     fontSize: 16,
-    color: '#6b7280',
-    marginLeft: 12,
+    color: '#374151',
+    fontStyle: 'italic',
+    lineHeight: 24,
+    marginBottom: 12,
     fontFamily: 'Inter-Regular',
   },
+  testimonialAuthor: {
+    fontSize: 14,
+    color: '#6b7280',
+    fontWeight: '500',
+    fontFamily: 'Inter-SemiBold',
+  },
+
+  // Trust Section
+  trustSection: {
+    paddingHorizontal: 20,
+    paddingVertical: 24,
+    backgroundColor: '#f0fdf4',
+    marginHorizontal: 20,
+    borderRadius: 16,
+    marginBottom: 32,
+  },
+  trustItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  trustIcon: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#dcfce7',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  trustText: {
+    fontSize: 14,
+    color: '#065f46',
+    fontFamily: 'Inter-Regular',
+  },
+
+  // Footer
   footer: {
     paddingHorizontal: 20,
     paddingVertical: 32,
     alignItems: 'center',
   },
   footerText: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#9ca3af',
     textAlign: 'center',
+    lineHeight: 18,
     fontFamily: 'Inter-Regular',
   },
-  // Pro user styles
-  proHeader: {
+
+  // Success State (Pro User)
+  successHeader: {
     alignItems: 'center',
     paddingVertical: 60,
     paddingHorizontal: 20,
   },
-  proHeaderTitle: {
+  successBadge: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 24,
+  },
+  successTitle: {
     fontSize: 32,
     fontWeight: 'bold',
     color: '#ffffff',
-    marginTop: 16,
     marginBottom: 8,
     fontFamily: 'Inter-Bold',
   },
-  proHeaderSubtitle: {
+  successSubtitle: {
     fontSize: 16,
     color: 'rgba(255, 255, 255, 0.9)',
     fontFamily: 'Inter-Regular',
   },
-  proFeaturesContainer: {
+  activeFeatures: {
     backgroundColor: '#ffffff',
     margin: 20,
     borderRadius: 16,
@@ -213,7 +473,7 @@ export const createStyles = () => StyleSheet.create({
     shadowRadius: 8,
     elevation: 4,
   },
-  proFeaturesTitle: {
+  activeFeaturesTitle: {
     fontSize: 20,
     fontWeight: 'bold',
     color: '#1f2937',
@@ -221,21 +481,29 @@ export const createStyles = () => StyleSheet.create({
     textAlign: 'center',
     fontFamily: 'Inter-Bold',
   },
-  featureIcon: {
+  activeFeatureItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f3f4f6',
+  },
+  activeFeatureIcon: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#dcfce7',
+    backgroundColor: '#f0fdf4',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
   },
-  featureText: {
+  activeFeatureText: {
+    flex: 1,
     fontSize: 16,
     color: '#374151',
     fontFamily: 'Inter-Regular',
   },
-  thankYouContainer: {
+  thankYouCard: {
     backgroundColor: '#f0fdf4',
     margin: 20,
     borderRadius: 16,
@@ -244,10 +512,18 @@ export const createStyles = () => StyleSheet.create({
     borderWidth: 2,
     borderColor: '#10b981',
   },
+  thankYouTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#065f46',
+    marginBottom: 12,
+    fontFamily: 'Inter-Bold',
+  },
   thankYouText: {
     fontSize: 16,
     color: '#065f46',
     textAlign: 'center',
+    lineHeight: 24,
     fontFamily: 'Inter-Regular',
   },
 });
