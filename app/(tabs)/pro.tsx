@@ -11,17 +11,20 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Crown, Check, X, Star, Zap, Globe, TrendingUp, Download } from 'lucide-react-native';
+import { useTheme } from '@/components/ThemeProvider';
+import { usePurchases } from '@/hooks/usePurchases';
 import { useAppStore } from '@/store/appStore';
 import { createStyles } from './proStyles';
 
 const { width } = Dimensions.get('window');
 
 export default function ProScreen() {
+  const { theme, isDark } = useTheme();
+  const { isProUser, isLoading, purchasePro, restorePurchases } = usePurchases();
   const { settings, upgradeToPremium } = useAppStore();
-  const [isUpgrading, setIsUpgrading] = useState(false);
-  const styles = createStyles();
+  const styles = createStyles(theme, isDark);
 
-  // Create pattern background - must be at top level before any returns
+  // Move useMemo to top level to avoid hooks rules violation
   const patternBackground = useMemo(() => {
     const { width, height } = Dimensions.get('window');
     const patterns = [];
@@ -58,7 +61,7 @@ export default function ProScreen() {
     return patterns;
   }, [styles.patternElement, styles.patternIcon]);
 
-  const handleUpgrade = async () => {
+  const handlePurchase = async () => {
     setIsUpgrading(true);
     
     // Simulate purchase flow
