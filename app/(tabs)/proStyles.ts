@@ -352,46 +352,6 @@ export const createStyles = () => StyleSheet.create({
     fontFamily: 'Inter-Regular',
   },
 
-  // Social Proof Section
-  socialProofSection: {
-    paddingHorizontal: 20,
-    paddingVertical: 32,
-  },
-  socialProofTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1f2937',
-    textAlign: 'center',
-    marginBottom: 20,
-    fontFamily: 'Inter-Bold',
-  },
-  testimonialCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    padding: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
-    borderLeftWidth: 4,
-    borderLeftColor: '#059669',
-  },
-  testimonialText: {
-    fontSize: 16,
-    color: '#374151',
-    fontStyle: 'italic',
-    lineHeight: 24,
-    marginBottom: 12,
-    fontFamily: 'Inter-Regular',
-  },
-  testimonialAuthor: {
-    fontSize: 14,
-    color: '#6b7280',
-    fontWeight: '500',
-    fontFamily: 'Inter-SemiBold',
-  },
-
   // Trust Section
   trustSection: {
     paddingHorizontal: 20,

@@ -259,17 +259,6 @@ export default function ProScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Social Proof */}
-        <View style={styles.socialProofSection}>
-          <Text style={styles.socialProofTitle}>Join 10,000+ Igbo Learners</Text>
-          <View style={styles.testimonialCard}>
-            <Text style={styles.testimonialText}>
-              "The dialect comparison feature helped me understand the nuances between different Igbo regions. Amazing app!"
-            </Text>
-            <Text style={styles.testimonialAuthor}>- Chioma O., Lagos</Text>
-          </View>
-        </View>
-
         {/* Trust Indicators */}
         <View style={styles.trustSection}>
           <View style={styles.trustItem}>
