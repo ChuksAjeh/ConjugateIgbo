@@ -1,6 +1,14 @@
 -- src/main/resources/db/migration/V1.1.0__audio_assets.sql
 
-create type dialect as enum ('delta_igbo','central_igbo'); -- extend as needed
+DO
+$$
+    BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'dialect') THEN
+            CREATE TYPE dialect AS ENUM ('standard', 'variant', 'slang');
+        END IF;
+    END
+$$;
+
 
 create table audio_assets
 (

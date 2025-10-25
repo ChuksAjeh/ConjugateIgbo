@@ -20,6 +20,7 @@ spring:
   flyway:
     enabled: true
     baseline-on-migrate: true
+    baseline-version: 1.0.0
     locations: classpath:db/migration,classpath:db/migration-test
 
 server:
