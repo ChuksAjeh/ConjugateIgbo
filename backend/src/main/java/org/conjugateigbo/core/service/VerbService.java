@@ -5,9 +5,14 @@ import org.conjugateigbo.core.model.dto.AudioDTO;
 import org.conjugateigbo.core.model.dto.VerbDTO;
 import org.conjugateigbo.core.model.enums.Dialect;
 import org.conjugateigbo.core.repository.verb.VerbRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
@@ -22,6 +27,7 @@ public class VerbService {
     );
     private final VerbRepository repo;
     private final NamedParameterJdbcTemplate jdbc;
+    private final ExcelVerbImportService excelImportService;
 
     public List<VerbDTO> list(Dialect d, int limit, String search) {
         var table = TABLE.get(d);
@@ -49,5 +55,44 @@ public class VerbService {
         // lookup object_key from audio_assets where (dialect, verb_id)=...
         // then use GCS SDK to make a V4 signed URL and return it
         return "...";
+    }
+
+    public Map<String, Object> importVerbs(Dialect d, MultipartFile file, String filePath) throws Exception {
+        if (d != Dialect.DELTA_IGBO) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Import currently supported only for delta-igbo");
+        }
+
+        Path pathToUse;
+        boolean isTemp = false;
+        if (file != null && !file.isEmpty()) {
+            Path tmp = Files.createTempFile("verbs-upload-", ".xlsx");
+            try {
+                Files.copy(file.getInputStream(), tmp, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            } catch (Exception e) {
+                try { Files.deleteIfExists(tmp); } catch (Exception ignore) {}
+                throw e;
+            }
+            pathToUse = tmp;
+            isTemp = true;
+        } else if (filePath != null && !filePath.isBlank()) {
+            pathToUse = Path.of(filePath);
+        } else {
+            pathToUse = Path.of("All Igbo Verbs.xlsx");
+        }
+
+        try {
+            var result = excelImportService.importDeltaFromExcel(pathToUse.toString());
+            return Map.of(
+                    "file", pathToUse.toString(),
+                    "dialect", "delta-igbo",
+                    "totalRows", result.totalRows(),
+                    "inserted", result.inserted(),
+                    "skipped", result.skipped()
+            );
+        } finally {
+            if (isTemp) {
+                try { Files.deleteIfExists(pathToUse); } catch (Exception ignore) {}
+            }
+        }
     }
 }

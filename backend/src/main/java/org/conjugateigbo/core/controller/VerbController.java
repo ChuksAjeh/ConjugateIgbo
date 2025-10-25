@@ -12,8 +12,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
@@ -23,7 +21,6 @@ import java.util.Map;
 @RequiredArgsConstructor
 class VerbController {
     private final VerbService service;
-    private final org.conjugateigbo.core.service.ExcelVerbImportService excelImportService;
 
     @GetMapping("/{dialect}/verbs")
     List<VerbDTO> list(@PathVariable String dialect,
@@ -48,49 +45,7 @@ class VerbController {
                                     @RequestParam(name = "file", required = false) MultipartFile file,
                                     @RequestParam(name = "filePath", required = false) String filePath) throws Exception {
         var d = dialectEnum(dialect);
-        if (d != Dialect.DELTA_IGBO) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Import currently supported only for delta-igbo");
-        }
-
-        Path pathToUse;
-        boolean isTemp = false;
-        if (file != null && !file.isEmpty()) {
-            // Save uploaded multipart file to a temp location
-            Path tmp = Files.createTempFile("verbs-upload-", ".xlsx");
-            try {
-                Files.copy(file.getInputStream(), tmp, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-            } catch (Exception e) {
-                try {
-                    Files.deleteIfExists(tmp);
-                } catch (Exception ignore) {
-                }
-                throw e;
-            }
-            pathToUse = tmp;
-            isTemp = true;
-        } else if (filePath != null && !filePath.isBlank()) {
-            pathToUse = Path.of(filePath);
-        } else {
-            pathToUse = Path.of("All Igbo Verbs.xlsx");
-        }
-
-        try {
-            var result = excelImportService.importDeltaFromExcel(pathToUse.toString());
-            return Map.of(
-                    "file", pathToUse.toString(),
-                    "dialect", "delta-igbo",
-                    "totalRows", result.totalRows(),
-                    "inserted", result.inserted(),
-                    "skipped", result.skipped()
-            );
-        } finally {
-            if (isTemp) {
-                try {
-                    Files.deleteIfExists(pathToUse);
-                } catch (Exception ignore) {
-                }
-            }
-        }
+        return service.importVerbs(d, file, filePath);
     }
 
     private Dialect dialectEnum(String s) {
