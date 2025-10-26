@@ -3,7 +3,7 @@ package org.conjugateigbo.core.controller;
 import lombok.RequiredArgsConstructor;
 import org.conjugateigbo.core.model.dto.VerbDTO;
 import org.conjugateigbo.core.model.enums.Dialect;
-import org.conjugateigbo.core.service.VerbService;
+import org.conjugateigbo.core.service.VerbServiceImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +20,7 @@ import java.util.Map;
 @RequestMapping("/api")
 @RequiredArgsConstructor
 class VerbController {
-    private final VerbService service;
+    private final VerbServiceImpl service;
 
     @GetMapping("/{dialect}/verbs")
     List<VerbDTO> list(@PathVariable String dialect,
@@ -55,4 +55,6 @@ class VerbController {
             default -> throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Unknown dialect");
         };
     }
+
+
 }
