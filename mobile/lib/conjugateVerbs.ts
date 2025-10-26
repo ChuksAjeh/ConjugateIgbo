@@ -31,11 +31,7 @@ function applyPresentRule(root: string, _pronoun: Pronoun): string {
   if (!root) return '';
   
   const stem = removePrefixI(root);
-  console.log("stem",stem);
   const prefix = getVowelharmonyPrefix(stem);
-  console.log("prefix", prefix);
-
-  console.log(`${prefix}${stem}`);
   return `${prefix}${stem}`;
 }
 
@@ -106,6 +102,11 @@ export function getConjugatedForm(verb: IgboVerb, tense: Tense, pronoun: Pronoun
     return verb.conjugations[tense][pronoun];
   }
   const conj = generateConjugations(verb);
+  console.log("conj", conj);
+
+  console.log("tense", tense);
+  console.log("pronoun", pronoun);
+  console.log("conj[tense][pronoun]", conj[tense][pronoun]);
   return conj[tense][pronoun];
 }
 

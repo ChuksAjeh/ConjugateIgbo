@@ -19,15 +19,15 @@ import { useTheme } from '@/components/ThemeProvider';
 import { styles } from './indexStyles';
 
 // Define type-safe tenses and pronouns
-const tenses: Tense[] = ['present', 'past', 'future', 'subjunctive'];
-const pronouns: Pronoun[] = ['m', 'i', 'o', 'anyi', 'unu', 'ha'];
+const tenses: Tense[] = ['present', 'past', 'future',];
+const pronouns: Pronoun[] = ['m', 'i', 'o', 'anyi', 'unu', 'wa'];
 const pronounLabels: Record<Pronoun, string> = {
   m: 'A/E… m (I)',
   i: 'I/Iyu (You)',
   o: 'Ọ (He/She/It)',
   anyi: 'Anyị (We)',
   unu: 'Unu (You all)',
-  ha: 'Wa (They)',
+  wa: 'Wa (They)',
 };
 
 export default function PracticeScreen() {
@@ -43,7 +43,7 @@ export default function PracticeScreen() {
   const { theme, isDark } = useTheme();
   const { statistics } = useProgress();
 
-  // Initialize with random verb
+  // Initialize with a random verb
   useEffect(() => {
     const loadRandomVerb = async () => {
       try {
@@ -57,7 +57,7 @@ export default function PracticeScreen() {
     
     loadRandomVerb();
     
-    // Cleanup function to prevent animation errors when component unmounts
+    // Cleanup function to prevent animation errors when the component unmounts
     return () => {
       // Stop any ongoing animations
       fadeAnim.stopAnimation();
@@ -122,7 +122,6 @@ export default function PracticeScreen() {
       case 'present': return '#3b82f6';
       case 'past': return '#10b981';
       case 'future': return '#f59e0b';
-      case 'subjunctive': return '#8b5cf6';
       default: return '#6b7280';
     }
   };
