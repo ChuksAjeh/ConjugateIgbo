@@ -4,11 +4,12 @@ import { IgboVerb } from '@/models/verb';
 export const offlineVerbs: IgboVerb[] = [
   {
     id: 'ije',
-    infinitive: 'ije',
-    meaning: 'to go',
+    igbo: 'ije',
+    english: 'to go',
     type: 'irregular',
-    frequency: 'high',
     difficulty: 'beginner',
+    // optional legacy label; backend uses freqRank instead
+    frequency: 'high',
     conjugations: {
       present: {
         m: 'ana m aga',
@@ -50,8 +51,8 @@ export const offlineVerbs: IgboVerb[] = [
   },
   {
     id: 'iri',
-    infinitive: 'iri',
-    meaning: 'to eat',
+    igbo: 'iri',
+    english: 'to eat',
     type: 'regular',
     frequency: 'high',
     difficulty: 'beginner',
@@ -96,8 +97,8 @@ export const offlineVerbs: IgboVerb[] = [
   },
   {
     id: 'ibia',
-    infinitive: 'ibia',
-    meaning: 'to come',
+    igbo: 'ibia',
+    english: 'to come',
     type: 'irregular',
     frequency: 'high',
     difficulty: 'beginner',
@@ -142,8 +143,8 @@ export const offlineVerbs: IgboVerb[] = [
   },
   {
     id: 'ikwu',
-    infinitive: 'ikwu',
-    meaning: 'to say/speak',
+    igbo: 'ikwu',
+    english: 'to say/speak',
     type: 'regular',
     frequency: 'high',
     difficulty: 'beginner',
@@ -188,8 +189,8 @@ export const offlineVerbs: IgboVerb[] = [
   },
   {
     id: 'ile',
-    infinitive: 'ile',
-    meaning: 'to see/look',
+    igbo: 'ile',
+    english: 'to see/look',
     type: 'regular',
     frequency: 'high',
     difficulty: 'beginner',
@@ -234,8 +235,8 @@ export const offlineVerbs: IgboVerb[] = [
   },
   {
     id: 'ime',
-    infinitive: 'ime',
-    meaning: 'to do/make',
+    igbo: 'ime',
+    english: 'to do/make',
     type: 'regular',
     frequency: 'high',
     difficulty: 'beginner',
@@ -280,8 +281,8 @@ export const offlineVerbs: IgboVerb[] = [
   },
   {
     id: 'inu',
-    infinitive: 'inu',
-    meaning: 'to drink',
+    igbo: 'inu',
+    english: 'to drink',
     type: 'regular',
     frequency: 'high',
     difficulty: 'beginner',
@@ -326,8 +327,8 @@ export const offlineVerbs: IgboVerb[] = [
   },
   {
     id: 'ira',
-    infinitive: 'ira',
-    meaning: 'to buy',
+    igbo: 'ira',
+    english: 'to buy',
     type: 'regular',
     frequency: 'medium',
     difficulty: 'beginner',
@@ -372,8 +373,8 @@ export const offlineVerbs: IgboVerb[] = [
   },
   {
     id: 'igu',
-    infinitive: 'igu',
-    meaning: 'to read/count',
+    igbo: 'igu',
+    english: 'to read/count',
     type: 'regular',
     frequency: 'medium',
     difficulty: 'intermediate',
@@ -418,8 +419,8 @@ export const offlineVerbs: IgboVerb[] = [
   },
   {
     id: 'ide',
-    infinitive: 'ide',
-    meaning: 'to write',
+    igbo: 'ide',
+    english: 'to write',
     type: 'regular',
     frequency: 'medium',
     difficulty: 'intermediate',

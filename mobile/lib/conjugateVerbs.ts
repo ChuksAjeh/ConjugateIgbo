@@ -2,7 +2,7 @@
 import { Conjugations, IgboVerb, Pronoun, Tense } from '@/models/verb';
 
 function getRoot(verb: IgboVerb): string {
-  const base = verb.rootForm || verb.infinitive || '';
+  const base = verb.rootForm || verb.igbo || '';
   return base.trim();
 }
 

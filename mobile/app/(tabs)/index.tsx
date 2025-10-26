@@ -48,6 +48,7 @@ export default function PracticeScreen() {
     const loadRandomVerb = async () => {
       try {
         const verb = await verbService.getRandomVerb();
+        console.log('Loaded random verb:', verb);
         setCurrentVerb(verb);
       } catch (error) {
         console.error('Error loading random verb:', error);
@@ -103,7 +104,7 @@ export default function PracticeScreen() {
 
   const handlePlayAudio = () => {
     // Audio playback would be implemented here
-    console.log('Playing audio for:', currentVerb?.infinitive);
+    console.log('Playing audio for:', currentVerb?.igbo);
   };
 
   const handleShowVerbDetails = () => {
@@ -152,12 +153,12 @@ export default function PracticeScreen() {
             <View style={[styles.card, { backgroundColor: theme.colors.surface }]}>
               {/* English meaning at top */}
               <Text style={[styles.englishMeaning, { color: theme.colors.textSecondary }]}>
-                {String(currentVerb.meaning)}
+                {String(currentVerb.english)}
               </Text>
 
               {/* Main Igbo verb */}
               <Text style={[styles.igboVerb, { color: theme.colors.text }]}>
-                {String(currentVerb.infinitive)}
+                {String(currentVerb.igbo)}
               </Text>
 
               {/* Tense badge */}
