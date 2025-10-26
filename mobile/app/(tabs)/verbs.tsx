@@ -14,7 +14,7 @@ import { useLocalSearchParams } from 'expo-router';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Search, Filter, Volume2, X, Book } from 'lucide-react-native';
-import { IgboVerb } from '@/data/igboVerbs';
+import { IgboVerb } from '@/models/verb';
 import { verbService } from '@/lib/verbService';
 import { useTheme } from '@/components/ThemeProvider';
 

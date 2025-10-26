@@ -1,52 +1,7 @@
-export interface IgboVerb {
-  id: string;
-  infinitive: string;
-  meaning: string;
-  type: 'regular' | 'irregular';
-  frequency: 'high' | 'medium' | 'low';
-  difficulty: 'beginner' | 'intermediate' | 'advanced';
-  conjugations: {
-    present: {
-      m: string;    // I
-      i: string;    // You (singular)
-      o: string;    // He/She/It
-      anyi: string; // We
-      unu: string;  // You (plural)
-      ha: string;   // They
-    };
-    past: {
-      m: string;
-      i: string;
-      o: string;
-      anyi: string;
-      unu: string;
-      ha: string;
-    };
-    future: {
-      m: string;
-      i: string;
-      o: string;
-      anyi: string;
-      unu: string;
-      ha: string;
-    };
-    subjunctive: {
-      m: string;
-      i: string;
-      o: string;
-      anyi: string;
-      unu: string;
-      ha: string;
-    };
-  };
-  examples?: {
-    igbo: string;
-    english: string;
-  }[];
-}
+import { IgboVerb } from '@/models/verb';
 
-// Core Igbo verbs database with authentic conjugations
-export const igboVerbs: IgboVerb[] = [
+// Minimal offline verb list (first 10), used as seed when no network/cache
+export const offlineVerbs: IgboVerb[] = [
   {
     id: 'ije',
     infinitive: 'ije',
@@ -509,34 +464,6 @@ export const igboVerbs: IgboVerb[] = [
   },
 ];
 
-// Utility functions for working with verbs
-export const getRandomVerb = (): IgboVerb => {
-  const randomIndex = Math.floor(Math.random() * igboVerbs.length);
-  return igboVerbs[randomIndex];
-};
-
-export const getVerbsByDifficulty = (difficulty: 'beginner' | 'intermediate' | 'advanced'): IgboVerb[] => {
-  return igboVerbs.filter(verb => verb.difficulty === difficulty);
-};
-
-export const getVerbsByFrequency = (frequency: 'high' | 'medium' | 'low'): IgboVerb[] => {
-  return igboVerbs.filter(verb => verb.frequency === frequency);
-};
-
-export const checkConjugation = (userAnswer: string, correctAnswer: string): boolean => {
-  // Remove extra spaces and convert to lowercase for comparison
-  const normalizedUser = userAnswer.trim().toLowerCase();
-  const normalizedCorrect = correctAnswer.trim().toLowerCase();
-  
-  // Allow for minor variations in spacing and tone marks
-  return normalizedUser === normalizedCorrect || 
-         normalizedUser.replace(/\s+/g, ' ') === normalizedCorrect.replace(/\s+/g, ' ');
-};
-
-export const searchVerbs = (query: string): IgboVerb[] => {
-  const lowercaseQuery = query.toLowerCase();
-  return igboVerbs.filter(verb => 
-    verb.infinitive.toLowerCase().includes(lowercaseQuery) ||
-    verb.meaning.toLowerCase().includes(lowercaseQuery)
-  );
-};
+// Note: This file acts solely as the offline seed store for verbs.
+// If the app cannot fetch from the backend or has no cached verbs,
+// `verbService` will seed from this `offlineVerbs` list.

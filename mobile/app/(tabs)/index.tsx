@@ -9,8 +9,9 @@ import {
 } from 'react-native';
 import { RotateCcw, Volume2, FileText } from 'lucide-react-native';
 import { router } from 'expo-router';
-import { IgboVerb } from '@/data/igboVerbs';
+import { IgboVerb, Tense, Pronoun } from '@/models/verb';
 import { verbService } from '@/lib/verbService';
+import { getConjugatedForm } from '@/lib/conjugateVerbs';
 import { useSettings } from '@/hooks/useSettings';
 import { useProgress } from '@/hooks/useProgress';
 import { usePurchases } from '@/hooks/usePurchases';
@@ -18,9 +19,6 @@ import { useTheme } from '@/components/ThemeProvider';
 import { styles } from './indexStyles';
 
 // Define type-safe tenses and pronouns
-type Tense = 'present' | 'past' | 'future' | 'subjunctive';
-type Pronoun = 'm' | 'i' | 'o' | 'anyi' | 'unu' | 'ha';
-
 const tenses: Tense[] = ['present', 'past', 'future', 'subjunctive'];
 const pronouns: Pronoun[] = ['m', 'i', 'o', 'anyi', 'unu', 'ha'];
 const pronounLabels: Record<Pronoun, string> = {
@@ -66,8 +64,8 @@ export default function PracticeScreen() {
     };
   }, []);
 
-  // Type-safe access to conjugations
-  const correctAnswer = currentVerb?.conjugations[selectedTense]?.[selectedPronoun] || 'N/A';
+  // Type-safe access to conjugations (rule-based, with legacy fallback)
+  const correctAnswer = currentVerb ? getConjugatedForm(currentVerb, selectedTense, selectedPronoun) : 'N/A';
 
   const handleRevealAnswer = () => {
     setShowAnswer(true);
