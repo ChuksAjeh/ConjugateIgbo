@@ -3,7 +3,8 @@ import { IgboVerb, VerbDifficulty, VerbFrequency, VerbType } from '@/models/verb
 import { offlineVerbs } from '@/data/igboVerbs';
 import { getItem, setItem } from '@/lib/storage';
 
-const VERBS_ENDPOINT = process.env.VERBS_ENDPOINT || process.env.EXPO_PUBLIC_VERBS_ENDPOINT || '';
+const BASE_URL = process.env.VERBS_ENDPOINT || process.env.EXPO_PUBLIC_VERBS_ENDPOINT || '';
+const VERBS_ENDPOINT = BASE_URL ? `${BASE_URL.replace(/\/$/, '')}/delta-igbo/verbs/all` : '';
 const VERBS_CACHE_KEY = 'VERBS_CACHE_V1';
 
 class VerbService {
@@ -13,7 +14,7 @@ class VerbService {
   async initialize(): Promise<void> {
     if (this.isInitialized) return;
 
-    // 1) Load from persistent cache if available
+    // 1) Load from a persistent cache if available
     try {
       const cached = await getItem(VERBS_CACHE_KEY);
       if (cached) {
@@ -35,6 +36,8 @@ class VerbService {
         const data = (await res.json()) as IgboVerb[];
         if (Array.isArray(data) && data.length > 0) {
           this.cache = data;
+          console.log('VerbService cache initialized:', this.cache);
+
           await setItem(VERBS_CACHE_KEY, JSON.stringify(data));
           console.log(`Verb service initialized from endpoint with ${data.length} verbs (cached)`);
         }
