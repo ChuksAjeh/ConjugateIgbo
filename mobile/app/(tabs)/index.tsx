@@ -22,12 +22,12 @@ import { styles } from './indexStyles';
 const tenses: Tense[] = ['present', 'past', 'future', 'subjunctive'];
 const pronouns: Pronoun[] = ['m', 'i', 'o', 'anyi', 'unu', 'ha'];
 const pronounLabels: Record<Pronoun, string> = {
-  m: 'M (I)',
-  i: 'I (You)',
-  o: 'O (He/She)',
+  m: 'A/E… m (I)',
+  i: 'I/Iyu (You)',
+  o: 'Ọ (He/She/It)',
   anyi: 'Anyị (We)',
   unu: 'Unu (You all)',
-  ha: 'Ha (They)',
+  ha: 'Wa (They)',
 };
 
 export default function PracticeScreen() {

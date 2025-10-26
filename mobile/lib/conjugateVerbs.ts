@@ -6,18 +6,44 @@ function getRoot(verb: IgboVerb): string {
   return base.trim();
 }
 
+// Determine vowel warmony prefix based on stem content
+// Returns 'a' if stem contains 'a' or accented vowels (ọ, ụ, ị)
+// Returns 'e' otherwise
+function getVowelharmonyPronoun(stem: string): 'A' | 'E' {
+  const wasAorAccents = /[aọụịỌỤỊ]/.test(stem);
+  return wasAorAccents ? 'A' : 'E';
+}
+
+// Remove 'i' prefix from verb root
+function removePrefixI(root: string): string {
+  return root.startsWith('i') ||root.startsWith('ị') ? root.substring(1) : root;
+}
+
+// Determine vowel warmony prefix based on stem content
+// Returns 'a' if stem contains 'a' or accented vowels (ọ, ụ, ị)
+// Returns 'e' otherwise
+function getVowelharmonyPrefix(stem: string): 'a' | 'e' {
+  const wasAorAccents = /[aọụịỌỤỊ]/.test(stem);
+  return wasAorAccents ? 'a' : 'e';
+}
+
 function applyPresentRule(root: string, _pronoun: Pronoun): string {
   if (!root) return '';
-  return root.startsWith('i') ? root.substring(1) : root;
+  
+  const stem = removePrefixI(root);
+  console.log("stem",stem);
+  const prefix = getVowelharmonyPrefix(stem);
+  console.log("prefix", prefix);
+
+  console.log(`${prefix}${stem}`);
+  return `${prefix}${stem}`;
 }
 
 function applyPastRule(root: string, _pronoun: Pronoun): string {
   if (!root) return '';
-  if (root.startsWith('i')) {
-    const stem = root.substring(1);
-    return stem.replace(/^([aeiou])/, (match) => match);
-  }
-  return root;
+  const stem = removePrefixI(root);
+
+  return stem;
 }
 
 function applyFutureRule(root: string, pronoun: Pronoun): string {
@@ -35,40 +61,42 @@ function applySubjunctiveRule(root: string, _pronoun: Pronoun): string {
 
 export function generateConjugations(verb: IgboVerb): Conjugations {
   const root = getRoot(verb);
-
+  const stem = removePrefixI(root);
+  const vowelPrefix = getVowelharmonyPronoun(stem);
+  
   return {
     present: {
-      m: `ana m ${applyPresentRule(root, 'm')}`,
-      i: `ana i ${applyPresentRule(root, 'i')}`,
-      o: `ana o ${applyPresentRule(root, 'o')}`,
-      anyi: `ana anyi ${applyPresentRule(root, 'anyi')}`,
-      unu: `ana unu ${applyPresentRule(root, 'unu')}`,
-      ha: `ana ha ${applyPresentRule(root, 'ha')}`,
+      m: `${vowelPrefix} na m ${applyPresentRule(root, 'm')}`,
+      i: `I na ${applyPresentRule(root, 'i')}`,
+      o: `Ọ na ${applyPresentRule(root, 'o')}`,
+      anyi: `Ànyị na ${applyPresentRule(root, 'anyi')}`,
+      unu: `Unu na ${applyPresentRule(root, 'unu')}`,
+      wa: `Wa na ${applyPresentRule(root, 'wa')}`,
     },
     past: {
-      m: `${applyPastRule(root, 'm')} m`,
-      i: `${applyPastRule(root, 'i')} i`,
-      o: `${applyPastRule(root, 'o')} o`,
-      anyi: `${applyPastRule(root, 'anyi')} anyi`,
-      unu: `${applyPastRule(root, 'unu')} unu`,
-      ha: `${applyPastRule(root, 'ha')} ha`,
+      m: `${vowelPrefix} ${applyPastRule(root, 'm')} m`,
+      i: `I ${applyPastRule(root, 'i')}`,
+      o: `Ọ ${applyPastRule(root, 'o')}`,
+      anyi: `Ànyị ${applyPastRule(root, 'anyi')}`,
+      unu: `Unu ${applyPastRule(root, 'unu')}`,
+      wa: `Wa ${applyPastRule(root, 'wa')}`,
     },
     future: {
-      m: `aga m ${applyFutureRule(root, 'm')}`,
-      i: `aga i ${applyFutureRule(root, 'i')}`,
-      o: `ga o ${applyFutureRule(root, 'o')}`,
-      anyi: `aga anyi ${applyFutureRule(root, 'anyi')}`,
-      unu: `aga unu ${applyFutureRule(root, 'unu')}`,
-      ha: `ga ha ${applyFutureRule(root, 'ha')}`,
+      m: `M ga ${applyFutureRule(root, 'm')}`,
+      i: `I ga ${applyFutureRule(root, 'i')}`,
+      o: `Ọ ga${applyFutureRule(root, 'o')}`,
+      anyi: `Ànyị ga ${applyFutureRule(root, 'anyi')}`,
+      unu: `Unu ga ${applyFutureRule(root, 'unu')}`,
+      wa: `Wa ga ${applyFutureRule(root, 'wa')}`,
     },
-    subjunctive: {
-      m: `ka m ${applySubjunctiveRule(root, 'm')}`,
-      i: `ka i ${applySubjunctiveRule(root, 'i')}`,
-      o: `ka o ${applySubjunctiveRule(root, 'o')}`,
-      anyi: `ka anyi ${applySubjunctiveRule(root, 'anyi')}`,
-      unu: `ka unu ${applySubjunctiveRule(root, 'unu')}`,
-      ha: `ka ha ${applySubjunctiveRule(root, 'ha')}`,
-    },
+    // subjunctive: {
+    // //   m: `ka m ${applySubjunctiveRule(root, 'm')}`,
+    // //   i: `ka i ${applySubjunctiveRule(root, 'i')}`,
+    // //   o: `ka o ${applySubjunctiveRule(root, 'o')}`,
+    // //   anyi: `ka anyi ${applySubjunctiveRule(root, 'anyi')}`,
+    // //   unu: `ka unu ${applySubjunctiveRule(root, 'unu')}`,
+    // //   wa: `ka wa ${applySubjunctiveRule(root, 'wa')}`,
+    // },
   };
 }
 

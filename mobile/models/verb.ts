@@ -9,7 +9,7 @@ export interface VerbDTO {
 }
 
 export type Tense = 'present' | 'past' | 'future' | 'subjunctive';
-export type Pronoun = 'm' | 'i' | 'o' | 'anyi' | 'unu' | 'ha';
+export type Pronoun = 'm' | 'i' | 'o' | 'anyi' | 'unu' | 'wa';
 
 export type VerbType = 'regular' | 'irregular';
 export type VerbFrequency = 'high' | 'medium' | 'low';
@@ -19,7 +19,7 @@ export interface Conjugations {
   present: Record<Pronoun, string>;
   past: Record<Pronoun, string>;
   future: Record<Pronoun, string>;
-  subjunctive: Record<Pronoun, string>;
+  // subjunctive: Record<Pronoun, string>;
 }
 
 export interface ExamplePair {
