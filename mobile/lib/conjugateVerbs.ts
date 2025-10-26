@@ -102,11 +102,7 @@ export function getConjugatedForm(verb: IgboVerb, tense: Tense, pronoun: Pronoun
     return verb.conjugations[tense][pronoun];
   }
   const conj = generateConjugations(verb);
-  console.log("conj", conj);
 
-  console.log("tense", tense);
-  console.log("pronoun", pronoun);
-  console.log("conj[tense][pronoun]", conj[tense][pronoun]);
   return conj[tense][pronoun];
 }
 
