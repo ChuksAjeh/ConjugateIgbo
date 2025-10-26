@@ -29,6 +29,12 @@ class VerbController {
         return service.list(dialectEnum(dialect), limit, search);
     }
 
+    // New endpoint to return ALL verbs for the given dialect (no limit)
+    @GetMapping("/{dialect}/verbs/all")
+    List<VerbDTO> listAll(@PathVariable String dialect) {
+        return service.listAll(dialectEnum(dialect));
+    }
+
     @GetMapping("/{dialect}/verbs/{id}")
     VerbDTO one(@PathVariable String dialect, @PathVariable long id) {
         return service.one(dialectEnum(dialect), id);
@@ -49,9 +55,10 @@ class VerbController {
     }
 
     private Dialect dialectEnum(String s) {
-        return switch (s.toLowerCase()) {
-            case "delta-igbo" -> Dialect.DELTA_IGBO;
-            case "central-igbo" -> Dialect.CENTRAL_IGBO;
+        var key = s.toLowerCase();
+        return switch (key) {
+            case "delta-igbo", "delta_igbo", "deltaigbo" -> Dialect.DELTA_IGBO;
+            case "central-igbo", "central_igbo", "centraligbo" -> Dialect.CENTRAL_IGBO;
             default -> throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Unknown dialect");
         };
     }

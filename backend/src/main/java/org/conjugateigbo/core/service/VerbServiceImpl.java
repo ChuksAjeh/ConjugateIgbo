@@ -39,6 +39,13 @@ public class VerbServiceImpl implements VerbService {
                 rs.getLong("id"), rs.getString("igbo"), rs.getString("english"), rs.getObject("freq_rank", Integer.class)));
     }
 
+    public List<VerbDTO> listAll(Dialect d) {
+        var table = TABLE.get(d);
+        var sql = "select id, igbo, english, freq_rank from " + table + " order by coalesce(freq_rank, 999999), igbo";
+        return jdbc.query(sql, Map.of(), (rs, i) -> new VerbDTO(
+                rs.getLong("id"), rs.getString("igbo"), rs.getString("english"), rs.getObject("freq_rank", Integer.class)));
+    }
+
     public VerbDTO one(Dialect d, long id) {
         var table = TABLE.get(d);
         return jdbc.queryForObject("select id, igbo, english, freq_rank from " + table + " where id=:id",

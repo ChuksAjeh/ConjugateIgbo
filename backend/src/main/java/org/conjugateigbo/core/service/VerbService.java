@@ -14,6 +14,9 @@ public interface VerbService {
 
     List<VerbDTO> list(Dialect d, int limit, String search);
 
+    // Return all verbs for a dialect (no limit)
+    List<VerbDTO> listAll(Dialect d);
+
     VerbDTO one(Dialect d, long id);
 
     Optional<AudioDTO> audioMeta(Dialect d, long id);

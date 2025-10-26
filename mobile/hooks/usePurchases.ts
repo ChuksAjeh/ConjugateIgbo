@@ -1,28 +1,8 @@
 import { useState, useEffect } from 'react';
+import { PurchaserInfo } from '@/hooks/models/hooksInterfaces';
+import { PurchasesPackage } from 'react-native-purchases';
 
-// RevenueCat types (these would come from react-native-purchases in a real implementation)
-interface PurchaserInfo {
-  entitlements: {
-    active: {
-      [key: string]: {
-        identifier: string;
-        isActive: boolean;
-        productIdentifier: string;
-      };
-    };
-  };
-}
 
-interface PurchasesPackage {
-  identifier: string;
-  packageType: string;
-  product: {
-    identifier: string;
-    price: number;
-    priceString: string;
-    currencyCode: string;
-  };
-}
 
 // Mock RevenueCat for web/development
 const MockPurchases = {

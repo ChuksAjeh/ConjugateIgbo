@@ -1,31 +1,8 @@
 import { useState, useEffect } from 'react';
-
-export interface VerbProgress {
-  verbId: string;
-  totalAttempts: number;
-  correctAttempts: number;
-  lastPracticed: string;
-  difficulty: 'beginner' | 'intermediate' | 'advanced';
-}
+import { ProgressStatistics } from '@/hooks/models/hooksInterfaces';
+import { VerbProgress } from '@/hooks/models/hooksInterfaces';
 
 
-export interface ProgressStatistics {
-  totalPracticed: number;
-  currentStreak: number;
-  totalStudyTime: number; // in hours
-  tenseProgress: {
-    present: number;
-    past: number;
-    future: number;
-    subjunctive: number;
-  };
-  weeklyProgress: {
-    day: string;
-    practiced: number;
-  }[];
-  dailyGoalProgress: number;
-  lastVisitDate: string;
-}
 
 const PROGRESS_STORAGE_KEY = 'igbo_verb_progress';
 const STATISTICS_STORAGE_KEY = 'igbo_verb_statistics';
