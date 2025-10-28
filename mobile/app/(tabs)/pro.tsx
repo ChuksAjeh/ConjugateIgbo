@@ -20,6 +20,43 @@ export default function ProScreen() {
   const { isProUser, isLoading, purchasePro, restorePurchases } = usePurchases();
   const styles = createStyles(theme, isDark);
 
+  // Pattern background (computed once)
+  const patternBackground = useMemo(() => {
+    const { width, height } = Dimensions.get('window');
+    const patterns = [] as React.ReactNode[];
+    const patternSize = 40;
+    const spacing = 60;
+    const maxElements = 100; // Prevent too many elements
+
+    const cols = Math.min(Math.ceil(width / spacing) + 1, Math.ceil(Math.sqrt(maxElements)));
+    const rows = Math.min(Math.ceil((height * 0.4) / spacing) + 1, Math.ceil(maxElements / cols));
+
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < cols; col++) {
+        const x = col * spacing - spacing / 2;
+        const y = row * spacing - spacing / 2;
+
+        patterns.push(
+          <View
+            key={`${row}-${col}`}
+            style={[
+              styles.patternElement,
+              {
+                left: x,
+                top: y,
+                width: patternSize,
+                height: patternSize,
+              },
+            ]}
+          >
+            <Text style={styles.patternIcon}>🦁</Text>
+          </View>
+        );
+      }
+    }
+    return patterns;
+  }, []);
+
   const showAlert = (title: string, message: string, buttonText = 'OK') => {
     Alert.alert(title, message, [{ text: buttonText, style: 'default' }]);
   };
@@ -60,7 +97,7 @@ export default function ProScreen() {
             style={styles.header}
           >
             <Crown size={48} color="white" />
-            <Text style={styles.headerTitle}>You're Pro!</Text>
+            <Text style={styles.headerTitle}>You&apos;re Pro!</Text>
             <Text style={styles.headerSubtitle}>
               All features unlocked
             </Text>
@@ -85,43 +122,6 @@ export default function ProScreen() {
       </SafeAreaView>
     );
   }
-
-  // Pattern background (computed once)
-  const patternBackground = useMemo(() => {
-    const { width, height } = Dimensions.get('window');
-    const patterns = [] as React.ReactNode[];
-    const patternSize = 40;
-    const spacing = 60;
-    const maxElements = 100; // Prevent too many elements
-
-    const cols = Math.min(Math.ceil(width / spacing) + 1, Math.ceil(Math.sqrt(maxElements)));
-    const rows = Math.min(Math.ceil((height * 0.4) / spacing) + 1, Math.ceil(maxElements / cols));
-
-    for (let row = 0; row < rows; row++) {
-      for (let col = 0; col < cols; col++) {
-        const x = col * spacing - spacing / 2;
-        const y = row * spacing - spacing / 2;
-
-        patterns.push(
-          <View
-            key={`${row}-${col}`}
-            style={[
-              styles.patternElement,
-              {
-                left: x,
-                top: y,
-                width: patternSize,
-                height: patternSize,
-              },
-            ]}
-          >
-            <Text style={styles.patternIcon}>🦁</Text>
-          </View>
-        );
-      }
-    }
-    return patterns;
-  }, []);
 
   return (
     <SafeAreaView style={styles.container}>

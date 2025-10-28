@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+// import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ProgressStatistics } from '@/hooks/models/hooksInterfaces';
 import { VerbProgress } from '@/hooks/models/hooksInterfaces';
 

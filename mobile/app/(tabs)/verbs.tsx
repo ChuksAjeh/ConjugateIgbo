@@ -120,8 +120,7 @@ export default function VerbsScreen() {
           </View>
         </View>
         
-        <Text style={[styles.verbMeaning, { color: theme.colors.textSecondary }]}>"{item.english}"</Text>
-        
+        <Text style={[styles.verbMeaning, { color: theme.colors.textSecondary }]}>&ldquo;{item.english}&rdquo;</Text>
         <View style={styles.verbMeta}>
           <Text style={[styles.verbType, { color: theme.colors.textSecondary }]}>{item.type}</Text>
           <Text style={[styles.verbDifficulty, { color: theme.colors.textSecondary }]}>{item.difficulty}</Text>
