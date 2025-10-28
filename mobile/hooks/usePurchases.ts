@@ -1,28 +1,8 @@
 import { useState, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { PurchaserInfo, PurchasesPackage } from '@/hooks/models/hooksInterfaces';
 
-// RevenueCat types (these would come from react-native-purchases in a real implementation)
-interface PurchaserInfo {
-  entitlements: {
-    active: {
-      [key: string]: {
-        identifier: string;
-        isActive: boolean;
-        productIdentifier: string;
-      };
-    };
-  };
-}
 
-interface PurchasesPackage {
-  identifier: string;
-  packageType: string;
-  product: {
-    identifier: string;
-    price: number;
-    priceString: string;
-    currencyCode: string;
-  };
-}
 
 // Mock RevenueCat for web/development
 const MockPurchases = {
@@ -135,6 +115,8 @@ export const usePurchases = () => {
     }
   };
 
+  const PURCHASED_KEY = 'igbo_pro_purchased';
+
   const purchasePro = async (): Promise<boolean> => {
     try {
       setIsLoading(true);
@@ -151,10 +133,10 @@ export const usePurchases = () => {
       
       // Store purchase status (in a real app, RevenueCat handles this)
       if (isPro) {
-        await AsyncStorage.setItem('igbo_pro_purchased', 'true');
+        await AsyncStorage.setItem(PURCHASED_KEY, 'true');
       }
       
-      return false;
+      return isPro;
     } catch (error) {
       console.error('Purchase failed:', error);
       return false;
@@ -188,50 +170,4 @@ export const usePurchases = () => {
     purchasePro,
     restorePurchases,
   };
-};
-
-// Mock AsyncStorage for cross-platform compatibility
-// Use in-memory storage for React Native environments
-const memoryStorage: Record<string, string> = {};
-
-const AsyncStorage = {
-  getItem: async (key: string): Promise<string | null> => {
-    try {
-      // Try to use localStorage (for web)
-      if (typeof localStorage !== 'undefined') {
-        return localStorage.getItem(key);
-      }
-      // Fall back to in-memory storage (for React Native)
-      return memoryStorage[key] || null;
-    } catch {
-      // Fall back to in-memory storage
-      return memoryStorage[key] || null;
-    }
-  },
-  setItem: async (key: string, value: string): Promise<void> => {
-    try {
-      // Try to use localStorage (for web)
-      if (typeof localStorage !== 'undefined') {
-        localStorage.setItem(key, value);
-      }
-      // Also store in memory (for React Native)
-      memoryStorage[key] = value;
-    } catch {
-      // Fall back to in-memory storage
-      memoryStorage[key] = value;
-    }
-  },
-  removeItem: async (key: string): Promise<void> => {
-    try {
-      // Try to use localStorage (for web)
-      if (typeof localStorage !== 'undefined') {
-        localStorage.removeItem(key);
-      }
-      // Also remove from memory (for React Native)
-      delete memoryStorage[key];
-    } catch {
-      // Fall back to in-memory storage
-      delete memoryStorage[key];
-    }
-  },
 };

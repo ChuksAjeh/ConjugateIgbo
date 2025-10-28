@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   View,
   Text,
@@ -14,35 +14,63 @@ import { Crown, Check } from 'lucide-react-native';
 import { usePurchases } from '@/hooks/usePurchases';
 import { useTheme } from '@/components/ThemeProvider';
 import { createStyles } from './proStyles';
-import { useMemo } from 'react';
 
 export default function ProScreen() {
   const { theme, isDark } = useTheme();
   const { isProUser, isLoading, purchasePro, restorePurchases } = usePurchases();
   const styles = createStyles(theme, isDark);
 
+  // Pattern background (computed once)
+  const patternBackground = useMemo(() => {
+    const { width, height } = Dimensions.get('window');
+    const patterns = [] as React.ReactNode[];
+    const patternSize = 40;
+    const spacing = 60;
+    const maxElements = 100; // Prevent too many elements
+
+    const cols = Math.min(Math.ceil(width / spacing) + 1, Math.ceil(Math.sqrt(maxElements)));
+    const rows = Math.min(Math.ceil((height * 0.4) / spacing) + 1, Math.ceil(maxElements / cols));
+
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < cols; col++) {
+        const x = col * spacing - spacing / 2;
+        const y = row * spacing - spacing / 2;
+
+        patterns.push(
+          <View
+            key={`${row}-${col}`}
+            style={[
+              styles.patternElement,
+              {
+                left: x,
+                top: y,
+                width: patternSize,
+                height: patternSize,
+              },
+            ]}
+          >
+            <Text style={styles.patternIcon}>🦁</Text>
+          </View>
+        );
+      }
+    }
+    return patterns;
+  }, []);
+
+  const showAlert = (title: string, message: string, buttonText = 'OK') => {
+    Alert.alert(title, message, [{ text: buttonText, style: 'default' }]);
+  };
+
   const handlePurchase = async () => {
     try {
       const success = await purchasePro();
       if (success) {
-        Alert.alert(
-          'Purchase Successful!',
-          'Welcome to Conjugate Igbo Pro! All features are now unlocked.',
-          [{ text: 'Awesome!', style: 'default' }]
-        );
+        showAlert('Purchase Successful!', 'Welcome to Conjugate Igbo Pro! All features are now unlocked.', 'Awesome!');
       } else {
-        Alert.alert(
-          'Purchase Failed',
-          'Something went wrong with your purchase. Please try again.',
-          [{ text: 'OK', style: 'default' }]
-        );
+        showAlert('Purchase Failed', 'Something went wrong with your purchase. Please try again.');
       }
     } catch (error) {
-      Alert.alert(
-        'Purchase Error',
-        'Unable to complete purchase. Please check your connection and try again.',
-        [{ text: 'OK', style: 'default' }]
-      );
+      showAlert('Purchase Error', 'Unable to complete purchase. Please check your connection and try again.');
     }
   };
 
@@ -50,24 +78,12 @@ export default function ProScreen() {
     try {
       const success = await restorePurchases();
       if (success) {
-        Alert.alert(
-          'Purchases Restored!',
-          'Your Pro features have been restored successfully.',
-          [{ text: 'Great!', style: 'default' }]
-        );
+        showAlert('Purchases Restored!', 'Your Pro features have been restored successfully.', 'Great!');
       } else {
-        Alert.alert(
-          'No Purchases Found',
-          'We couldn\'t find any previous purchases to restore.',
-          [{ text: 'OK', style: 'default' }]
-        );
+        showAlert('No Purchases Found', "We couldn't find any previous purchases to restore.");
       }
     } catch (error) {
-      Alert.alert(
-        'Restore Failed',
-        'Unable to restore purchases. Please try again later.',
-        [{ text: 'OK', style: 'default' }]
-      );
+      showAlert('Restore Failed', 'Unable to restore purchases. Please try again later.');
     }
   };
 
@@ -81,7 +97,7 @@ export default function ProScreen() {
             style={styles.header}
           >
             <Crown size={48} color="white" />
-            <Text style={styles.headerTitle}>You're Pro!</Text>
+            <Text style={styles.headerTitle}>You&apos;re Pro!</Text>
             <Text style={styles.headerSubtitle}>
               All features unlocked
             </Text>
@@ -107,48 +123,6 @@ export default function ProScreen() {
     );
   }
 
-  // Create cat illustration with pattern background
-
-
-  const createPatternBackground = () => {
-    const { width, height } = Dimensions.get('window');
-
-    return useMemo(() => {
-      const patterns = [];
-      const patternSize = 40;
-      const spacing = 60;
-      const maxElements = 100; // Prevent too many elements
-
-      const cols = Math.min(Math.ceil(width / spacing) + 1, Math.ceil(Math.sqrt(maxElements)));
-      const rows = Math.min(Math.ceil((height * 0.4) / spacing) + 1, Math.ceil(maxElements / cols));
-
-      for (let row = 0; row < rows; row++) {
-        for (let col = 0; col < cols; col++) {
-          const x = col * spacing - spacing / 2;
-          const y = row * spacing - spacing / 2;
-
-          patterns.push(
-            <View
-              key={`${row}-${col}`}
-              style={[
-                styles.patternElement,
-                {
-                  left: x,
-                  top: y,
-                  width: patternSize,
-                  height: patternSize,
-                },
-              ]}
-            >
-              <Text style={styles.patternIcon}>🦁</Text>
-            </View>
-          );
-        }
-      }
-      return patterns;
-    }, []);
-  };
-
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
@@ -158,7 +132,7 @@ export default function ProScreen() {
           style={styles.topSection}
         >
           <View style={styles.patternContainer}>
-            {createPatternBackground()}
+            {patternBackground}
           </View>
           
           {/* Cat Illustration */}

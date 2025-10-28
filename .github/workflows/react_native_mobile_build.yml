@@ -38,7 +38,7 @@ jobs:
       - name: Typecheck (if tsconfig.json exists)
         run: |
           if [ -f tsconfig.json ]; then
-            npx -y typescript --noEmit
+            npx -y tsc --noEmit
           else
             echo "No tsconfig.json; skipping typecheck."
           fi

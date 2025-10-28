@@ -16,6 +16,7 @@ public class CorsConfig {
                         .allowedOrigins(
                                 "http://localhost:5173",  // Local Dev UI
                                 "http://localhost:8080",  // Local Dev UI
+                                "http://localhost:8081",  // Local Dev UI
                                 "https://lcp-ui-staging.up.railway.app",  // Staging UI
                                 "https://lcp-ui-prod.up.railway.app",  // Production UI
                                 "https://www.langcurate.com"

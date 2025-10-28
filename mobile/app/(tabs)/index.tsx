@@ -1,36 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  View, 
-  Text, 
-  TouchableOpacity, 
+import {
+  View,
+  Text,
+  TouchableOpacity,
   Animated,
   SafeAreaView,
-  ScrollView,
+  ScrollView
 } from 'react-native';
 import { RotateCcw, Volume2, FileText } from 'lucide-react-native';
 import { router } from 'expo-router';
-import { IgboVerb } from '@/data/igboVerbs';
+import { IgboVerb, Tense, Pronoun } from '@/models/verb';
 import { verbService } from '@/lib/verbService';
+import { getConjugatedForm } from '@/lib/conjugateVerbs';
 import { useSettings } from '@/hooks/useSettings';
 import { useProgress } from '@/hooks/useProgress';
 import { usePurchases } from '@/hooks/usePurchases';
 import { useTheme } from '@/components/ThemeProvider';
 import { styles } from './indexStyles';
+import { pronounLabels, pronouns, tenses } from '@/app/(tabs)/models/interfaces';
 
 // Define type-safe tenses and pronouns
-type Tense = 'present' | 'past' | 'future' | 'subjunctive';
-type Pronoun = 'm' | 'i' | 'o' | 'anyi' | 'unu' | 'ha';
 
-const tenses: Tense[] = ['present', 'past', 'future', 'subjunctive'];
-const pronouns: Pronoun[] = ['m', 'i', 'o', 'anyi', 'unu', 'ha'];
-const pronounLabels: Record<Pronoun, string> = {
-  m: 'M (I)',
-  i: 'I (You)',
-  o: 'O (He/She)',
-  anyi: 'Anyị (We)',
-  unu: 'Unu (You all)',
-  ha: 'Ha (They)',
-};
 
 export default function PracticeScreen() {
   const [currentVerb, setCurrentVerb] = useState<IgboVerb | null>(null);
@@ -38,27 +28,27 @@ export default function PracticeScreen() {
   const [selectedPronoun, setSelectedPronoun] = useState<Pronoun>(() => pronouns[Math.floor(Math.random() * pronouns.length)]);
   const [showAnswer, setShowAnswer] = useState(false);
   const [fadeAnim] = useState(new Animated.Value(0));
-  
-  const { settings } = useSettings();
-  const { updateProgress } = useProgress();
-  const { isProUser } = usePurchases();
-  const { theme, isDark } = useTheme();
-  const { statistics } = useProgress();
 
-  // Initialize with random verb
+  const { settings } = useSettings();
+  const { updateProgress, statistics } = useProgress();
+  const { isProUser } = usePurchases();
+  const { theme } = useTheme();
+
+  // Initialize with a random verb
   useEffect(() => {
     const loadRandomVerb = async () => {
       try {
         const verb = await verbService.getRandomVerb();
+        console.log('Loaded random verb:', verb);
         setCurrentVerb(verb);
       } catch (error) {
         console.error('Error loading random verb:', error);
       }
     };
-    
+
     loadRandomVerb();
-    
-    // Cleanup function to prevent animation errors when component unmounts
+
+    // Cleanup function to prevent animation errors when the component unmounts
     return () => {
       // Stop any ongoing animations
       fadeAnim.stopAnimation();
@@ -66,19 +56,20 @@ export default function PracticeScreen() {
     };
   }, []);
 
-  // Type-safe access to conjugations
-  const correctAnswer = currentVerb?.conjugations[selectedTense]?.[selectedPronoun] || 'N/A';
+  // Type-safe access to conjugations (rule-based, with legacy fallback)
+  const correctAnswer = currentVerb ? getConjugatedForm(currentVerb, selectedTense, selectedPronoun) : 'N/A';
+  console.log('Correct answer:', correctAnswer);
 
   const handleRevealAnswer = () => {
     setShowAnswer(true);
     if (currentVerb) {
       updateProgress(currentVerb.id, true);
     }
-    
+
     Animated.timing(fadeAnim, {
       toValue: 1,
       duration: 300,
-      useNativeDriver: true,
+      useNativeDriver: true
     }).start();
   };
 
@@ -90,7 +81,7 @@ export default function PracticeScreen() {
       console.error('Error loading next verb:', error);
       return;
     }
-    
+
     // If user is pro, allow all tenses, otherwise limit to present and past
     const availableTenses = isProUser ? tenses : tenses.slice(0, 2);
     // Type assertion to ensure we're getting a valid Tense
@@ -105,7 +96,7 @@ export default function PracticeScreen() {
 
   const handlePlayAudio = () => {
     // Audio playback would be implemented here
-    console.log('Playing audio for:', currentVerb?.infinitive);
+    console.log('Playing audio for:', currentVerb?.igbo);
   };
 
   const handleShowVerbDetails = () => {
@@ -120,11 +111,14 @@ export default function PracticeScreen() {
 
   const getTenseBadgeColor = (tense: Tense) => {
     switch (tense) {
-      case 'present': return '#3b82f6';
-      case 'past': return '#10b981';
-      case 'future': return '#f59e0b';
-      case 'subjunctive': return '#8b5cf6';
-      default: return '#6b7280';
+      case 'present':
+        return '#3b82f6';
+      case 'past':
+        return '#10b981';
+      case 'future':
+        return '#f59e0b';
+      default:
+        return '#6b7280';
     }
   };
 
@@ -142,9 +136,13 @@ export default function PracticeScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
       {/* Daily Goal Progress Bar */}
-      <View style={[styles.progressContainer, { backgroundColor: theme.colors.background, borderBottomColor: theme.colors.border }]}>
+      <View style={[styles.progressContainer, {
+        backgroundColor: theme.colors.background,
+        borderBottomColor: theme.colors.border
+      }]}>
         <Text style={[styles.progressTitle, { color: theme.colors.textSecondary }]}>Daily goal</Text>
-        <Text style={[styles.progressCount, { color: theme.colors.textSecondary }]}>{String(statistics.dailyGoalProgress)} / {String(settings.dailyGoal)}</Text>
+        <Text
+          style={[styles.progressCount, { color: theme.colors.textSecondary }]}>{String(statistics.dailyGoalProgress)} / {String(settings.dailyGoal)}</Text>
       </View>
 
       <View style={styles.content}>
@@ -154,12 +152,12 @@ export default function PracticeScreen() {
             <View style={[styles.card, { backgroundColor: theme.colors.surface }]}>
               {/* English meaning at top */}
               <Text style={[styles.englishMeaning, { color: theme.colors.textSecondary }]}>
-                {String(currentVerb.meaning)}
+                {String(currentVerb.english)}
               </Text>
 
               {/* Main Igbo verb */}
               <Text style={[styles.igboVerb, { color: theme.colors.text }]}>
-                {String(currentVerb.infinitive)}
+                {String(currentVerb.igbo)}
               </Text>
 
               {/* Tense badge */}
@@ -175,13 +173,14 @@ export default function PracticeScreen() {
                 <Text style={[styles.pronounText, { color: theme.colors.textSecondary }]}>
                   {pronounLabels[selectedPronoun]}
                 </Text>
-                
+
                 {showAnswer ? (
                   <TouchableOpacity onPress={handleNextVerb} activeOpacity={0.7}>
                     <Animated.Text style={[styles.answerText, { opacity: fadeAnim, color: theme.colors.text }]}>
                       {String(correctAnswer)}
                     </Animated.Text>
-                    <Animated.Text style={[styles.tapToNextText, { color: theme.colors.textSecondary, opacity: fadeAnim }]}>
+                    <Animated.Text
+                      style={[styles.tapToNextText, { color: theme.colors.textSecondary, opacity: fadeAnim }]}>
                       Tap to continue
                     </Animated.Text>
                   </TouchableOpacity>
@@ -202,22 +201,22 @@ export default function PracticeScreen() {
 
         {/* Bottom Action Buttons */}
         <View style={styles.bottomActions}>
-          <TouchableOpacity 
-            style={[styles.actionButton, { backgroundColor: theme.colors.surface }]} 
+          <TouchableOpacity
+            style={[styles.actionButton, { backgroundColor: theme.colors.surface }]}
             onPress={handleNextVerb}
           >
             <RotateCcw size={24} color={theme.colors.textSecondary} />
           </TouchableOpacity>
 
-          <TouchableOpacity 
-            style={[styles.actionButton, { backgroundColor: theme.colors.surface }]} 
+          <TouchableOpacity
+            style={[styles.actionButton, { backgroundColor: theme.colors.surface }]}
             onPress={handleShowVerbDetails}
           >
             <FileText size={24} color={theme.colors.textSecondary} />
           </TouchableOpacity>
 
-          <TouchableOpacity 
-            style={[styles.actionButton, { backgroundColor: theme.colors.surface }]} 
+          <TouchableOpacity
+            style={[styles.actionButton, { backgroundColor: theme.colors.surface }]}
             onPress={handlePlayAudio}
           >
             <Volume2 size={24} color={theme.colors.textSecondary} />

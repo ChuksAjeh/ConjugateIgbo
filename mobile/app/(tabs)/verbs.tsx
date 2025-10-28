@@ -14,7 +14,7 @@ import { useLocalSearchParams } from 'expo-router';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Search, Filter, Volume2, X, Book } from 'lucide-react-native';
-import { IgboVerb } from '@/data/igboVerbs';
+import { IgboVerb } from '@/models/verb';
 import { verbService } from '@/lib/verbService';
 import { useTheme } from '@/components/ThemeProvider';
 
@@ -58,29 +58,42 @@ export default function VerbsScreen() {
   }, [verbId]);
 
   const filteredAndSortedVerbs = useMemo(() => {
+    const q = searchQuery.toLowerCase();
     let filtered = verbs.filter(verb => {
-      const matchesSearch = 
-        verb.infinitive.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        verb.meaning.toLowerCase().includes(searchQuery.toLowerCase());
-      
-      const matchesFilter = selectedFilter === 'all' || 
-        (selectedFilter === 'common' && verb.frequency === 'high') ||
+      const matchesSearch =
+        (verb.igbo ?? '').toLowerCase().includes(q) ||
+        (verb.english ?? '').toLowerCase().includes(q);
+
+      const matchesFilter = selectedFilter === 'all' ||
+        (selectedFilter === 'common' && (verb.freqRank != null ? verb.freqRank <= 100 : verb.frequency === 'high')) ||
         (selectedFilter === 'regular' && verb.type === 'regular') ||
         (selectedFilter === 'irregular' && verb.type === 'irregular');
-      
+
       return matchesSearch && matchesFilter;
     });
+
+    const frequencyOrder = { high: 3, medium: 2, low: 1 } as const;
+    const getFreqScore = (v: IgboVerb) => {
+      if (v && typeof v.freqRank === 'number') {
+        // Lower rank = higher frequency; map to higher score
+        if (v.freqRank <= 100) return 3;
+        if (v.freqRank <= 300) return 2;
+        return 1;
+      }
+      // Fallback to legacy label if provided
+      // @ts-ignore legacy optional
+      return frequencyOrder[(v as any).frequency as keyof typeof frequencyOrder] ?? 1;
+    };
 
     return filtered.sort((a, b) => {
       switch (sortBy) {
         case 'alphabetical':
-          return a.infinitive.localeCompare(b.infinitive);
+          return (a.igbo ?? '').localeCompare(b.igbo ?? '');
         case 'frequency':
-          const frequencyOrder = { high: 3, medium: 2, low: 1 };
-          return frequencyOrder[b.frequency] - frequencyOrder[a.frequency];
+          return getFreqScore(b) - getFreqScore(a);
         case 'difficulty':
-          const difficultyOrder = { beginner: 1, intermediate: 2, advanced: 3 };
-          return difficultyOrder[a.difficulty] - difficultyOrder[b.difficulty];
+          const difficultyOrder = { beginner: 1, intermediate: 2, advanced: 3 } as const;
+          return (difficultyOrder[a.difficulty ?? 'beginner'] ?? 1) - (difficultyOrder[b.difficulty ?? 'beginner'] ?? 1);
         default:
           return 0;
       }
@@ -94,11 +107,11 @@ export default function VerbsScreen() {
     >
       <View style={styles.verbItemContent}>
         <View style={styles.verbItemHeader}>
-          <Text style={[styles.verbInfinitive, { color: theme.colors.text }]}>{item.infinitive}</Text>
+          <Text style={[styles.verbInfinitive, { color: theme.colors.text }]}>{item.igbo}</Text>
           <View style={styles.verbBadges}>
-            <View style={[styles.badge, getBadgeStyle(item.frequency)]}>
-              <Text style={[styles.badgeText, getBadgeTextStyle(item.frequency)]}>
-                {item.frequency}
+            <View style={[styles.badge, getBadgeStyle(item)]}>
+              <Text style={[styles.badgeText, getBadgeTextStyle(item)]}>
+                {rankToLabel(item.freqRank, (item as any).frequency)}
               </Text>
             </View>
             <TouchableOpacity style={styles.audioButton}>
@@ -107,8 +120,7 @@ export default function VerbsScreen() {
           </View>
         </View>
         
-        <Text style={[styles.verbMeaning, { color: theme.colors.textSecondary }]}>"{item.meaning}"</Text>
-        
+        <Text style={[styles.verbMeaning, { color: theme.colors.textSecondary }]}>&ldquo;{item.english}&rdquo;</Text>
         <View style={styles.verbMeta}>
           <Text style={[styles.verbType, { color: theme.colors.textSecondary }]}>{item.type}</Text>
           <Text style={[styles.verbDifficulty, { color: theme.colors.textSecondary }]}>{item.difficulty}</Text>
@@ -117,8 +129,19 @@ export default function VerbsScreen() {
     </TouchableOpacity>
   );
 
-  const getBadgeStyle = (frequency: string) => {
-    switch (frequency) {
+  const rankToLabel = (rank?: number | null, legacy?: string): 'high' | 'medium' | 'low' => {
+    if (typeof rank === 'number') {
+      if (rank <= 100) return 'high';
+      if (rank <= 300) return 'medium';
+      return 'low';
+    }
+    if (legacy === 'high' || legacy === 'medium' || legacy === 'low') return legacy;
+    return 'low';
+  };
+
+  const getBadgeStyle = (verb: IgboVerb) => {
+    const label = rankToLabel(verb.freqRank, (verb as any).frequency);
+    switch (label) {
       case 'high': return styles.badgeHigh;
       case 'medium': return styles.badgeMedium;
       case 'low': return styles.badgeLow;
@@ -126,8 +149,9 @@ export default function VerbsScreen() {
     }
   };
 
-  const getBadgeTextStyle = (frequency: string) => {
-    switch (frequency) {
+  const getBadgeTextStyle = (verb: IgboVerb) => {
+    const label = rankToLabel(verb.freqRank, (verb as any).frequency);
+    switch (label) {
       case 'high': return styles.badgeTextHigh;
       case 'medium': return styles.badgeTextMedium;
       case 'low': return styles.badgeTextLow;
@@ -355,7 +379,7 @@ const VerbDetailContent = ({ verb, theme }: { verb: IgboVerb; theme: any }) => {
       <View style={styles.practiceToggle}>
         <View style={styles.flagContainer}>
           <Text style={styles.flagEmoji}>🇬🇧</Text>
-          <Text style={[styles.verbMeaningLarge, { color: theme.colors.text }]}>{verb.meaning}</Text>
+          <Text style={[styles.verbMeaningLarge, { color: theme.colors.text }]}>{verb.english}</Text>
         </View>
         
         <View style={styles.toggleContainer}>
@@ -400,7 +424,7 @@ const VerbDetailContent = ({ verb, theme }: { verb: IgboVerb; theme: any }) => {
       <View style={styles.practiceToggle}>
         <View style={styles.flagContainer}>
           <Text style={styles.flagEmoji}>🇬🇧</Text>
-          <Text style={[styles.verbMeaningLarge, { color: theme.colors.text }]}>{verb.meaning}</Text>
+          <Text style={[styles.verbMeaningLarge, { color: theme.colors.text }]}>{verb.english}</Text>
         </View>
         
         <View style={styles.toggleContainer}>
@@ -482,7 +506,7 @@ const VerbDetailContent = ({ verb, theme }: { verb: IgboVerb; theme: any }) => {
 
   return (
     <View style={styles.verbDetailContainer}>
-      <Text style={[styles.verbTitle, { color: theme.colors.text }]}>{verb.infinitive}</Text>
+      <Text style={[styles.verbTitle, { color: theme.colors.text }]}>{verb.igbo}</Text>
       
       <View style={styles.tabContainer}>
         <TabButton 

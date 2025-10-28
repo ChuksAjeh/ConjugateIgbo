@@ -1,6 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
+import Constants from 'expo-constants';
 
 // Configure notification behavior
 Notifications.setNotificationHandler({
@@ -8,16 +9,19 @@ Notifications.setNotificationHandler({
     shouldShowAlert: true,
     shouldPlaySound: true,
     shouldSetBadge: false,
+    shouldShowBanner: true,
+    shouldShowList: true,
   }),
 });
 
 export const useNotifications = () => {
   const [expoPushToken, setExpoPushToken] = useState<string>('');
   const [notification, setNotification] = useState<Notifications.Notification | null>(null);
-  const notificationListener = useRef<Notifications.Subscription>();
-  const responseListener = useRef<Notifications.Subscription>();
-
+  
   useEffect(() => {
+    let notificationSubscription: Notifications.Subscription | undefined;
+    let responseSubscription: Notifications.Subscription | undefined;
+
     registerForPushNotificationsAsync().then(token => {
       if (token) {
         setExpoPushToken(token);
@@ -25,21 +29,17 @@ export const useNotifications = () => {
     });
 
     // Listen for notifications
-    notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
+    notificationSubscription = Notifications.addNotificationReceivedListener(notification => {
       setNotification(notification);
     });
 
-    responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
+    responseSubscription = Notifications.addNotificationResponseReceivedListener(response => {
       console.log('Notification response:', response);
     });
 
     return () => {
-      if (notificationListener.current) {
-        Notifications.removeNotificationSubscription(notificationListener.current);
-      }
-      if (responseListener.current) {
-        Notifications.removeNotificationSubscription(responseListener.current);
-      }
+      notificationSubscription?.remove();
+      responseSubscription?.remove();
     };
   }, []);
 
@@ -67,7 +67,7 @@ export const useNotifications = () => {
           hour: hours,
           minute: minutes,
           repeats: true,
-        },
+        } as Notifications.CalendarTriggerInput,
       });
 
       console.log('Daily reminder scheduled for', time);
@@ -116,7 +116,7 @@ async function registerForPushNotificationsAsync() {
   
   try {
     token = await Notifications.getExpoPushTokenAsync({
-      projectId: 'your-expo-project-id', // Replace with your actual project ID
+      projectId: Constants.expoConfig?.extra?.eas?.projectId,
     });
   } catch (error) {
     console.error('Error getting push token:', error);

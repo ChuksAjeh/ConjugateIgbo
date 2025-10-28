@@ -140,7 +140,7 @@ export default function ProgressScreen() {
 
         {/* Weekly Progress Chart */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>This Week's Activity</Text>
+          <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>This Week&apos;s Activity</Text>
           <View style={[styles.chartContainer, { backgroundColor: theme.colors.surface }]}>
             <View style={styles.chartBars}>
               {statistics.weeklyProgress.map((day, index) => (
