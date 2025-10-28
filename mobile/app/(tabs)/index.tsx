@@ -17,18 +17,10 @@ import { useProgress } from '@/hooks/useProgress';
 import { usePurchases } from '@/hooks/usePurchases';
 import { useTheme } from '@/components/ThemeProvider';
 import { styles } from './indexStyles';
+import { pronounLabels, pronouns, tenses } from '@/app/(tabs)/models/interfaces';
 
 // Define type-safe tenses and pronouns
-const tenses: Tense[] = ['present', 'past', 'future'];
-const pronouns: Pronoun[] = ['m', 'i', 'o', 'anyi', 'unu', 'wa'];
-const pronounLabels: Record<Pronoun, string> = {
-  m: 'A/E… m (I)',
-  i: 'I/Iyu (You)',
-  o: 'Ọ (He/She/It)',
-  anyi: 'Anyị (We)',
-  unu: 'Unu (You all)',
-  wa: 'Wa (They)'
-};
+
 
 export default function PracticeScreen() {
   const [currentVerb, setCurrentVerb] = useState<IgboVerb | null>(null);

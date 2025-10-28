@@ -80,19 +80,11 @@ export function generateConjugations(verb: IgboVerb): Conjugations {
     future: {
       m: `M ga ${applyFutureRule(root, 'm')}`,
       i: `I ga ${applyFutureRule(root, 'i')}`,
-      o: `Ọ ga${applyFutureRule(root, 'o')}`,
+      o: `Ọ ga ${applyFutureRule(root, 'o')}`,
       anyi: `Ànyị ga ${applyFutureRule(root, 'anyi')}`,
       unu: `Unu ga ${applyFutureRule(root, 'unu')}`,
       wa: `Wa ga ${applyFutureRule(root, 'wa')}`,
     },
-    // subjunctive: {
-    // //   m: `ka m ${applySubjunctiveRule(root, 'm')}`,
-    // //   i: `ka i ${applySubjunctiveRule(root, 'i')}`,
-    // //   o: `ka o ${applySubjunctiveRule(root, 'o')}`,
-    // //   anyi: `ka anyi ${applySubjunctiveRule(root, 'anyi')}`,
-    // //   unu: `ka unu ${applySubjunctiveRule(root, 'unu')}`,
-    // //   wa: `ka wa ${applySubjunctiveRule(root, 'wa')}`,
-    // },
   };
 }
 
