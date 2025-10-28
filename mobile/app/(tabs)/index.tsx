@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  View, 
-  Text, 
-  TouchableOpacity, 
+import {
+  View,
+  Text,
+  TouchableOpacity,
   Animated,
   SafeAreaView,
-  ScrollView,
+  ScrollView
 } from 'react-native';
 import { RotateCcw, Volume2, FileText } from 'lucide-react-native';
 import { router } from 'expo-router';
@@ -19,7 +19,7 @@ import { useTheme } from '@/components/ThemeProvider';
 import { styles } from './indexStyles';
 
 // Define type-safe tenses and pronouns
-const tenses: Tense[] = ['present', 'past', 'future',];
+const tenses: Tense[] = ['present', 'past', 'future'];
 const pronouns: Pronoun[] = ['m', 'i', 'o', 'anyi', 'unu', 'wa'];
 const pronounLabels: Record<Pronoun, string> = {
   m: 'A/E… m (I)',
@@ -27,7 +27,7 @@ const pronounLabels: Record<Pronoun, string> = {
   o: 'Ọ (He/She/It)',
   anyi: 'Anyị (We)',
   unu: 'Unu (You all)',
-  wa: 'Wa (They)',
+  wa: 'Wa (They)'
 };
 
 export default function PracticeScreen() {
@@ -62,10 +62,11 @@ export default function PracticeScreen() {
       fadeAnim.stopAnimation();
       fadeAnim.setValue(0);
     };
-  });
+  }, []);
 
   // Type-safe access to conjugations (rule-based, with legacy fallback)
   const correctAnswer = currentVerb ? getConjugatedForm(currentVerb, selectedTense, selectedPronoun) : 'N/A';
+  console.log('Correct answer:', correctAnswer);
 
   const handleRevealAnswer = () => {
     setShowAnswer(true);
@@ -76,7 +77,7 @@ export default function PracticeScreen() {
     Animated.timing(fadeAnim, {
       toValue: 1,
       duration: 300,
-      useNativeDriver: true,
+      useNativeDriver: true
     }).start();
   };
 
@@ -118,10 +119,14 @@ export default function PracticeScreen() {
 
   const getTenseBadgeColor = (tense: Tense) => {
     switch (tense) {
-      case 'present': return '#3b82f6';
-      case 'past': return '#10b981';
-      case 'future': return '#f59e0b';
-      default: return '#6b7280';
+      case 'present':
+        return '#3b82f6';
+      case 'past':
+        return '#10b981';
+      case 'future':
+        return '#f59e0b';
+      default:
+        return '#6b7280';
     }
   };
 
@@ -139,9 +144,13 @@ export default function PracticeScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
       {/* Daily Goal Progress Bar */}
-      <View style={[styles.progressContainer, { backgroundColor: theme.colors.background, borderBottomColor: theme.colors.border }]}>
+      <View style={[styles.progressContainer, {
+        backgroundColor: theme.colors.background,
+        borderBottomColor: theme.colors.border
+      }]}>
         <Text style={[styles.progressTitle, { color: theme.colors.textSecondary }]}>Daily goal</Text>
-        <Text style={[styles.progressCount, { color: theme.colors.textSecondary }]}>{String(statistics.dailyGoalProgress)} / {String(settings.dailyGoal)}</Text>
+        <Text
+          style={[styles.progressCount, { color: theme.colors.textSecondary }]}>{String(statistics.dailyGoalProgress)} / {String(settings.dailyGoal)}</Text>
       </View>
 
       <View style={styles.content}>
@@ -178,7 +187,8 @@ export default function PracticeScreen() {
                     <Animated.Text style={[styles.answerText, { opacity: fadeAnim, color: theme.colors.text }]}>
                       {String(correctAnswer)}
                     </Animated.Text>
-                    <Animated.Text style={[styles.tapToNextText, { color: theme.colors.textSecondary, opacity: fadeAnim }]}>
+                    <Animated.Text
+                      style={[styles.tapToNextText, { color: theme.colors.textSecondary, opacity: fadeAnim }]}>
                       Tap to continue
                     </Animated.Text>
                   </TouchableOpacity>

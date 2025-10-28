@@ -104,34 +104,6 @@ class VerbService {
     await this.initialize();
     return this.cache;
   }
-
-  async getVerbById(id: string): Promise<IgboVerb | null> {
-    await this.initialize();
-    return this.cache.find(v => String(v.id) === String(id)) || null;
-  }
-
-  async searchVerbs(searchTerm: string): Promise<IgboVerb[]> {
-    await this.initialize();
-    const q = searchTerm.toLowerCase();
-    return this.cache.filter(v =>
-      (v.igbo ?? '').toLowerCase().includes(q) || (v.english ?? '').toLowerCase().includes(q)
-    );
-  }
-
-  async getVerbsByFilter(filters: {
-    type?: VerbType;
-    frequency?: VerbFrequency;
-    difficulty?: VerbDifficulty;
-  }): Promise<IgboVerb[]> {
-    await this.initialize();
-    return this.cache.filter(verb => {
-      if (filters.type && verb.type !== filters.type) return false;
-      if (filters.frequency && verb.frequency !== filters.frequency) return false;
-      if (filters.difficulty && verb.difficulty !== filters.difficulty) return false;
-      return true;
-    });
-  }
-
   async getRandomVerb(): Promise<IgboVerb> {
     const verbs = await this.getAllVerbs();
     const idx = Math.floor(Math.random() * verbs.length);
@@ -140,11 +112,3 @@ class VerbService {
 }
 
 export const verbService = new VerbService();
-
-export const {
-  getAllVerbs,
-  getVerbById,
-  searchVerbs,
-  getVerbsByFilter,
-  getRandomVerb,
-} = verbService;
