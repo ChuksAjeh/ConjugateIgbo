@@ -1,7 +1,6 @@
 import { Tabs } from 'expo-router';
 import { Book, Settings, Crown, Zap, TrendingUp, Music } from 'lucide-react-native';
 import { usePurchases } from '@/hooks/usePurchases';
-import { useTheme } from '@/components/ThemeProvider';
 
 export default function TabLayout() {
   const { isProUser } = usePurchases();

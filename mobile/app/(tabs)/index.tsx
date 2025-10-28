@@ -36,12 +36,11 @@ export default function PracticeScreen() {
   const [selectedPronoun, setSelectedPronoun] = useState<Pronoun>(() => pronouns[Math.floor(Math.random() * pronouns.length)]);
   const [showAnswer, setShowAnswer] = useState(false);
   const [fadeAnim] = useState(new Animated.Value(0));
-  
+
   const { settings } = useSettings();
-  const { updateProgress } = useProgress();
+  const { updateProgress, statistics } = useProgress();
   const { isProUser } = usePurchases();
-  const { theme, isDark } = useTheme();
-  const { statistics } = useProgress();
+  const { theme } = useTheme();
 
   // Initialize with a random verb
   useEffect(() => {
@@ -54,16 +53,16 @@ export default function PracticeScreen() {
         console.error('Error loading random verb:', error);
       }
     };
-    
+
     loadRandomVerb();
-    
+
     // Cleanup function to prevent animation errors when the component unmounts
     return () => {
       // Stop any ongoing animations
       fadeAnim.stopAnimation();
       fadeAnim.setValue(0);
     };
-  }, []);
+  });
 
   // Type-safe access to conjugations (rule-based, with legacy fallback)
   const correctAnswer = currentVerb ? getConjugatedForm(currentVerb, selectedTense, selectedPronoun) : 'N/A';
@@ -73,7 +72,7 @@ export default function PracticeScreen() {
     if (currentVerb) {
       updateProgress(currentVerb.id, true);
     }
-    
+
     Animated.timing(fadeAnim, {
       toValue: 1,
       duration: 300,
@@ -89,7 +88,7 @@ export default function PracticeScreen() {
       console.error('Error loading next verb:', error);
       return;
     }
-    
+
     // If user is pro, allow all tenses, otherwise limit to present and past
     const availableTenses = isProUser ? tenses : tenses.slice(0, 2);
     // Type assertion to ensure we're getting a valid Tense
@@ -173,7 +172,7 @@ export default function PracticeScreen() {
                 <Text style={[styles.pronounText, { color: theme.colors.textSecondary }]}>
                   {pronounLabels[selectedPronoun]}
                 </Text>
-                
+
                 {showAnswer ? (
                   <TouchableOpacity onPress={handleNextVerb} activeOpacity={0.7}>
                     <Animated.Text style={[styles.answerText, { opacity: fadeAnim, color: theme.colors.text }]}>
@@ -200,22 +199,22 @@ export default function PracticeScreen() {
 
         {/* Bottom Action Buttons */}
         <View style={styles.bottomActions}>
-          <TouchableOpacity 
-            style={[styles.actionButton, { backgroundColor: theme.colors.surface }]} 
+          <TouchableOpacity
+            style={[styles.actionButton, { backgroundColor: theme.colors.surface }]}
             onPress={handleNextVerb}
           >
             <RotateCcw size={24} color={theme.colors.textSecondary} />
           </TouchableOpacity>
 
-          <TouchableOpacity 
-            style={[styles.actionButton, { backgroundColor: theme.colors.surface }]} 
+          <TouchableOpacity
+            style={[styles.actionButton, { backgroundColor: theme.colors.surface }]}
             onPress={handleShowVerbDetails}
           >
             <FileText size={24} color={theme.colors.textSecondary} />
           </TouchableOpacity>
 
-          <TouchableOpacity 
-            style={[styles.actionButton, { backgroundColor: theme.colors.surface }]} 
+          <TouchableOpacity
+            style={[styles.actionButton, { backgroundColor: theme.colors.surface }]}
             onPress={handlePlayAudio}
           >
             <Volume2 size={24} color={theme.colors.textSecondary} />
