@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   View,
   Text,
@@ -50,6 +50,31 @@ export default function PracticeScreen() {
     return list;
   }, [isProUser, settings.enabledTenses]);
 
+  // Extract the common logic into a reusable function
+  const loadNewVerb = useCallback(async () => {
+    try {
+      const verb = await verbService.getRandomVerb();
+      setCurrentVerb(verb);
+
+      // Pick a valid tense based on the latest settings and entitlement
+      const newTense = availableTenses[Math.floor(Math.random() * availableTenses.length)] as Tense;
+      setSelectedTense(newTense);
+
+      // Randomize pronoun
+      const newPronoun = pronouns[Math.floor(Math.random() * pronouns.length)] as Pronoun;
+      setSelectedPronoun(newPronoun);
+
+      // Reset answer state and animation
+      setShowAnswer(false);
+      fadeAnim.setValue(0);
+
+      return verb;
+    } catch (error) {
+      console.error('Error loading verb:', error);
+      throw error;
+    }
+  }, [availableTenses, fadeAnim]);
+
   // Ensure selectedTense always respects current Settings/Pro availability
   useEffect(() => {
     if (!availableTenses.includes(selectedTense)) {
@@ -65,41 +90,27 @@ export default function PracticeScreen() {
       let isActive = true;
 
       const refreshCard = async () => {
+        if (!isActive) return;
         try {
-          const verb = await verbService.getRandomVerb();
-          if (!isActive) return;
-          setCurrentVerb(verb);
-
-          // Pick a valid tense based on latest settings and entitlement
-          const newTense = availableTenses[Math.floor(Math.random() * availableTenses.length)] as Tense;
-          setSelectedTense(newTense);
-
-          // Randomize pronoun
-          const newPronoun = pronouns[Math.floor(Math.random() * pronouns.length)] as Pronoun;
-          setSelectedPronoun(newPronoun);
-
-          // Reset answer state and animation
-          setShowAnswer(false);
-          fadeAnim.setValue(0);
+          await loadNewVerb();
         } catch (error) {
           console.error('Error refreshing practice card on focus:', error);
         }
       };
 
-      refreshCard().then(r => console.log("card refresh: ", r));
+      refreshCard();
 
       return () => {
         isActive = false;
-        // Stop any ongoing animations to avoid warnings on blur/unmount
         try {
           fadeAnim.stopAnimation();
         } catch (error) {
           console.error('Error stopping animation:', error);
         }
       };
-    }, [availableTenses, fadeAnim])
+    }, [loadNewVerb, fadeAnim])
   );
-  
+
   // Type-safe access to conjugations (rule-based, with legacy fallback)
   const correctAnswer = currentVerb ? getConjugatedForm(currentVerb, selectedTense, selectedPronoun) : 'N/A';
   console.log('Correct answer:', correctAnswer);
@@ -123,23 +134,12 @@ export default function PracticeScreen() {
   const handleNextVerb = async () => {
     // Increment daily goal counter whenever user proceeds to the next card
     setDailyCount((prev) => prev + 1);
-
+    
     try {
-      const verb = await verbService.getRandomVerb();
-      setCurrentVerb(verb);
+      await loadNewVerb();
     } catch (error) {
       console.error('Error loading next verb:', error);
-      return;
     }
-
-    // Pick next tense from those available per Settings and Pro status
-    const newTense = availableTenses[Math.floor(Math.random() * availableTenses.length)] as Tense;
-    setSelectedTense(newTense);
-    // Type assertion to ensure we're getting a valid Pronoun
-    const newPronoun = pronouns[Math.floor(Math.random() * pronouns.length)] as Pronoun;
-    setSelectedPronoun(newPronoun);
-    setShowAnswer(false);
-    fadeAnim.setValue(0);
   };
 
   const handlePlayAudio = () => {
