@@ -69,36 +69,68 @@ function getDialectRules(_dialect: Dialect) {
   };
 }
 
+// Dialect-specific surface forms (pronouns, particles)
+function getDialectSurfaces(dialect: Dialect) {
+  // Defaults reflect current Delta outputs to preserve backward compatibility
+  const base = {
+    pronouns: {
+      m: 'M',
+      i: 'I',
+      o: 'Ọ',
+      anyi: 'Ànyị',
+      unu: 'Unu',
+      wa: 'Wa',
+    } as Record<Pronoun, string>,
+    particles: {
+      presentLink: 'na', // e.g., "I na ..."
+      futureAux: 'ga',   // e.g., "I ga ..."
+    },
+  };
+
+  switch (dialect) {
+    case 'central':
+      // Example difference: use "Ha" instead of "Wa" for 3rd person plural
+      return {
+        ...base,
+        pronouns: { ...base.pronouns, wa: 'Ha' },
+      };
+    // Add other dialect overrides here as needed
+    default:
+      return base;
+  }
+}
+
 export function generateConjugations(verb: IgboVerb, dialect: Dialect = 'delta'): Conjugations {
   const root = getRoot(verb);
   const stem = removePrefixI(root);
   const vowelPrefix = getVowelharmonyPronoun(stem);
   const rules = getDialectRules(dialect);
+  const surfaces = getDialectSurfaces(dialect);
   
   return {
     present: {
-      m: `${vowelPrefix} na m ${rules.applyPresentRule(root, 'm')}`,
-      i: `I na ${rules.applyPresentRule(root, 'i')}`,
-      o: `Ọ na ${rules.applyPresentRule(root, 'o')}`,
-      anyi: `Ànyị na ${rules.applyPresentRule(root, 'anyi')}`,
-      unu: `Unu na ${rules.applyPresentRule(root, 'unu')}`,
-      wa: `Wa na ${rules.applyPresentRule(root, 'wa')}`,
+      m: `${vowelPrefix} ${surfaces.particles.presentLink} m ${rules.applyPresentRule(root, 'm')}`,
+      i: `${surfaces.pronouns.i} ${surfaces.particles.presentLink} ${rules.applyPresentRule(root, 'i')}`,
+      o: `${surfaces.pronouns.o} ${surfaces.particles.presentLink} ${rules.applyPresentRule(root, 'o')}`,
+      anyi: `${surfaces.pronouns.anyi} ${surfaces.particles.presentLink} ${rules.applyPresentRule(root, 'anyi')}`,
+      unu: `${surfaces.pronouns.unu} ${surfaces.particles.presentLink} ${rules.applyPresentRule(root, 'unu')}`,
+      wa: `${surfaces.pronouns.wa} ${surfaces.particles.presentLink} ${rules.applyPresentRule(root, 'wa')}`,
     },
     past: {
       m: `${vowelPrefix} ${rules.applyPastRule(root, 'm')} m`,
-      i: `I ${rules.applyPastRule(root, 'i')}`,
-      o: `Ọ ${rules.applyPastRule(root, 'o')}`,
-      anyi: `Ànyị ${rules.applyPastRule(root, 'anyi')}`,
-      unu: `Unu ${rules.applyPastRule(root, 'unu')}`,
-      wa: `Wa ${rules.applyPastRule(root, 'wa')}`,
+      i: `${surfaces.pronouns.i} ${rules.applyPastRule(root, 'i')}`,
+      o: `${surfaces.pronouns.o} ${rules.applyPastRule(root, 'o')}`,
+      anyi: `${surfaces.pronouns.anyi} ${rules.applyPastRule(root, 'anyi')}`,
+      unu: `${surfaces.pronouns.unu} ${rules.applyPastRule(root, 'unu')}`,
+      wa: `${surfaces.pronouns.wa} ${rules.applyPastRule(root, 'wa')}`,
     },
     future: {
-      m: `M ga ${rules.applyFutureRule(root, 'm')}`,
-      i: `I ga ${rules.applyFutureRule(root, 'i')}`,
-      o: `Ọ ga ${rules.applyFutureRule(root, 'o')}`,
-      anyi: `Ànyị ga ${rules.applyFutureRule(root, 'anyi')}`,
-      unu: `Unu ga ${rules.applyFutureRule(root, 'unu')}`,
-      wa: `Wa ga ${rules.applyFutureRule(root, 'wa')}`,
+      m: `${surfaces.pronouns.m} ${surfaces.particles.futureAux} ${rules.applyFutureRule(root, 'm')}`,
+      i: `${surfaces.pronouns.i} ${surfaces.particles.futureAux} ${rules.applyFutureRule(root, 'i')}`,
+      o: `${surfaces.pronouns.o} ${surfaces.particles.futureAux} ${rules.applyFutureRule(root, 'o')}`,
+      anyi: `${surfaces.pronouns.anyi} ${surfaces.particles.futureAux} ${rules.applyFutureRule(root, 'anyi')}`,
+      unu: `${surfaces.pronouns.unu} ${surfaces.particles.futureAux} ${rules.applyFutureRule(root, 'unu')}`,
+      wa: `${surfaces.pronouns.wa} ${surfaces.particles.futureAux} ${rules.applyFutureRule(root, 'wa')}`,
     },
   };
 }
