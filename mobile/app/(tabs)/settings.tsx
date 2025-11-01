@@ -337,13 +337,6 @@ export default function SettingsScreen() {
             isLocked={!isProUser}
           />
 
-          <ToggleItem
-            icon={Type}
-            title="Answer by Typing"
-            subtitle="Type answers instead of tap to reveal"
-            value={settings.typingMode}
-            onValueChange={(value) => updateSettings({ typingMode: value })}
-          />
 
           <ToggleItem
             icon={Eye}
