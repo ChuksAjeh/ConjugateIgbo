@@ -1,12 +1,25 @@
 // Verb Service - Fetches verbs from backend, caches in-memory, seeds from offline list if needed
 import { IgboVerb, VerbDifficulty, VerbFrequency, VerbType, VerbDTO } from '@/models/verb';
+import type { Dialect } from '@/lib/conjugateVerbs';
 import { offlineVerbs } from '@/data/igboVerbs';
 import { getItem, setItem } from '@/lib/storage';
 
 const BASE_URL = process.env.VERBS_ENDPOINT || process.env.EXPO_PUBLIC_VERBS_ENDPOINT || '';
-const VERBS_ENDPOINT = BASE_URL ? `${BASE_URL.replace(/\/$/, '')}/delta-igbo/verbs/all` : '';
+const BASE = BASE_URL ? BASE_URL.replace(/\/$/, '') : '';
 const VERBS_CACHE_KEY_V2 = 'VERBS_CACHE_V2';
 const VERBS_CACHE_KEY_V1 = 'VERBS_CACHE_V1';
+
+const DIALECT_SLUG: Record<Dialect, string> = {
+  delta: 'delta-igbo',
+  central: 'central-igbo',
+  anambra: 'anambra-igbo',
+  imo: 'imo-igbo',
+  abia: 'abia-igbo',
+};
+
+function cacheKeyForDialect(d: Dialect) {
+  return `${VERBS_CACHE_KEY_V2}_${d}`;
+}
 
 function mapDtoToVerb(dto: VerbDTO): IgboVerb {
   return {
@@ -18,8 +31,7 @@ function mapDtoToVerb(dto: VerbDTO): IgboVerb {
 }
 
 class VerbService {
-  private isInitialized = false;
-  private cache: IgboVerb[] = [];
+  private cacheByDialect: Partial<Record<Dialect, IgboVerb[]>> = {};
 
   private migrateV1ToV2 = (arr: any[]): IgboVerb[] => {
     return arr.map((v: any) => {
@@ -45,69 +57,85 @@ class VerbService {
     });
   };
 
-  async initialize(): Promise<void> {
-    if (this.isInitialized) return;
+  private async ensureLoaded(dialect: Dialect): Promise<{ dialectUsed: Dialect }> {
+    const key = cacheKeyForDialect(dialect);
 
-    // 1) Load from a persistent cache (V2), or migrate from V1 if present
+    // 1) Try cache for this dialect
     try {
-      const cachedV2 = await getItem(VERBS_CACHE_KEY_V2);
-      if (cachedV2) {
-        const parsed = JSON.parse(cachedV2) as IgboVerb[];
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          this.cache = parsed;
-          console.log(`Verb service loaded ${parsed.length} verbs from V2 cache`);
-        }
-      } else {
-        const cachedV1 = await getItem(VERBS_CACHE_KEY_V1);
-        if (cachedV1) {
-          const parsedV1 = JSON.parse(cachedV1) as any[];
-          if (Array.isArray(parsedV1) && parsedV1.length > 0) {
-            const migrated = this.migrateV1ToV2(parsedV1);
-            this.cache = migrated;
-            await setItem(VERBS_CACHE_KEY_V2, JSON.stringify(migrated));
-            console.log(`Migrated ${migrated.length} verbs from V1 to V2 cache`);
+      if (!this.cacheByDialect[dialect]) {
+        const cached = await getItem(key);
+        if (cached) {
+          const parsed = JSON.parse(cached) as IgboVerb[];
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            this.cacheByDialect[dialect] = parsed;
+            console.log(`Verb service loaded ${parsed.length} ${dialect} verbs from cache`);
           }
         }
       }
     } catch (e) {
-      console.warn('Failed to parse verbs cache, ignoring:', e);
+      console.warn(`Failed to parse verbs cache for ${dialect}, ignoring:`, e);
     }
 
-    // 2) Try to fetch from API (refresh cache)
-    if (VERBS_ENDPOINT) {
+    // 2) Try to fetch from API for this dialect
+    if (BASE && !this.cacheByDialect[dialect]) {
+      const endpoint = `${BASE}/${DIALECT_SLUG[dialect]}/verbs/all`;
       try {
-        const res = await fetch(VERBS_ENDPOINT);
+        const res = await fetch(endpoint);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = (await res.json()) as VerbDTO[];
         if (Array.isArray(data) && data.length > 0) {
           const mapped = data.map(mapDtoToVerb);
-          this.cache = mapped;
-          await setItem(VERBS_CACHE_KEY_V2, JSON.stringify(mapped));
-          console.log(`Verb service initialized from endpoint with ${mapped.length} verbs (cached V2)`);
+          this.cacheByDialect[dialect] = mapped;
+          await setItem(key, JSON.stringify(mapped));
+          console.log(`Verb service initialized from endpoint with ${mapped.length} ${dialect} verbs (cached)`);
         }
       } catch (error) {
-        console.warn('Fetching verbs from endpoint failed. Using cache/offline if available:', error);
+        console.warn(`Fetching verbs from endpoint failed for ${dialect}.`, error);
       }
     }
 
-    // 3) Fallback seed if nothing available
-    if (this.cache.length === 0) {
-      this.cache = offlineVerbs.slice(0, 10);
-      await setItem(VERBS_CACHE_KEY_V2, JSON.stringify(this.cache));
-      console.log(`Verb service initialized with offline seed (${this.cache.length} verbs)`);
+    // 3) Fallbacks
+    // If requested dialect still empty and it's not delta, try delta
+    if (!this.cacheByDialect[dialect] || this.cacheByDialect[dialect]!.length === 0) {
+      if (dialect !== 'delta') {
+        await this.ensureLoaded('delta');
+        if (this.cacheByDialect['delta'] && this.cacheByDialect['delta']!.length > 0) {
+          return { dialectUsed: 'delta' };
+        }
+      }
+      // As a last resort, seed delta from offline
+      if (!this.cacheByDialect['delta'] || this.cacheByDialect['delta']!.length === 0) {
+        this.cacheByDialect['delta'] = offlineVerbs.slice(0, 10);
+        await setItem(cacheKeyForDialect('delta'), JSON.stringify(this.cacheByDialect['delta']));
+        console.log(`Verb service initialized delta with offline seed (${this.cacheByDialect['delta']!.length} verbs)`);
+        return { dialectUsed: 'delta' };
+      }
     }
 
-    this.isInitialized = true;
+    return { dialectUsed: dialect };
   }
 
+  async getAllVerbsForDialect(dialect: Dialect): Promise<{ verbs: IgboVerb[]; fellBackToDelta: boolean }> {
+    const { dialectUsed } = await this.ensureLoaded(dialect);
+    const used = dialectUsed === 'delta' && dialect !== 'delta';
+    const verbs = this.cacheByDialect[dialectUsed] || [];
+    return { verbs, fellBackToDelta: used };
+  }
+
+  async getRandomVerbForDialect(dialect: Dialect): Promise<{ verb: IgboVerb; fellBackToDelta: boolean }> {
+    const { verbs, fellBackToDelta } = await this.getAllVerbsForDialect(dialect);
+    const idx = Math.floor(Math.random() * Math.max(1, verbs.length));
+    return { verb: verbs[idx], fellBackToDelta };
+  }
+
+  // Backward-compat methods (default to delta)
   async getAllVerbs(): Promise<IgboVerb[]> {
-    await this.initialize();
-    return this.cache;
+    const { verbs } = await this.getAllVerbsForDialect('delta');
+    return verbs;
   }
   async getRandomVerb(): Promise<IgboVerb> {
-    const verbs = await this.getAllVerbs();
-    const idx = Math.floor(Math.random() * verbs.length);
-    return verbs[idx];
+    const { verb } = await this.getRandomVerbForDialect('delta');
+    return verb;
   }
 }
 

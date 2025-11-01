@@ -1,6 +1,9 @@
 // Rule-based conjugation engine for Igbo verbs
 import { Conjugations, IgboVerb, Pronoun, Tense } from '@/models/verb';
 
+// Supported dialects (keep in sync with settings.dialect)
+export type Dialect = 'central' | 'delta' | 'anambra' | 'imo' | 'abia';
+
 function getRoot(verb: IgboVerb): string {
   const base = verb.rootForm || verb.igbo || '';
   return base.trim();
@@ -55,45 +58,89 @@ function applySubjunctiveRule(root: string, _pronoun: Pronoun): string {
   return root + 'e';
 }
 
-export function generateConjugations(verb: IgboVerb): Conjugations {
+// Return the rule implementations for a given dialect
+function getDialectRules(_dialect: Dialect) {
+  // TODO: Implement dialect-specific differences. For now, use the same rules.
+  return {
+    applyPresentRule,
+    applyPastRule,
+    applyFutureRule,
+    applySubjunctiveRule,
+  };
+}
+
+// Dialect-specific surface forms (pronouns, particles)
+function getDialectSurfaces(dialect: Dialect) {
+  // Defaults reflect current Delta outputs to preserve backward compatibility
+  const base = {
+    pronouns: {
+      m: 'M',
+      i: 'I',
+      o: 'Ọ',
+      anyi: 'Ànyị',
+      unu: 'Unu',
+      wa: 'Wa',
+    } as Record<Pronoun, string>,
+    particles: {
+      presentLink: 'na', // e.g., "I na ..."
+      futureAux: 'ga',   // e.g., "I ga ..."
+    },
+  };
+
+  switch (dialect) {
+    case 'central':
+      // Example difference: use "Ha" instead of "Wa" for 3rd person plural
+      return {
+        ...base,
+        pronouns: { ...base.pronouns, wa: 'Ha' },
+      };
+    // Add other dialect overrides here as needed
+    default:
+      return base;
+  }
+}
+
+export function generateConjugations(verb: IgboVerb, dialect: Dialect = 'delta'): Conjugations {
   const root = getRoot(verb);
   const stem = removePrefixI(root);
   const vowelPrefix = getVowelharmonyPronoun(stem);
+  const rules = getDialectRules(dialect);
+  const surfaces = getDialectSurfaces(dialect);
   
   return {
     present: {
-      m: `${vowelPrefix} na m ${applyPresentRule(root, 'm')}`,
-      i: `I na ${applyPresentRule(root, 'i')}`,
-      o: `Ọ na ${applyPresentRule(root, 'o')}`,
-      anyi: `Ànyị na ${applyPresentRule(root, 'anyi')}`,
-      unu: `Unu na ${applyPresentRule(root, 'unu')}`,
-      wa: `Wa na ${applyPresentRule(root, 'wa')}`,
+      m: `${vowelPrefix} ${surfaces.particles.presentLink} m ${rules.applyPresentRule(root, 'm')}`,
+      i: `${surfaces.pronouns.i} ${surfaces.particles.presentLink} ${rules.applyPresentRule(root, 'i')}`,
+      o: `${surfaces.pronouns.o} ${surfaces.particles.presentLink} ${rules.applyPresentRule(root, 'o')}`,
+      anyi: `${surfaces.pronouns.anyi} ${surfaces.particles.presentLink} ${rules.applyPresentRule(root, 'anyi')}`,
+      unu: `${surfaces.pronouns.unu} ${surfaces.particles.presentLink} ${rules.applyPresentRule(root, 'unu')}`,
+      wa: `${surfaces.pronouns.wa} ${surfaces.particles.presentLink} ${rules.applyPresentRule(root, 'wa')}`,
     },
     past: {
-      m: `${vowelPrefix} ${applyPastRule(root, 'm')} m`,
-      i: `I ${applyPastRule(root, 'i')}`,
-      o: `Ọ ${applyPastRule(root, 'o')}`,
-      anyi: `Ànyị ${applyPastRule(root, 'anyi')}`,
-      unu: `Unu ${applyPastRule(root, 'unu')}`,
-      wa: `Wa ${applyPastRule(root, 'wa')}`,
+      m: `${vowelPrefix} ${rules.applyPastRule(root, 'm')} m`,
+      i: `${surfaces.pronouns.i} ${rules.applyPastRule(root, 'i')}`,
+      o: `${surfaces.pronouns.o} ${rules.applyPastRule(root, 'o')}`,
+      anyi: `${surfaces.pronouns.anyi} ${rules.applyPastRule(root, 'anyi')}`,
+      unu: `${surfaces.pronouns.unu} ${rules.applyPastRule(root, 'unu')}`,
+      wa: `${surfaces.pronouns.wa} ${rules.applyPastRule(root, 'wa')}`,
     },
     future: {
-      m: `M ga ${applyFutureRule(root, 'm')}`,
-      i: `I ga ${applyFutureRule(root, 'i')}`,
-      o: `Ọ ga ${applyFutureRule(root, 'o')}`,
-      anyi: `Ànyị ga ${applyFutureRule(root, 'anyi')}`,
-      unu: `Unu ga ${applyFutureRule(root, 'unu')}`,
-      wa: `Wa ga ${applyFutureRule(root, 'wa')}`,
+      m: `${surfaces.pronouns.m} ${surfaces.particles.futureAux} ${rules.applyFutureRule(root, 'm')}`,
+      i: `${surfaces.pronouns.i} ${surfaces.particles.futureAux} ${rules.applyFutureRule(root, 'i')}`,
+      o: `${surfaces.pronouns.o} ${surfaces.particles.futureAux} ${rules.applyFutureRule(root, 'o')}`,
+      anyi: `${surfaces.pronouns.anyi} ${surfaces.particles.futureAux} ${rules.applyFutureRule(root, 'anyi')}`,
+      unu: `${surfaces.pronouns.unu} ${surfaces.particles.futureAux} ${rules.applyFutureRule(root, 'unu')}`,
+      wa: `${surfaces.pronouns.wa} ${surfaces.particles.futureAux} ${rules.applyFutureRule(root, 'wa')}`,
     },
   };
 }
 
-export function getConjugatedForm(verb: IgboVerb, tense: Tense, pronoun: Pronoun): string {
+export function getConjugatedForm(verb: IgboVerb, tense: Tense, pronoun: Pronoun, dialect: Dialect = 'delta'): string {
   // Prefer pre-computed conjugations if present (legacy data), otherwise generate
   if (verb.conjugations && verb.conjugations[tense] && verb.conjugations[tense][pronoun]) {
     return verb.conjugations[tense][pronoun];
   }
-  const conj = generateConjugations(verb);
+  const conj = generateConjugations(verb, dialect);
 
   // Check if the tense exists in the generated conjugations
   if (!conj[tense]) {
