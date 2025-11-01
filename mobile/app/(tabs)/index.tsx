@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { RotateCcw, Volume2, FileText } from 'lucide-react-native';
 import { router } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
 import { IgboVerb, Tense, Pronoun } from '@/models/verb';
 import { verbService } from '@/lib/verbService';
 import { getConjugatedForm } from '@/lib/conjugateVerbs';
@@ -19,12 +20,9 @@ import { useTheme } from '@/components/ThemeProvider';
 import { styles } from './indexStyles';
 import { pronounLabels, pronouns, tenses } from '@/app/(tabs)/models/interfaces';
 
-// Define type-safe tenses and pronouns
-
-
 export default function PracticeScreen() {
   const [currentVerb, setCurrentVerb] = useState<IgboVerb | null>(null);
-  const [selectedTense, setSelectedTense] = useState<Tense>(() => tenses[Math.floor(Math.random() * 2)]); // Only present and past
+  const [selectedTense, setSelectedTense] = useState<Tense>('present');
   const [selectedPronoun, setSelectedPronoun] = useState<Pronoun>(() => pronouns[Math.floor(Math.random() * pronouns.length)]);
   const [showAnswer, setShowAnswer] = useState(false);
   const [fadeAnim] = useState(new Animated.Value(0));
@@ -34,6 +32,84 @@ export default function PracticeScreen() {
   const { isProUser } = usePurchases();
   const { theme } = useTheme();
   const [dailyCount, setDailyCount] = useState(0);
+
+  // Build the list of available tenses based on Settings and Pro status
+  const availableTenses: Tense[] = useMemo(() => {
+    // Start with the app-supported tenses
+    let list = [...tenses];
+
+    // Restrict non-Pro users to present and past only
+    if (!isProUser) {
+      list = list.filter((t) => t === 'present' || t === 'past');
+    }
+
+    // Apply user settings toggles
+    list = list.filter((t) => {
+      return settings.enabledTenses[t];
+    });
+
+    // Fallbacks to ensure we always have at least one tense
+    if (list.length === 0) {
+      // Try a sensible default respecting entitlement first
+      const fallback = (!isProUser ? ['present', 'past'] : ['present', 'past', 'future']).filter(
+        (t) => (settings.enabledTenses as any)[t] !== false
+      );
+      if (fallback.length > 0) return fallback as Tense[];
+
+      // Absolute fallback
+      return (!isProUser ? ['present', 'past'] : ['present', 'past', 'future']) as Tense[];
+    }
+
+    return list as Tense[];
+  }, [isProUser, settings.enabledTenses]);
+
+  // Ensure selectedTense always respects current Settings/Pro availability
+  useEffect(() => {
+    if (!availableTenses.includes(selectedTense)) {
+      const newTense = availableTenses[Math.floor(Math.random() * availableTenses.length)] as Tense;
+      setSelectedTense(newTense);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [availableTenses]);
+
+  // Refresh the practice card whenever this tab/screen gains focus
+  useFocusEffect(
+    React.useCallback(() => {
+      let isActive = true;
+
+      const refreshCard = async () => {
+        try {
+          const verb = await verbService.getRandomVerb();
+          if (!isActive) return;
+          setCurrentVerb(verb);
+
+          // Pick a valid tense based on latest settings and entitlement
+          const newTense = availableTenses[Math.floor(Math.random() * availableTenses.length)] as Tense;
+          setSelectedTense(newTense);
+
+          // Randomize pronoun
+          const newPronoun = pronouns[Math.floor(Math.random() * pronouns.length)] as Pronoun;
+          setSelectedPronoun(newPronoun);
+
+          // Reset answer state and animation
+          setShowAnswer(false);
+          fadeAnim.setValue(0);
+        } catch (error) {
+          console.error('Error refreshing practice card on focus:', error);
+        }
+      };
+
+      refreshCard().then(r => console.log("card refresh: ", r));
+
+      return () => {
+        isActive = false;
+        // Stop any ongoing animations to avoid warnings on blur/unmount
+        try {
+          fadeAnim.stopAnimation();
+        } catch {}
+      };
+    }, [availableTenses])
+  );
 
   // Initialize with a random verb
   useEffect(() => {
@@ -86,9 +162,7 @@ export default function PracticeScreen() {
       return;
     }
 
-    // If user is pro, allow all tenses, otherwise limit to present and past
-    const availableTenses = isProUser ? tenses : tenses.slice(0, 2);
-    // Type assertion to ensure we're getting a valid Tense
+    // Pick next tense from those available per Settings and Pro status
     const newTense = availableTenses[Math.floor(Math.random() * availableTenses.length)] as Tense;
     setSelectedTense(newTense);
     // Type assertion to ensure we're getting a valid Pronoun
