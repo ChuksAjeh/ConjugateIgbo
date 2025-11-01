@@ -336,15 +336,6 @@ export default function SettingsScreen() {
             onPress={isProUser ? () => setShowGoalModal(true) : undefined}
             isLocked={!isProUser}
           />
-
-
-          <ToggleItem
-            icon={Eye}
-            title="Highlight Mistakes"
-            subtitle="Show incorrect parts in red"
-            value={settings.highlightMistakes}
-            onValueChange={(value) => updateSettings({ highlightMistakes: value })}
-          />
         </SettingsSection>
 
         {/* Feedback */}
