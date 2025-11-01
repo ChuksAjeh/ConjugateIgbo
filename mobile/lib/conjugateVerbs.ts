@@ -95,6 +95,12 @@ export function getConjugatedForm(verb: IgboVerb, tense: Tense, pronoun: Pronoun
   }
   const conj = generateConjugations(verb);
 
+  // Check if the tense exists in the generated conjugations
+  if (!conj[tense]) {
+    console.warn(`Tense "${tense}" not yet implemented for verb: ${verb.igbo}`);
+    return '';
+  }
+
   return conj[tense][pronoun];
 }
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { RotateCcw, Volume2, FileText } from 'lucide-react-native';
 import { router } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
 import { IgboVerb, Tense, Pronoun } from '@/models/verb';
 import { verbService } from '@/lib/verbService';
 import { getConjugatedForm } from '@/lib/conjugateVerbs';
@@ -19,54 +20,110 @@ import { useTheme } from '@/components/ThemeProvider';
 import { styles } from './indexStyles';
 import { pronounLabels, pronouns, tenses } from '@/app/(tabs)/models/interfaces';
 
-// Define type-safe tenses and pronouns
-
-
 export default function PracticeScreen() {
   const [currentVerb, setCurrentVerb] = useState<IgboVerb | null>(null);
-  const [selectedTense, setSelectedTense] = useState<Tense>(() => tenses[Math.floor(Math.random() * 2)]); // Only present and past
+  const [selectedTense, setSelectedTense] = useState<Tense>('present');
   const [selectedPronoun, setSelectedPronoun] = useState<Pronoun>(() => pronouns[Math.floor(Math.random() * pronouns.length)]);
   const [showAnswer, setShowAnswer] = useState(false);
   const [fadeAnim] = useState(new Animated.Value(0));
 
   const { settings } = useSettings();
-  const { updateProgress, statistics } = useProgress();
+  const { updateProgress } = useProgress();
   const { isProUser } = usePurchases();
   const { theme } = useTheme();
   const [dailyCount, setDailyCount] = useState(0);
 
-  // Initialize with a random verb
-  useEffect(() => {
-    const loadRandomVerb = async () => {
-      try {
-        const verb = await verbService.getRandomVerb();
-        console.log('Loaded random verb:', verb);
-        setCurrentVerb(verb);
-      } catch (error) {
-        console.error('Error loading random verb:', error);
-      }
-    };
+  const availableTenses: Tense[] = useMemo(() => {
+    let list = [...tenses];
+    if (!isProUser) {
+      list = list.filter((t) => t === 'present' || t === 'past');
+    }
+    list = list.filter((t) => {
+      return settings.enabledTenses[t];
+    });
+    if (list.length === 0) {
+      const defaults: Tense[] = !isProUser ? ['present', 'past'] : ['present', 'past', 'future'];
+      const fallback = defaults.filter((t) => settings.enabledTenses[t]);
+      if (fallback.length > 0) return fallback;
+      return defaults;
+    }
+    return list;
+  }, [isProUser, settings.enabledTenses]);
 
-    loadRandomVerb();
+  // Extract the common logic into a reusable function
+  const loadNewVerb = useCallback(async () => {
+    try {
+      const verb = await verbService.getRandomVerb();
+      setCurrentVerb(verb);
 
-    // Cleanup function to prevent animation errors when the component unmounts
-    return () => {
-      // Stop any ongoing animations
-      fadeAnim.stopAnimation();
+      // Pick a valid tense based on the latest settings and entitlement
+      const newTense = availableTenses[Math.floor(Math.random() * availableTenses.length)] as Tense;
+      setSelectedTense(newTense);
+
+      // Randomize pronoun
+      const newPronoun = pronouns[Math.floor(Math.random() * pronouns.length)] as Pronoun;
+      setSelectedPronoun(newPronoun);
+
+      // Reset answer state and animation
+      setShowAnswer(false);
       fadeAnim.setValue(0);
-    };
-  }, []);
+
+      return verb;
+    } catch (error) {
+      console.error('Error loading verb:', error);
+      throw error;
+    }
+  }, [availableTenses, fadeAnim]);
+
+  // Ensure selectedTense always respects current Settings/Pro availability
+  useEffect(() => {
+    if (!availableTenses.includes(selectedTense)) {
+      const newTense = availableTenses[Math.floor(Math.random() * availableTenses.length)] as Tense;
+      setSelectedTense(newTense);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [availableTenses]);
+
+  // Refresh the practice card whenever this tab/screen gains focus
+  useFocusEffect(
+    React.useCallback(() => {
+      let isActive = true;
+
+      const refreshCard = async () => {
+        if (!isActive) return;
+        try {
+          await loadNewVerb();
+        } catch (error) {
+          console.error('Error refreshing practice card on focus:', error);
+        }
+      };
+
+      refreshCard();
+
+      return () => {
+        isActive = false;
+        try {
+          fadeAnim.stopAnimation();
+        } catch (error) {
+          console.error('Error stopping animation:', error);
+        }
+      };
+    }, [loadNewVerb, fadeAnim])
+  );
 
   // Type-safe access to conjugations (rule-based, with legacy fallback)
   const correctAnswer = currentVerb ? getConjugatedForm(currentVerb, selectedTense, selectedPronoun) : 'N/A';
   console.log('Correct answer:', correctAnswer);
 
-  const handleRevealAnswer = () => {
+  const handleRevealAnswer = async () => {
     setShowAnswer(true);
     if (currentVerb) {
-      updateProgress(currentVerb.id, true);
+      try {
+        await updateProgress(currentVerb.id, true);
+      } catch (error) {
+        console.error('Error updating progress:', error);
+      }
     }
-
     Animated.timing(fadeAnim, {
       toValue: 1,
       duration: 300,
@@ -77,25 +134,12 @@ export default function PracticeScreen() {
   const handleNextVerb = async () => {
     // Increment daily goal counter whenever user proceeds to the next card
     setDailyCount((prev) => prev + 1);
-
+    
     try {
-      const verb = await verbService.getRandomVerb();
-      setCurrentVerb(verb);
+      await loadNewVerb();
     } catch (error) {
       console.error('Error loading next verb:', error);
-      return;
     }
-
-    // If user is pro, allow all tenses, otherwise limit to present and past
-    const availableTenses = isProUser ? tenses : tenses.slice(0, 2);
-    // Type assertion to ensure we're getting a valid Tense
-    const newTense = availableTenses[Math.floor(Math.random() * availableTenses.length)] as Tense;
-    setSelectedTense(newTense);
-    // Type assertion to ensure we're getting a valid Pronoun
-    const newPronoun = pronouns[Math.floor(Math.random() * pronouns.length)] as Pronoun;
-    setSelectedPronoun(newPronoun);
-    setShowAnswer(false);
-    fadeAnim.setValue(0);
   };
 
   const handlePlayAudio = () => {

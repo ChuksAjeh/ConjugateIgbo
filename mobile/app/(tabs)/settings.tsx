@@ -10,17 +10,15 @@ import {
   Modal,
   ActivityIndicator,
   TextInput,
-  Platform,
+
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { 
+import {
   Moon, 
   Sun, 
   Bell, 
   Target, 
   Volume2, 
-  Type, 
-  Eye, 
+  Eye,
   MessageCircle, 
   ChevronRight,
   X,
@@ -35,7 +33,7 @@ import { useTheme } from '@/components/ThemeProvider';
 import { createStyles } from './settingsStyles';
 
 export default function SettingsScreen() {
-  const { settings, updateSettings, resetSettings } = useSettings();
+  const { settings, updateSettings } = useSettings();
   const { isProUser, restorePurchases, isLoading } = usePurchases();
   const { theme, isDark } = useTheme();
   const styles = createStyles(theme, isDark);
