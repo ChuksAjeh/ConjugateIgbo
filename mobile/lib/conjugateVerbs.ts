@@ -1,6 +1,9 @@
 // Rule-based conjugation engine for Igbo verbs
 import { Conjugations, IgboVerb, Pronoun, Tense } from '@/models/verb';
 
+// Supported dialects (keep in sync with settings.dialect)
+export type Dialect = 'central' | 'delta' | 'anambra' | 'imo' | 'abia';
+
 function getRoot(verb: IgboVerb): string {
   const base = verb.rootForm || verb.igbo || '';
   return base.trim();
@@ -55,45 +58,57 @@ function applySubjunctiveRule(root: string, _pronoun: Pronoun): string {
   return root + 'e';
 }
 
-export function generateConjugations(verb: IgboVerb): Conjugations {
+// Return the rule implementations for a given dialect
+function getDialectRules(_dialect: Dialect) {
+  // TODO: Implement dialect-specific differences. For now, use the same rules.
+  return {
+    applyPresentRule,
+    applyPastRule,
+    applyFutureRule,
+    applySubjunctiveRule,
+  };
+}
+
+export function generateConjugations(verb: IgboVerb, dialect: Dialect = 'delta'): Conjugations {
   const root = getRoot(verb);
   const stem = removePrefixI(root);
   const vowelPrefix = getVowelharmonyPronoun(stem);
+  const rules = getDialectRules(dialect);
   
   return {
     present: {
-      m: `${vowelPrefix} na m ${applyPresentRule(root, 'm')}`,
-      i: `I na ${applyPresentRule(root, 'i')}`,
-      o: `Ọ na ${applyPresentRule(root, 'o')}`,
-      anyi: `Ànyị na ${applyPresentRule(root, 'anyi')}`,
-      unu: `Unu na ${applyPresentRule(root, 'unu')}`,
-      wa: `Wa na ${applyPresentRule(root, 'wa')}`,
+      m: `${vowelPrefix} na m ${rules.applyPresentRule(root, 'm')}`,
+      i: `I na ${rules.applyPresentRule(root, 'i')}`,
+      o: `Ọ na ${rules.applyPresentRule(root, 'o')}`,
+      anyi: `Ànyị na ${rules.applyPresentRule(root, 'anyi')}`,
+      unu: `Unu na ${rules.applyPresentRule(root, 'unu')}`,
+      wa: `Wa na ${rules.applyPresentRule(root, 'wa')}`,
     },
     past: {
-      m: `${vowelPrefix} ${applyPastRule(root, 'm')} m`,
-      i: `I ${applyPastRule(root, 'i')}`,
-      o: `Ọ ${applyPastRule(root, 'o')}`,
-      anyi: `Ànyị ${applyPastRule(root, 'anyi')}`,
-      unu: `Unu ${applyPastRule(root, 'unu')}`,
-      wa: `Wa ${applyPastRule(root, 'wa')}`,
+      m: `${vowelPrefix} ${rules.applyPastRule(root, 'm')} m`,
+      i: `I ${rules.applyPastRule(root, 'i')}`,
+      o: `Ọ ${rules.applyPastRule(root, 'o')}`,
+      anyi: `Ànyị ${rules.applyPastRule(root, 'anyi')}`,
+      unu: `Unu ${rules.applyPastRule(root, 'unu')}`,
+      wa: `Wa ${rules.applyPastRule(root, 'wa')}`,
     },
     future: {
-      m: `M ga ${applyFutureRule(root, 'm')}`,
-      i: `I ga ${applyFutureRule(root, 'i')}`,
-      o: `Ọ ga ${applyFutureRule(root, 'o')}`,
-      anyi: `Ànyị ga ${applyFutureRule(root, 'anyi')}`,
-      unu: `Unu ga ${applyFutureRule(root, 'unu')}`,
-      wa: `Wa ga ${applyFutureRule(root, 'wa')}`,
+      m: `M ga ${rules.applyFutureRule(root, 'm')}`,
+      i: `I ga ${rules.applyFutureRule(root, 'i')}`,
+      o: `Ọ ga ${rules.applyFutureRule(root, 'o')}`,
+      anyi: `Ànyị ga ${rules.applyFutureRule(root, 'anyi')}`,
+      unu: `Unu ga ${rules.applyFutureRule(root, 'unu')}`,
+      wa: `Wa ga ${rules.applyFutureRule(root, 'wa')}`,
     },
   };
 }
 
-export function getConjugatedForm(verb: IgboVerb, tense: Tense, pronoun: Pronoun): string {
+export function getConjugatedForm(verb: IgboVerb, tense: Tense, pronoun: Pronoun, dialect: Dialect = 'delta'): string {
   // Prefer pre-computed conjugations if present (legacy data), otherwise generate
   if (verb.conjugations && verb.conjugations[tense] && verb.conjugations[tense][pronoun]) {
     return verb.conjugations[tense][pronoun];
   }
-  const conj = generateConjugations(verb);
+  const conj = generateConjugations(verb, dialect);
 
   // Check if the tense exists in the generated conjugations
   if (!conj[tense]) {

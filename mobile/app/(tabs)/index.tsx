@@ -5,7 +5,8 @@ import {
   TouchableOpacity,
   Animated,
   SafeAreaView,
-  ScrollView
+  ScrollView,
+  Modal
 } from 'react-native';
 import { RotateCcw, Volume2, FileText } from 'lucide-react-native';
 import { router } from 'expo-router';
@@ -26,6 +27,7 @@ export default function PracticeScreen() {
   const [selectedPronoun, setSelectedPronoun] = useState<Pronoun>(() => pronouns[Math.floor(Math.random() * pronouns.length)]);
   const [showAnswer, setShowAnswer] = useState(false);
   const [fadeAnim] = useState(new Animated.Value(0));
+  const [fallbackModalVisible, setFallbackModalVisible] = useState(false);
 
   const { settings } = useSettings();
   const { updateProgress } = useProgress();
@@ -53,8 +55,11 @@ export default function PracticeScreen() {
   // Extract the common logic into a reusable function
   const loadNewVerb = useCallback(async () => {
     try {
-      const verb = await verbService.getRandomVerb();
+      const { verb, fellBackToDelta } = await verbService.getRandomVerbForDialect(settings.dialect as any);
       setCurrentVerb(verb);
+      if (fellBackToDelta) {
+        setFallbackModalVisible(true);
+      }
 
       // Pick a valid tense based on the latest settings and entitlement
       const newTense = availableTenses[Math.floor(Math.random() * availableTenses.length)] as Tense;
@@ -112,7 +117,7 @@ export default function PracticeScreen() {
   );
 
   // Type-safe access to conjugations (rule-based, with legacy fallback)
-  const correctAnswer = currentVerb ? getConjugatedForm(currentVerb, selectedTense, selectedPronoun) : 'N/A';
+  const correctAnswer = currentVerb ? getConjugatedForm(currentVerb, selectedTense, selectedPronoun, settings.dialect as any) : 'N/A';
   console.log('Correct answer:', correctAnswer);
 
   const handleRevealAnswer = async () => {
@@ -273,6 +278,31 @@ export default function PracticeScreen() {
           </TouchableOpacity>
         </View>
       </View>
+      {/* Fallback Modal for verbs defaulting to Delta */}
+      <Modal
+        visible={fallbackModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setFallbackModalVisible(false)}
+      >
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center' }}>
+          <View style={{ backgroundColor: theme.colors.surface, padding: 20, borderRadius: 12, width: '85%' }}>
+            <Text style={{ fontSize: 18, fontWeight: '600', marginBottom: 8, color: theme.colors.text }}>
+              Network or data issue
+            </Text>
+            <Text style={{ color: theme.colors.textSecondary, marginBottom: 16 }}>
+              Failed to get verbs for {settings.dialect.charAt(0).toUpperCase() + settings.dialect.slice(1)} Igbo.
+              Defaulting to Delta Igbo until your connection is restored.
+            </Text>
+            <TouchableOpacity
+              onPress={() => setFallbackModalVisible(false)}
+              style={{ alignSelf: 'flex-end', paddingVertical: 8, paddingHorizontal: 12, backgroundColor: '#3b82f6', borderRadius: 8 }}
+            >
+              <Text style={{ color: '#ffffff', fontWeight: '600' }}>OK</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }

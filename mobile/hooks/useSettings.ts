@@ -24,7 +24,7 @@ const defaultSettings: AppSettings = {
   autoPronounce: false,
   dailyGoal: 100,
   appearance: 'light',
-  dialect: 'central',
+  dialect: 'delta',
   displayMode: 'Verb and translation',
   rateAnswers: false,
   enabledTenses: {
