@@ -31,6 +31,10 @@ const defaultSettings: AppSettings = {
     present: true,
     past: true,
     future: false,
+    imperative: false,
+    imperfect: false,
+    conditional: false,
+    subjunctive: false
   },
   notifications: {
     daily: true,
@@ -90,14 +94,14 @@ async function loadFromStorageOnce() {
       const parsed = JSON.parse(saved);
       currentSettings = { ...defaultSettings, ...parsed } as AppSettings;
     } else {
-      // Persist defaults on first run to keep storage in sync
+      // Persist defaults on the first run to keep storage in sync
       await AsyncStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(currentSettings));
     }
   } catch (e) {
     console.error('Error loading settings:', e);
   } finally {
     initialized = true;
-    // Notify all subscribers of initial value
+    // Notify all subscribers of the initial value
     settingsListeners.forEach((cb) => cb(currentSettings));
   }
 }
@@ -123,7 +127,7 @@ export const useSettings = () => {
     if (!initialized) {
       loadFromStorageOnce();
     } else {
-      // Already initialized, ensure local state is up to date
+      // Already initialized, ensure the local state is up to date
       setSettings(currentSettings);
       setIsLoading(false);
     }

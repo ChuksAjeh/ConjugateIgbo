@@ -8,7 +8,7 @@ export interface VerbDTO {
   freqRank?: number | null;
 }
 
-export type Tense = 'present' | 'past' | 'future';
+export type Tense = 'present' | 'past' | 'future' | 'subjunctive'| 'conditional'| 'imperative' |'imperfect';
 export type Pronoun = 'm' | 'i' | 'o' | 'anyi' | 'unu' | 'wa';
 
 export type VerbType = 'regular' | 'irregular';
