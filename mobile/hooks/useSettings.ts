@@ -1,14 +1,12 @@
 import { useState, useEffect } from 'react';
 
 export interface AppSettings {
-  typingMode: boolean;
   audioEnabled: boolean;
   autoPronounce: boolean;
   dailyGoal: number;
   appearance: 'light' | 'dark' | 'system';
   dialect: 'central' | 'delta' | 'anambra' | 'imo' | 'abia';
   displayMode: 'Verb and translation' | 'Only translation' | 'Only verb';
-  highlightMistakes: boolean;
   rateAnswers: boolean;
   enabledTenses: {
     present: boolean;
@@ -26,14 +24,12 @@ export interface AppSettings {
 }
 
 const defaultSettings: AppSettings = {
-  typingMode: false,
   audioEnabled: true,
   autoPronounce: false,
   dailyGoal: 100,
   appearance: 'light',
   dialect: 'central',
   displayMode: 'Verb and translation',
-  highlightMistakes: true,
   rateAnswers: false,
   enabledTenses: {
     present: true,
