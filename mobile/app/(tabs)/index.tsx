@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -35,6 +35,17 @@ export default function PracticeScreen() {
   const { theme } = useTheme();
   const [dailyCount, setDailyCount] = useState(0);
 
+  // Track last used dialect to trigger reloads when it changes
+  const lastDialectRef = useRef(settings.dialect);
+  useEffect(() => {
+    if (lastDialectRef.current !== settings.dialect) {
+      lastDialectRef.current = settings.dialect;
+      // When dialect changes (e.g., user returns from Settings), refresh the card
+      loadNewVerb();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [settings.dialect]);
+
   const availableTenses: Tense[] = useMemo(() => {
     let list = [...tenses];
     if (!isProUser) {
@@ -55,6 +66,9 @@ export default function PracticeScreen() {
   // Extract the common logic into a reusable function
   const loadNewVerb = useCallback(async () => {
     try {
+      // Reset any previous fallback notice; we'll show it again if we actually fall back
+      setFallbackModalVisible(false);
+
       const { verb, fellBackToDelta } = await verbService.getRandomVerbForDialect(settings.dialect as any);
       setCurrentVerb(verb);
       if (fellBackToDelta) {
@@ -78,7 +92,7 @@ export default function PracticeScreen() {
       console.error('Error loading verb:', error);
       throw error;
     }
-  }, [availableTenses, fadeAnim]);
+  }, [availableTenses, fadeAnim, settings.dialect]);
 
   // Ensure selectedTense always respects current Settings/Pro availability
   useEffect(() => {
