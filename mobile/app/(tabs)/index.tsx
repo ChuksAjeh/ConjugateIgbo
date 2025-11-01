@@ -33,6 +33,7 @@ export default function PracticeScreen() {
   const { updateProgress, statistics } = useProgress();
   const { isProUser } = usePurchases();
   const { theme } = useTheme();
+  const [dailyCount, setDailyCount] = useState(0);
 
   // Initialize with a random verb
   useEffect(() => {
@@ -74,6 +75,9 @@ export default function PracticeScreen() {
   };
 
   const handleNextVerb = async () => {
+    // Increment daily goal counter whenever user proceeds to the next card
+    setDailyCount((prev) => prev + 1);
+
     try {
       const verb = await verbService.getRandomVerb();
       setCurrentVerb(verb);
@@ -141,8 +145,10 @@ export default function PracticeScreen() {
         borderBottomColor: theme.colors.border
       }]}>
         <Text style={[styles.progressTitle, { color: theme.colors.textSecondary }]}>Daily goal</Text>
-        <Text
-          style={[styles.progressCount, { color: theme.colors.textSecondary }]}>{String(statistics.dailyGoalProgress)} / {String(settings.dailyGoal)}</Text>
+        <Text style={[styles.progressCount]}> 
+          <Text style={{ color: dailyCount >= settings.dailyGoal ? '#10b981' : '#ef4444' }}>{String(dailyCount)}</Text>
+          <Text style={{ color: theme.colors.textSecondary }}> / {String(settings.dailyGoal)}</Text>
+        </Text>
       </View>
 
       <View style={styles.content}>
