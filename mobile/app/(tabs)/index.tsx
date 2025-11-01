@@ -28,39 +28,26 @@ export default function PracticeScreen() {
   const [fadeAnim] = useState(new Animated.Value(0));
 
   const { settings } = useSettings();
-  const { updateProgress, statistics } = useProgress();
+  const { updateProgress } = useProgress();
   const { isProUser } = usePurchases();
   const { theme } = useTheme();
   const [dailyCount, setDailyCount] = useState(0);
 
-  // Build the list of available tenses based on Settings and Pro status
   const availableTenses: Tense[] = useMemo(() => {
-    // Start with the app-supported tenses
     let list = [...tenses];
-
-    // Restrict non-Pro users to present and past only
     if (!isProUser) {
       list = list.filter((t) => t === 'present' || t === 'past');
     }
-
-    // Apply user settings toggles
     list = list.filter((t) => {
       return settings.enabledTenses[t];
     });
-
-    // Fallbacks to ensure we always have at least one tense
     if (list.length === 0) {
-      // Try a sensible default respecting entitlement first
-      const fallback = (!isProUser ? ['present', 'past'] : ['present', 'past', 'future']).filter(
-        (t) => (settings.enabledTenses as any)[t] !== false
-      );
-      if (fallback.length > 0) return fallback as Tense[];
-
-      // Absolute fallback
-      return (!isProUser ? ['present', 'past'] : ['present', 'past', 'future']) as Tense[];
+      const defaults: Tense[] = !isProUser ? ['present', 'past'] : ['present', 'past', 'future'];
+      const fallback = defaults.filter((t) => settings.enabledTenses[t]);
+      if (fallback.length > 0) return fallback;
+      return defaults;
     }
-
-    return list as Tense[];
+    return list;
   }, [isProUser, settings.enabledTenses]);
 
   // Ensure selectedTense always respects current Settings/Pro availability
@@ -106,43 +93,26 @@ export default function PracticeScreen() {
         // Stop any ongoing animations to avoid warnings on blur/unmount
         try {
           fadeAnim.stopAnimation();
-        } catch {}
+        } catch (error) {
+          console.error('Error stopping animation:', error);
+        }
       };
-    }, [availableTenses])
+    }, [availableTenses, fadeAnim])
   );
-
-  // Initialize with a random verb
-  useEffect(() => {
-    const loadRandomVerb = async () => {
-      try {
-        const verb = await verbService.getRandomVerb();
-        console.log('Loaded random verb:', verb);
-        setCurrentVerb(verb);
-      } catch (error) {
-        console.error('Error loading random verb:', error);
-      }
-    };
-
-    loadRandomVerb();
-
-    // Cleanup function to prevent animation errors when the component unmounts
-    return () => {
-      // Stop any ongoing animations
-      fadeAnim.stopAnimation();
-      fadeAnim.setValue(0);
-    };
-  }, []);
-
+  
   // Type-safe access to conjugations (rule-based, with legacy fallback)
   const correctAnswer = currentVerb ? getConjugatedForm(currentVerb, selectedTense, selectedPronoun) : 'N/A';
   console.log('Correct answer:', correctAnswer);
 
-  const handleRevealAnswer = () => {
+  const handleRevealAnswer = async () => {
     setShowAnswer(true);
     if (currentVerb) {
-      updateProgress(currentVerb.id, true);
+      try {
+        await updateProgress(currentVerb.id, true);
+      } catch (error) {
+        console.error('Error updating progress:', error);
+      }
     }
-
     Animated.timing(fadeAnim, {
       toValue: 1,
       duration: 300,
