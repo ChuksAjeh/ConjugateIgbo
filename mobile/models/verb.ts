@@ -19,7 +19,10 @@ export interface Conjugations {
   present: Record<Pronoun, string>;
   past: Record<Pronoun, string>;
   future: Record<Pronoun, string>;
-  // subjunctive: Record<Pronoun, string>;
+  subjunctive?: Record<Pronoun, string>;
+  conditional?: Record<Pronoun, string>;
+  imperative?: Record<Pronoun, string>;
+  imperfect?: Record<Pronoun, string>;
 }
 
 export interface ExamplePair {
