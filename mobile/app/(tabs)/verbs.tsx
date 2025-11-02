@@ -339,19 +339,13 @@ const VerbDetailContent = ({ verb, theme }: { verb: IgboVerb; theme: any }) => {
 
   // Compute available tenses similar to Practice screen
   const availableTenses: Tense[] = useMemo(() => {
-    let list = [...(tenseList as Tense[])];
+    // On the Verbs page, Settings (enabled tenses) should NOT affect which tenses appear.
+    // Only Pro status controls visibility: free users see Present and Past; Pro users see all tenses.
     if (!isProUser) {
-      list = list.filter((t) => t === 'present' || t === 'past');
+      return ['present', 'past'];
     }
-    list = list.filter((t) => settings.enabledTenses[t]);
-    if (list.length === 0) {
-      const defaults: Tense[] = !isProUser ? ['present', 'past'] : ['present', 'past', 'future'];
-      const fallback = defaults.filter((t) => settings.enabledTenses[t]);
-      if (fallback.length > 0) return fallback;
-      return defaults;
-    }
-    return list;
-  }, [isProUser, settings.enabledTenses]);
+    return [...(tenseList as Tense[])];
+  }, [isProUser]);
 
   const titleCase = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
