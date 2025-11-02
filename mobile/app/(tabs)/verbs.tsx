@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { router } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Search, Filter, Volume2, X, Book } from 'lucide-react-native';
 import { IgboVerb, Tense, Pronoun } from '@/models/verb';
@@ -27,7 +28,7 @@ type SortType = 'alphabetical' | 'frequency' | 'difficulty';
 
 export default function VerbsScreen() {
   const { theme, isDark } = useTheme();
-  const { verbId } = useLocalSearchParams<{ verbId?: string }>();
+  const { verbId, openDetails } = useLocalSearchParams<{ verbId?: string; openDetails?: string }>();
   const [verbs, setVerbs] = useState<IgboVerb[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -44,11 +45,13 @@ export default function VerbsScreen() {
         const allVerbs = await verbService.getAllVerbs();
         setVerbs(allVerbs);
         
-        // If verbId is provided, automatically show that verb's details
-        if (verbId) {
+        // Only auto-open details if explicitly requested via openDetails flag
+        if (verbId && openDetails) {
           const targetVerb = allVerbs.find(verb => verb.id === verbId);
           if (targetVerb) {
             setSelectedVerb(targetVerb);
+            // Clear the flag so subsequent visits to Verbs don't auto-open
+            try { router.setParams({ openDetails: undefined }); } catch {}
           }
         }
       } catch (error) {
@@ -59,7 +62,25 @@ export default function VerbsScreen() {
     };
     
     loadVerbs();
-  }, [verbId]);
+  }, [verbId, openDetails]);
+
+  // Ensure that when navigating here from Practice with a verbId,
+  // closing the modal and pressing the details icon again reopens the modal.
+  // This runs every time the Verbs tab regains focus.
+  useFocusEffect(
+    React.useCallback(() => {
+      // Only reopen automatically if explicitly requested via openDetails flag
+      if (verbId && openDetails && !selectedVerb) {
+        const targetVerb = verbs.find(v => v.id === verbId);
+        if (targetVerb) {
+          setSelectedVerb(targetVerb);
+          // Clear the flag once handled so Verbs tab doesn't auto-open on future visits
+          try { router.setParams({ openDetails: undefined }); } catch {}
+        }
+      }
+      return () => {};
+    }, [verbId, openDetails, verbs, selectedVerb])
+  );
 
   const filteredAndSortedVerbs = useMemo(() => {
     const q = searchQuery.toLowerCase();

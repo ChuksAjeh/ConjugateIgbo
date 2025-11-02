@@ -179,7 +179,7 @@ export default function PracticeScreen() {
       // Navigate to verbs tab and show this specific verb
       router.push({
         pathname: '/(tabs)/verbs',
-        params: { verbId: currentVerb.id }
+        params: { verbId: currentVerb.id, openDetails: '1' }
       });
     }
   };
