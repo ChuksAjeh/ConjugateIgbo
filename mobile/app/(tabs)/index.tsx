@@ -108,20 +108,24 @@ export default function PracticeScreen() {
   }, [availableTenses]);
 
   // Refresh the practice card whenever this tab/screen gains focus
+  // Only load a new verb on initial focus (when there is no currentVerb).
+  // When returning from the Verb Details screen, keep showing the same card.
   useFocusEffect(
     React.useCallback(() => {
       let isActive = true;
 
-      const refreshCard = async () => {
+      const refreshCardIfNeeded = async () => {
         if (!isActive) return;
         try {
-          await loadNewVerb();
+          if (!currentVerb) {
+            await loadNewVerb();
+          }
         } catch (error) {
           console.error('Error refreshing practice card on focus:', error);
         }
       };
 
-      refreshCard();
+      refreshCardIfNeeded();
 
       return () => {
         isActive = false;
@@ -131,7 +135,7 @@ export default function PracticeScreen() {
           console.error('Error stopping animation:', error);
         }
       };
-    }, [loadNewVerb, fadeAnim])
+    }, [currentVerb, loadNewVerb, fadeAnim])
   );
 
   // Type-safe access to conjugations (rule-based, with legacy fallback)
