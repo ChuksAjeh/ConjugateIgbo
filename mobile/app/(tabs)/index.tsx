@@ -35,6 +35,10 @@ export default function PracticeScreen() {
   const { theme } = useTheme();
   const [dailyCount, setDailyCount] = useState(0);
 
+  // Determine what to show on the card based on Settings > Display Mode
+  const showEnglish = settings.displayMode === 'Verb and translation' || settings.displayMode === 'Only translation';
+  const showIgbo = settings.displayMode === 'Verb and translation' || settings.displayMode === 'Only verb';
+
   // Track last used dialect to trigger reloads when it changes
   const lastDialectRef = useRef(settings.dialect);
   useEffect(() => {
@@ -219,15 +223,19 @@ export default function PracticeScreen() {
           {/* Main Card */}
           <View style={styles.cardContainer}>
             <View style={[styles.card, { backgroundColor: theme.colors.surface }]}>
-              {/* English meaning at top */}
-              <Text style={[styles.englishMeaning, { color: theme.colors.textSecondary }]}>
-                {String(currentVerb.english)}
-              </Text>
+              {/* English meaning at top (optional) */}
+              {showEnglish && (
+                <Text style={[styles.englishMeaning, { color: theme.colors.textSecondary }]}>
+                  {String(currentVerb.english)}
+                </Text>
+              )}
 
-              {/* Main Igbo verb */}
-              <Text style={[styles.igboVerb, { color: theme.colors.text }]}>
-                {String(currentVerb.igbo)}
-              </Text>
+              {/* Main Igbo verb (optional) */}
+              {showIgbo && (
+                <Text style={[styles.igboVerb, { color: theme.colors.text }]}>
+                  {String(currentVerb.igbo)}
+                </Text>
+              )}
 
               {/* Tense badge */}
               <View style={[styles.tenseBadge, { backgroundColor: getTenseBadgeColor(selectedTense) }]}>
