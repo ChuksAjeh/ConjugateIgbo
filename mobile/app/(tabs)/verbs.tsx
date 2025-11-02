@@ -12,18 +12,23 @@ import {
 } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { router } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Search, Filter, Volume2, X, Book } from 'lucide-react-native';
-import { IgboVerb } from '@/models/verb';
+import { IgboVerb, Tense, Pronoun } from '@/models/verb';
 import { verbService } from '@/lib/verbService';
 import { useTheme } from '@/components/ThemeProvider';
+import { getConjugatedForm } from '@/lib/conjugateVerbs';
+import { useSettings } from '@/hooks/useSettings';
+import { usePurchases } from '@/hooks/usePurchases';
+import { pronounLabels, pronouns, tenses as tenseList } from '@/app/(tabs)/models/interfaces';
 
 type FilterType = 'all' | 'common' | 'regular' | 'irregular';
 type SortType = 'alphabetical' | 'frequency' | 'difficulty';
 
 export default function VerbsScreen() {
   const { theme, isDark } = useTheme();
-  const { verbId } = useLocalSearchParams<{ verbId?: string }>();
+  const { verbId, openDetails } = useLocalSearchParams<{ verbId?: string; openDetails?: string }>();
   const [verbs, setVerbs] = useState<IgboVerb[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -40,11 +45,13 @@ export default function VerbsScreen() {
         const allVerbs = await verbService.getAllVerbs();
         setVerbs(allVerbs);
         
-        // If verbId is provided, automatically show that verb's details
-        if (verbId) {
+        // Only auto-open details if explicitly requested via openDetails flag
+        if (verbId && openDetails) {
           const targetVerb = allVerbs.find(verb => verb.id === verbId);
           if (targetVerb) {
             setSelectedVerb(targetVerb);
+            // Clear the flag so subsequent visits to Verbs don't auto-open
+            try { router.setParams({ openDetails: undefined }); } catch {}
           }
         }
       } catch (error) {
@@ -55,7 +62,25 @@ export default function VerbsScreen() {
     };
     
     loadVerbs();
-  }, [verbId]);
+  }, [verbId, openDetails]);
+
+  // Ensure that when navigating here from Practice with a verbId,
+  // closing the modal and pressing the details icon again reopens the modal.
+  // This runs every time the Verbs tab regains focus.
+  useFocusEffect(
+    React.useCallback(() => {
+      // Only reopen automatically if explicitly requested via openDetails flag
+      if (verbId && openDetails && !selectedVerb) {
+        const targetVerb = verbs.find(v => v.id === verbId);
+        if (targetVerb) {
+          setSelectedVerb(targetVerb);
+          // Clear the flag once handled so Verbs tab doesn't auto-open on future visits
+          try { router.setParams({ openDetails: undefined }); } catch {}
+        }
+      }
+      return () => {};
+    }, [verbId, openDetails, verbs, selectedVerb])
+  );
 
   const filteredAndSortedVerbs = useMemo(() => {
     const q = searchQuery.toLowerCase();
@@ -330,205 +355,49 @@ export default function VerbsScreen() {
 
 // Separate component for verb detail content
 const VerbDetailContent = ({ verb, theme }: { verb: IgboVerb; theme: any }) => {
-  const [selectedTab, setSelectedTab] = useState<'indicative' | 'subjunctive' | 'others'>('indicative');
-  const [practiceEnabled, setPracticeEnabled] = useState(true);
+  const { settings } = useSettings();
+  const { isProUser } = usePurchases();
 
-  const TabButton = ({ 
-    title, 
-    isActive, 
-    onPress 
-  }: { 
-    title: string; 
-    isActive: boolean; 
-    onPress: () => void; 
-  }) => (
-    <TouchableOpacity style={styles.tabButton} onPress={onPress}>
-      <Text style={[
-        styles.tabButtonText,
-        { color: isActive ? '#f59e0b' : theme.colors.textSecondary },
-        isActive && styles.tabButtonTextActive
-      ]}>
-        {title}
-      </Text>
-      {isActive && <View style={styles.tabIndicator} />}
-    </TouchableOpacity>
-  );
+  // Compute available tenses similar to Practice screen
+  const availableTenses: Tense[] = useMemo(() => {
+    // On the Verbs page, Settings (enabled tenses) should NOT affect which tenses appear.
+    // Only Pro status controls visibility: free users see Present and Past; Pro users see all tenses.
+    if (!isProUser) {
+      return ['present', 'past'];
+    }
+    return [...(tenseList as Tense[])];
+  }, [isProUser]);
 
-  const ConjugationRow = ({ 
-    pronoun, 
-    conjugation, 
-    isEnabled = true 
-  }: { 
-    pronoun: string; 
-    conjugation: string; 
-    isEnabled?: boolean; 
-  }) => (
-    <TouchableOpacity style={styles.conjugationRow} disabled={!isEnabled}>
-      <Text style={[styles.pronounLabel, { color: theme.colors.textSecondary }]}>{pronoun}</Text>
-      <Text style={[
-        styles.conjugationValue, 
-        { color: isEnabled ? '#ef4444' : theme.colors.textSecondary }
-      ]}>
-        {conjugation}
-      </Text>
-    </TouchableOpacity>
-  );
-
-  const renderIndicativeContent = () => (
-    <View style={styles.tabContent}>
-      <View style={styles.practiceToggle}>
-        <View style={styles.flagContainer}>
-          <Text style={styles.flagEmoji}>🇬🇧</Text>
-          <Text style={[styles.verbMeaningLarge, { color: theme.colors.text }]}>{verb.english}</Text>
-        </View>
-        
-        <View style={styles.toggleContainer}>
-          <Text style={[styles.toggleLabel, { color: theme.colors.text }]}>Enabled for practice</Text>
-          <Switch
-            value={practiceEnabled}
-            onValueChange={setPracticeEnabled}
-            trackColor={{ false: '#374151', true: '#f59e0b' }}
-            thumbColor="#ffffff"
-          />
-        </View>
-      </View>
-
-      <Text style={[styles.instructionText, { color: theme.colors.textSecondary }]}>
-        Tap on a conjugation row to hear its pronunciation. Swipe left to exclude it from practice.
-      </Text>
-
-      <View style={styles.tenseGroup}>
-        <Text style={[styles.tenseGroupTitle, { color: theme.colors.text }]}>Present</Text>
-        <ConjugationRow pronoun="yo" conjugation="soy" />
-        <ConjugationRow pronoun="tú" conjugation="eres" />
-        <ConjugationRow pronoun="él/ella/Ud." conjugation="es" />
-        <ConjugationRow pronoun="nosotros" conjugation="somos" />
-        <ConjugationRow pronoun="vosotros" conjugation="sois" />
-        <ConjugationRow pronoun="ellos/ellas/Uds." conjugation="son" />
-      </View>
-
-      <View style={styles.tenseGroup}>
-        <Text style={[styles.tenseGroupTitle, { color: theme.colors.text }]}>Preterite</Text>
-        <ConjugationRow pronoun="yo" conjugation="fui" />
-        <ConjugationRow pronoun="tú" conjugation="fuiste" />
-        <ConjugationRow pronoun="él/ella/Ud." conjugation="fue" />
-        <ConjugationRow pronoun="nosotros" conjugation="fuimos" />
-        <ConjugationRow pronoun="vosotros" conjugation="fuisteis" />
-        <ConjugationRow pronoun="ellos/ellas/Uds." conjugation="fueron" />
-      </View>
-    </View>
-  );
-
-  const renderSubjunctiveContent = () => (
-    <View style={styles.tabContent}>
-      <View style={styles.practiceToggle}>
-        <View style={styles.flagContainer}>
-          <Text style={styles.flagEmoji}>🇬🇧</Text>
-          <Text style={[styles.verbMeaningLarge, { color: theme.colors.text }]}>{verb.english}</Text>
-        </View>
-        
-        <View style={styles.toggleContainer}>
-          <Text style={[styles.toggleLabel, { color: theme.colors.text }]}>Enabled for practice</Text>
-          <Switch
-            value={practiceEnabled}
-            onValueChange={setPracticeEnabled}
-            trackColor={{ false: '#374151', true: '#f59e0b' }}
-            thumbColor="#ffffff"
-          />
-        </View>
-      </View>
-
-      <Text style={[styles.instructionText, { color: theme.colors.textSecondary }]}>
-        Tap on a conjugation row to hear its pronunciation. Swipe left to exclude it from practice.
-      </Text>
-      <View style={styles.tenseGroup}>
-        <Text style={[styles.tenseGroupTitle, { color: theme.colors.text }]}>Present subjunctive</Text>
-        <ConjugationRow pronoun="yo" conjugation="sea" />
-        <ConjugationRow pronoun="tú" conjugation="seas" />
-        <ConjugationRow pronoun="él/ella/Ud." conjugation="sea" />
-        <ConjugationRow pronoun="nosotros" conjugation="seamos" />
-        <ConjugationRow pronoun="vosotros" conjugation="seáis" />
-        <ConjugationRow pronoun="ellos/ellas/Uds." conjugation="sean" />
-      </View>
-
-      <View style={styles.tenseGroup}>
-        <Text style={[styles.tenseGroupTitle, { color: theme.colors.text }]}>Imperfect subjunctive (-ra)</Text>
-        <ConjugationRow pronoun="yo" conjugation="fuera" />
-        <ConjugationRow pronoun="tú" conjugation="fueras" />
-        <ConjugationRow pronoun="él/ella/Ud." conjugation="fuera" />
-        <ConjugationRow pronoun="nosotros" conjugation="fuéramos" />
-        <ConjugationRow pronoun="vosotros" conjugation="fuerais" />
-        <ConjugationRow pronoun="ellos/ellas/Uds." conjugation="fueran" />
-      </View>
-    </View>
-  );
-
-  const renderOthersContent = () => (
-    <View style={styles.tabContent}>
-      <View style={styles.practiceToggle}>
-        <View style={styles.flagContainer}>
-          <Text style={styles.flagEmoji}>🇬🇧</Text>
-          <Text style={[styles.verbMeaningLarge, { color: theme.colors.text }]}>{verb.meaning}</Text>
-        </View>
-        
-        <View style={styles.toggleContainer}>
-          <Text style={[styles.toggleLabel, { color: theme.colors.text }]}>Enabled for practice</Text>
-          <Switch
-            value={practiceEnabled}
-            onValueChange={setPracticeEnabled}
-            trackColor={{ false: '#374151', true: '#f59e0b' }}
-            thumbColor="#ffffff"
-          />
-        </View>
-      </View>
-
-      <Text style={[styles.instructionText, { color: theme.colors.textSecondary }]}>
-        Tap on a conjugation row to hear its pronunciation. Swipe left to exclude it from practice.
-      </Text>
-
-      <View style={styles.tenseGroup}>
-        <Text style={[styles.tenseGroupTitle, { color: theme.colors.text }]}>Impersonal</Text>
-        <ConjugationRow pronoun="Gerund" conjugation="siendo" />
-        <ConjugationRow pronoun="Past participle" conjugation="sido" />
-      </View>
-
-      <View style={styles.tenseGroup}>
-        <Text style={[styles.tenseGroupTitle, { color: theme.colors.text }]}>Imperative</Text>
-        <ConjugationRow pronoun="yo" conjugation="-" isEnabled={false} />
-        <ConjugationRow pronoun="tú" conjugation="sé" />
-        <ConjugationRow pronoun="él/ella/Ud." conjugation="sea" />
-        <ConjugationRow pronoun="nosotros" conjugation="seamos" />
-        <ConjugationRow pronoun="vosotros" conjugation="sed" />
-        <ConjugationRow pronoun="ellos/ellas/Uds." conjugation="sean" />
-      </View>
-    </View>
-  );
+  const titleCase = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
   return (
     <View style={styles.verbDetailContainer}>
       <Text style={[styles.verbTitle, { color: theme.colors.text }]}>{verb.igbo}</Text>
-      
-      <View style={styles.tabContainer}>
-        <TabButton 
-          title="Indicative" 
-          isActive={selectedTab === 'indicative'} 
-          onPress={() => setSelectedTab('indicative')} 
-        />
-        <TabButton 
-          title="Subjunctive" 
-          isActive={selectedTab === 'subjunctive'} 
-          onPress={() => setSelectedTab('subjunctive')} 
-        />
-        <TabButton 
-          title="Others" 
-          isActive={selectedTab === 'others'} 
-          onPress={() => setSelectedTab('others')} 
-        />
-      </View>
+      {verb.english ? (
+        <Text style={[styles.verbMeaning, { color: theme.colors.textSecondary, textAlign: 'center', marginBottom: 16 }]}>
+          “{verb.english}”
+        </Text>
+      ) : null}
 
-      {selectedTab === 'indicative' && renderIndicativeContent()}
-      {selectedTab === 'subjunctive' && renderSubjunctiveContent()}
-      {selectedTab === 'others' && renderOthersContent()}
+      {/* Render each available tense with pronouns and conjugations */}
+      {availableTenses.map((tense) => (
+        <View key={tense} style={styles.tenseGroup}>
+          <Text style={[styles.tenseGroupTitle, { color: theme.colors.text }]}>{titleCase(tense)}</Text>
+          {pronouns.map((p: Pronoun) => {
+            const value = getConjugatedForm(verb, tense, p, settings.dialect as any);
+            return (
+              <View key={`${tense}-${p}`} style={styles.conjugationRow}>
+                <Text style={[styles.pronounLabel, { color: theme.colors.textSecondary }]}>
+                  {pronounLabels[p]}
+                </Text>
+                <Text style={[styles.conjugationValue, { color: '#ef4444' }]}>
+                  {String(value)}
+                </Text>
+              </View>
+            );
+          })}
+        </View>
+      ))}
     </View>
   );
 };
