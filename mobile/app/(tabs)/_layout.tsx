@@ -35,15 +35,18 @@ export default function TabLayout() {
           ),
         }}
       />
-      <Tabs.Screen
-        name="pro"
-        options={{
-          title: isProUser ? 'Pro' : 'Get Pro',
-          tabBarIcon: ({ size, color }) => (
-            <Crown size={size} color={color} />
-          ),
-        }}
-      />
+      {/* Conditionally render the Pro tab: hide it completely for Pro users */}
+      {!isProUser && (
+        <Tabs.Screen
+          name="pro"
+          options={{
+            title: 'Get Pro',
+            tabBarIcon: ({ size, color }) => (
+              <Crown size={size} color={color} />
+            ),
+          }}
+        />
+      )}
       <Tabs.Screen
         name="settings"
         options={{
