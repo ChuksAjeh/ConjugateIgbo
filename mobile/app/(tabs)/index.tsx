@@ -6,7 +6,7 @@ import {
   Animated,
   SafeAreaView,
   ScrollView,
-  Modal
+  Modal, Platform, StatusBar
 } from 'react-native';
 import { RotateCcw, Volume2, FileText } from 'lucide-react-native';
 import { router } from 'expo-router';
@@ -213,10 +213,11 @@ export default function PracticeScreen() {
       {/* Daily Goal Progress Bar */}
       <View style={[styles.progressContainer, {
         backgroundColor: theme.colors.background,
-        borderBottomColor: theme.colors.border
+        borderBottomColor: theme.colors.border,
+        paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 16 : 48
       }]}>
         <Text style={[styles.progressTitle, { color: theme.colors.textSecondary }]}>Daily goal</Text>
-        <Text style={[styles.progressCount]}> 
+        <Text style={[styles.progressCount]}>
           <Text style={{ color: dailyCount >= settings.dailyGoal ? '#10b981' : '#ef4444' }}>{String(dailyCount)}</Text>
           <Text style={{ color: theme.colors.textSecondary }}> / {String(settings.dailyGoal)}</Text>
         </Text>
