@@ -20,16 +20,13 @@
       "expo-router",
       "expo-font",
       "expo-web-browser",
-      [
-        "expo-notifications",
-        {
-          "sounds": [
-            "./assets/sounds/notification.wav"
-          ]
-        }
-      ]
-    ],"android": {
-      "permissions": ["POST_NOTIFICATIONS"]
+      "expo-notifications"
+    ],
+    "android": {
+      "permissions": [
+        "POST_NOTIFICATIONS"
+      ],
+      "package": "com.chuksajeh.conjugateigbo"
     },
     "experiments": {
       "typedRoutes": true

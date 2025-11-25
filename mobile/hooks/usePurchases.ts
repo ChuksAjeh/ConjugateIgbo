@@ -1,173 +1,122 @@
-import { useState, useEffect } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { PurchaserInfo, PurchasesPackage } from '@/hooks/models/hooksInterfaces';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Platform } from 'react-native';
+import Purchases, {
+  CustomerInfo,
+  PurchasesError,
+  PURCHASES_ERROR_CODE,
+  PurchasesOfferings,
+} from 'react-native-purchases';
 
+const ENTITLEMENT_ID = 'entldefbca344e';
 
+const isNative = Platform.OS === 'ios' || Platform.OS === 'android';
 
-// Mock RevenueCat for web/development
-const MockPurchases = {
-  configure: async (apiKey: string) => {
-    console.log('RevenueCat configured with key:', apiKey);
-  },
-  
-  getOfferings: async () => {
-    return {
-      current: {
-        availablePackages: [
-          {
-            identifier: 'pro_lifetime',
-            packageType: 'LIFETIME',
-            product: {
-              identifier: 'pro_lifetime',
-              price: 5.0,
-              priceString: '£5.00',
-              currencyCode: 'GBP',
-            },
-          },
-        ],
-      },
-    };
-  },
-  
-  purchasePackage: async (packageToPurchase: PurchasesPackage) => {
-    // Simulate purchase success
-    return {
-      purchaserInfo: {
-        entitlements: {
-          active: {
-            pro: {
-              identifier: 'pro',
-              isActive: true,
-              productIdentifier: 'pro_lifetime',
-            },
-          },
-        },
-      },
-    };
-  },
-  
-  getPurchaserInfo: async (): Promise<PurchaserInfo> => {
-    // Check if user has purchased (stored in AsyncStorage)
-    const purchasedValue = await AsyncStorage.getItem('igbo_pro_purchased');
-    const hasPurchased = purchasedValue === 'true';
-    
-    return {
-      entitlements: {
-        active: hasPurchased ? {
-          pro: {
-            identifier: 'pro',
-            isActive: true,
-            productIdentifier: 'pro_lifetime',
-          },
-        } : {},
-      },
-    };
-  },
-  
-  restoreTransactions: async () => {
-    // In a real app, this would restore from the app store
-    const purchasedValue = await AsyncStorage.getItem('igbo_pro_purchased');
-    const hasPurchased = purchasedValue === 'true';
-    
-    return {
-      purchaserInfo: {
-        entitlements: {
-          active: hasPurchased ? {
-            pro: {
-              identifier: 'pro',
-              isActive: true,
-              productIdentifier: 'pro_lifetime',
-            },
-          } : {},
-        },
-      },
-    };
-  },
-};
+// Some versions of @types for react-native-purchases do not export `Package`.
+// Use a relaxed type here to avoid type errors while keeping runtime correct.
+export type PurchasesPackage = any;
 
 export const usePurchases = () => {
-  const [isProUser, setIsProUser] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [packages, setPackages] = useState<PurchasesPackage[]>([]);
+  const [customerInfo, setCustomerInfo] = useState<CustomerInfo | null>(null);
+  const [offerings, setOfferings] = useState<PurchasesOfferings | null>(null);
+
+  const isProUser = !!customerInfo?.entitlements?.active?.[ENTITLEMENT_ID];
+  const packages: PurchasesPackage[] = useMemo(() => {
+    return offerings?.current?.availablePackages ?? [];
+  }, [offerings]);
+
+  const setCustomerInfoRef = useRef(setCustomerInfo);
+  setCustomerInfoRef.current = setCustomerInfo;
 
   useEffect(() => {
-    initializePurchases();
+    if (!isNative) {
+      setIsLoading(false);
+      return;
+    }
+
+    let didCancel = false;
+
+    async function load() {
+      try {
+        setIsLoading(true);
+        const [info, offs] = await Promise.all([
+          Purchases.getCustomerInfo(),
+          Purchases.getOfferings(),
+        ]);
+        if (!didCancel) {
+          setCustomerInfo(info);
+          setOfferings(offs);
+        }
+      } catch (e) {
+        console.warn('RevenueCat init failed', e);
+      } finally {
+        if (!didCancel) setIsLoading(false);
+      }
+    }
+
+    load();
+
+    const listener: any = Purchases.addCustomerInfoUpdateListener((info) => {
+      setCustomerInfoRef.current(info);
+    });
+
+    return () => {
+      // RevenueCat v9 returns a listener object with a remove() method
+      try {
+        listener?.remove?.();
+      } catch {}
+      didCancel = true;
+    };
   }, []);
 
-  const initializePurchases = async () => {
-    try {
-      // In a real app, you'd use your RevenueCat API key
-      await MockPurchases.configure('your_revenuecat_api_key');
-      
-      // Check current purchaser info
-      const purchaserInfo = await MockPurchases.getPurchaserInfo();
-      setIsProUser(purchaserInfo.entitlements.active.pro?.isActive || false);
-      
-      // Get available packages
-      const offerings = await MockPurchases.getOfferings();
-      if (offerings.current) {
-        setPackages(offerings.current.availablePackages);
-      }
-    } catch (error) {
-      console.error('Error initializing purchases:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const PURCHASED_KEY = 'igbo_pro_purchased';
-
-  const purchasePro = async (): Promise<boolean> => {
+  const purchasePackage = useCallback(async (pkg: PurchasesPackage) => {
+    if (!isNative) return false;
     try {
       setIsLoading(true);
-      
-      const proPackage = packages.find(pkg => pkg.identifier === 'pro_lifetime');
-      if (!proPackage) {
-        throw new Error('Pro package not found');
+      const { customerInfo: info } = await Purchases.purchasePackage(pkg);
+      setCustomerInfo(info);
+      return !!info.entitlements?.active?.[ENTITLEMENT_ID];
+    } catch (e) {
+      const err = e as PurchasesError;
+      if (err?.code === PURCHASES_ERROR_CODE.PURCHASE_CANCELLED_ERROR) {
+        return false; // user cancelled
       }
-
-      const { purchaserInfo } = await MockPurchases.purchasePackage(proPackage);
-      const isPro = purchaserInfo.entitlements.active.pro?.isActive || false;
-      
-      setIsProUser(isPro);
-      
-      // Store purchase status (in a real app, RevenueCat handles this)
-      if (isPro) {
-        await AsyncStorage.setItem(PURCHASED_KEY, 'true');
-      }
-      
-      return isPro;
-    } catch (error) {
-      console.error('Purchase failed:', error);
+      console.error('Purchase failed', err);
       return false;
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
-  const restorePurchases = async (): Promise<boolean> => {
+  const purchasePro = useCallback(async (): Promise<boolean> => {
+    const lifetime = packages.find((p) => p.identifier === 'lifetime');
+    if (!lifetime) return false;
+    return purchasePackage(lifetime);
+  }, [packages, purchasePackage]);
+
+  const restorePurchases = useCallback(async (): Promise<boolean> => {
+    if (!isNative) return false;
     try {
       setIsLoading(true);
-      
-      const { purchaserInfo } = await MockPurchases.restoreTransactions();
-      const isPro = purchaserInfo.entitlements.active.pro?.isActive || false;
-      
-      setIsProUser(isPro);
-      
-      return isPro;
-    } catch (error) {
-      console.error('Restore failed:', error);
+      const info = await Purchases.restorePurchases();
+      setCustomerInfo(info);
+      return !!info.entitlements?.active?.[ENTITLEMENT_ID];
+    } catch (e) {
+      console.error('Restore failed', e);
       return false;
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   return {
     isProUser,
     isLoading,
     packages,
+    offerings,
+    customerInfo,
     purchasePro,
+    purchasePackage,
     restorePurchases,
   };
 };

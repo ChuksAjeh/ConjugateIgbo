@@ -14,10 +14,11 @@ import { Crown, Check } from 'lucide-react-native';
 import { usePurchases } from '@/hooks/usePurchases';
 import { useTheme } from '@/components/ThemeProvider';
 import { createStyles } from './proStyles';
+import { presentPaywall } from '@/lib/revenuecatUI';
 
 export default function ProScreen() {
   const { theme, isDark } = useTheme();
-  const { isProUser, isLoading, purchasePro, restorePurchases } = usePurchases();
+  const { isProUser, isLoading, purchasePro, restorePurchases, offerings } = usePurchases();
   const styles = createStyles(theme, isDark);
 
   // Pattern background (computed once)
@@ -61,18 +62,75 @@ export default function ProScreen() {
     Alert.alert(title, message, [{ text: buttonText, style: 'default' }]);
   };
 
+  // Try RevenueCat Paywall first, then fall back to direct purchase if unavailable
   const handlePurchase = async () => {
     try {
-      const success = await purchasePro();
-      if (success) {
-        showAlert('Purchase Successful!', 'Welcome to Conjugate Igbo Pro! All features are now unlocked.', 'Awesome!');
-      } else {
-        showAlert('Purchase Failed', 'Something went wrong with your purchase. Please try again.');
-      }
+      const offeringIdentifier = offerings?.current?.identifier;
+      console.log('[ProScreen] Presenting paywall with offering:', offeringIdentifier || 'default');
+      
+      const result = await presentPaywall({ displayCloseButton: true, offeringIdentifier });
+      console.log('[ProScreen] Paywall result:', result);
+      
+      // Paywall closed - check if purchase was made
+      // The customer info listener should have already updated if purchase succeeded
+      // Give it a moment to process
+      setTimeout(() => {
+        console.log('[ProScreen] Post-paywall isProUser:', isProUser);
+      }, 500);
+      
+      return;
     } catch (error) {
-      showAlert('Purchase Error', 'Unable to complete purchase. Please check your connection and try again.');
+      const err = error as any;
+      const code = err?.code;
+      const message = err?.message;
+      const userCancelled = err?.userCancelled; // Some versions provide this
+
+      console.log('[ProScreen] Paywall error:', { 
+        code, 
+        message, 
+        userCancelled,
+        fullError: JSON.stringify(err, null, 2) 
+      });
+
+      // User cancelled - don't show an error
+      if (userCancelled || code === 'PURCHASE_CANCELLED') {
+        console.log('[ProScreen] User cancelled paywall');
+        return;
+      }
+
+      // If the UI is not available (e.g., Expo Go or missing native module), fall back to direct purchase
+      if (
+        code === 'RC_UI_UNAVAILABLE_NATIVE' ||
+        code === 'RC_UI_UNAVAILABLE_WEB' ||
+        code === 'RC_UI_PAYWALL_UNAVAILABLE' ||
+        code === 'RC_UI_EXPORT_MISSING' ||
+        !offerings?.current
+      ) {
+        console.log('[ProScreen] Falling back to direct purchase. Reason:', code || 'no offerings');
+        try {
+          const ok = await purchasePro();
+          if (!ok) {
+            console.log('[ProScreen] Direct purchase returned false');
+            // Don't show alert - user may have cancelled
+            // Alert.alert('Purchase Not Completed', 'The purchase did not complete.');
+          } else {
+            console.log('[ProScreen] Direct purchase succeeded');
+          }
+          return;
+        } catch (e) {
+          console.error('[ProScreen] Direct purchase error', e);
+          Alert.alert('Purchase Error', 'Unable to start purchase.');
+          return;
+        }
+      }
+
+      // For other unexpected errors, show a generic error
+      console.error('[ProScreen] Unexpected paywall error', err);
+      showAlert('Purchase Error', `Unable to present paywall: ${message || 'Unknown error'}`);
     }
   };
+
+  // (Direct-purchase-only implementation removed in favor of paywall-first with fallback)
 
   const handleRestorePurchases = async () => {
     try {
