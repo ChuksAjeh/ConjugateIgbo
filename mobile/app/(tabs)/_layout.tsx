@@ -27,15 +27,6 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="rhymes"
-        options={{
-          title: 'Rhymes',
-          tabBarIcon: ({ size, color }) => (
-            <Music size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
         name="verbs"
         options={{
           title: 'Verbs',
@@ -44,24 +35,18 @@ export default function TabLayout() {
           ),
         }}
       />
-      <Tabs.Screen
-        name="pro"
-        options={{
-          title: isProUser ? 'Pro' : 'Get Pro',
-          tabBarIcon: ({ size, color }) => (
-            <Crown size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="progress"
-        options={{
-          title: 'Progress',
-          tabBarIcon: ({ size, color }) => (
-            <TrendingUp size={size} color={color} />
-          ),
-        }}
-      />
+      {/* Conditionally render the Pro tab: hide it completely for Pro users */}
+      {!isProUser && (
+        <Tabs.Screen
+          name="pro"
+          options={{
+            title: 'Get Pro',
+            tabBarIcon: ({ size, color }) => (
+              <Crown size={size} color={color} />
+            ),
+          }}
+        />
+      )}
       <Tabs.Screen
         name="settings"
         options={{

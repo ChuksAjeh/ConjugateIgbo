@@ -31,6 +31,7 @@ import { useSettings } from '@/hooks/useSettings';
 import { usePurchases } from '@/hooks/usePurchases';
 import { useTheme } from '@/components/ThemeProvider';
 import { createStyles } from './settingsStyles';
+import { presentCustomerCenter } from '@/lib/revenuecatUI';
 
 export default function SettingsScreen() {
   const { settings, updateSettings } = useSettings();
@@ -65,6 +66,18 @@ export default function SettingsScreen() {
       Alert.alert(
         'Restore Failed',
         'Unable to restore purchases. Please try again later.',
+        [{ text: 'OK', style: 'default' }]
+      );
+    }
+  };
+
+  const handleOpenCustomerCenter = async () => {
+    try {
+      await presentCustomerCenter({});
+    } catch (e) {
+      Alert.alert(
+        'Unable to open Customer Center',
+        'Please try again later.',
         [{ text: 'OK', style: 'default' }]
       );
     }
@@ -346,6 +359,12 @@ export default function SettingsScreen() {
             rightElement={
               isLoading ? <ActivityIndicator size="small" color="#6b7280" /> : null
             }
+          />
+          <SettingsItem
+            icon={Smartphone}
+            title="Manage Purchases"
+            subtitle="Open RevenueCat Customer Center"
+            onPress={handleOpenCustomerCenter}
           />
         </SettingsSection>
 

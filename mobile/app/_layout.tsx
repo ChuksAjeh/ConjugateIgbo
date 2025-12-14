@@ -6,6 +6,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useFrameworkReady } from '@/hooks/useFrameworkReady';
 import CustomSplashScreen from '@/components/SplashScreen';
 import { ThemeProvider } from '@/components/ThemeProvider';
+import { configureRevenueCat } from '@/lib/revenuecat';
 
 // Prevent the splash screen from auto-hiding
 SplashScreen.preventAutoHideAsync();
@@ -26,6 +27,11 @@ export default function RootLayout() {
       SplashScreen.hideAsync();
     }
   }, [fontsLoaded]);
+
+  // Initialize RevenueCat once on app start
+  useEffect(() => {
+    configureRevenueCat();
+  }, []);
 
   if (!fontsLoaded) {
     return null;
