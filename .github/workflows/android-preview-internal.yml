@@ -1,0 +1,54 @@
+name: Android Preview → Play Internal Testing
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths: [ 'mobile/**' ]
+
+jobs:
+  build-and-submit-android:
+    runs-on: ubuntu-latest
+
+    concurrency:
+      group: android-preview-internal
+      cancel-in-progress: true
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install EAS CLI
+        run: npm install -g eas-cli
+
+      - name: Authenticate with Expo
+        run: eas whoami
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Build Android (Preview / Staging)
+        run: >
+          eas build
+          --platform android
+          --profile preview
+          --non-interactive
+          --wait
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Submit to Play Internal Testing
+        run: >
+          eas submit
+          --platform android
+          --profile preview
+          --non-interactive
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}

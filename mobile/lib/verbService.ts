@@ -4,7 +4,7 @@ import type { Dialect } from '@/lib/conjugateVerbs';
 import { offlineVerbs } from '@/data/igboVerbs';
 import { getItem, setItem } from '@/lib/storage';
 
-const BASE_URL = process.env.VERBS_ENDPOINT || process.env.EXPO_PUBLIC_VERBS_ENDPOINT || '';
+const BASE_URL = process.env.EXPO_PUBLIC_VERBS_ENDPOINT || '';
 const BASE = BASE_URL ? BASE_URL.replace(/\/$/, '') : '';
 const VERBS_CACHE_KEY_V2 = 'VERBS_CACHE_V2';
 const VERBS_CACHE_KEY_V1 = 'VERBS_CACHE_V1';
