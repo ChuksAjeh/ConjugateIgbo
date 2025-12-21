@@ -1,8 +1,12 @@
 {
   "expo": {
+    "owner": "chuksajeh",
     "name": "Conjugate Igbo",
     "slug": "conjugate-igbo",
     "version": "1.0.0",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
@@ -35,7 +39,8 @@
       "permissions": [
         "POST_NOTIFICATIONS"
       ],
-      "package": "com.chuksajeh.conjugateigbo"
+      "package": "com.chuksajeh.conjugateigbo",
+      "versionCode": 1
     },
     "experiments": {
       "typedRoutes": true
