@@ -39,8 +39,7 @@
       "permissions": [
         "POST_NOTIFICATIONS"
       ],
-      "package": "com.chuksajeh.conjugateigbo",
-      "versionCode": 1
+      "package": "com.chuksajeh.conjugateigbo"
     },
     "experiments": {
       "typedRoutes": true
