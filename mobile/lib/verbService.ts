@@ -10,7 +10,7 @@ import type { Dialect } from '@/lib/conjugateVerbs';
 import { offlineVerbs } from '@/data/igboVerbs';
 import { getItem, setItem } from '@/lib/storage';
 
-const BASE_URL = process.env.EXPO_PUBLIC_VERBS_ENDPOINT || '';
+const BASE_URL = process.env.EXPO_PUBLIC_API_URL || '';
 const BASE = BASE_URL ? BASE_URL.replace(/\/$/, '') : '';
 const VERBS_CACHE_KEY_V2 = 'VERBS_CACHE_V2';
 const DIALECT_SLUG: Record<Dialect, string> = {
