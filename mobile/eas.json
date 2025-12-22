@@ -21,8 +21,7 @@
   "submit": {
     "preview": {
       "android": {
-        "track": "internal",
-        "artifactType": "bundle"
+        "track": "internal"
       }
     },
     "production": {}
