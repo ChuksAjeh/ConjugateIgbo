@@ -3,11 +3,8 @@ import { useState, useEffect } from 'react';
 import { ProgressStatistics } from '@/hooks/models/hooksInterfaces';
 import { VerbProgress } from '@/hooks/models/hooksInterfaces';
 
-
-
 const PROGRESS_STORAGE_KEY = 'igbo_verb_progress';
 const STATISTICS_STORAGE_KEY = 'igbo_verb_statistics';
-
 
 const mockWeeklyProgress = [
   { day: 'Mon', practiced: 8 },
@@ -35,7 +32,9 @@ const getDefaultStatistics = (): ProgressStatistics => ({
 });
 export const useProgress = () => {
   const [progress, setProgress] = useState<VerbProgress[]>([]);
-  const [statistics, setStatistics] = useState<ProgressStatistics>(getDefaultStatistics());
+  const [statistics, setStatistics] = useState<ProgressStatistics>(
+    getDefaultStatistics(),
+  );
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -46,14 +45,19 @@ export const useProgress = () => {
   const loadProgress = async () => {
     try {
       const savedProgress = await AsyncStorage.getItem(PROGRESS_STORAGE_KEY);
-      const savedStatistics = await AsyncStorage.getItem(STATISTICS_STORAGE_KEY);
-      
+      const savedStatistics = await AsyncStorage.getItem(
+        STATISTICS_STORAGE_KEY,
+      );
+
       if (savedProgress) {
         setProgress(JSON.parse(savedProgress));
       }
-      
+
       if (savedStatistics) {
-        setStatistics({ ...getDefaultStatistics(), ...JSON.parse(savedStatistics) });
+        setStatistics({
+          ...getDefaultStatistics(),
+          ...JSON.parse(savedStatistics),
+        });
       } else {
         setStatistics(getDefaultStatistics());
       }
@@ -67,18 +71,20 @@ export const useProgress = () => {
   const updateStreak = async () => {
     try {
       const today = new Date().toDateString();
-      const savedStatistics = await AsyncStorage.getItem(STATISTICS_STORAGE_KEY);
-      
+      const savedStatistics = await AsyncStorage.getItem(
+        STATISTICS_STORAGE_KEY,
+      );
+
       if (savedStatistics) {
         const stats = JSON.parse(savedStatistics);
         const lastVisit = stats.lastVisitDate;
-        
+
         if (lastVisit !== today) {
           const yesterday = new Date();
           yesterday.setDate(yesterday.getDate() - 1);
-          
+
           let newStreak = stats.currentStreak || 0;
-          
+
           if (lastVisit === yesterday.toDateString()) {
             // Consecutive day
             newStreak += 1;
@@ -86,15 +92,18 @@ export const useProgress = () => {
             // Streak broken
             newStreak = 1;
           }
-          
+
           const updatedStats = {
             ...stats,
             currentStreak: newStreak,
             lastVisitDate: today,
           };
-          
+
           setStatistics(updatedStats);
-          await AsyncStorage.setItem(STATISTICS_STORAGE_KEY, JSON.stringify(updatedStats));
+          await AsyncStorage.setItem(
+            STATISTICS_STORAGE_KEY,
+            JSON.stringify(updatedStats),
+          );
         }
       }
     } catch (error) {
@@ -103,20 +112,20 @@ export const useProgress = () => {
   };
   const updateProgress = async (verbId: string, isCorrect: boolean) => {
     try {
-      const existingProgress = progress.find(p => p.verbId === verbId);
-      
+      const existingProgress = progress.find((p) => p.verbId === verbId);
+
       let updatedProgress: VerbProgress[];
-      
+
       if (existingProgress) {
-        updatedProgress = progress.map(p => 
-          p.verbId === verbId 
+        updatedProgress = progress.map((p) =>
+          p.verbId === verbId
             ? {
                 ...p,
                 totalAttempts: p.totalAttempts + 1,
                 correctAttempts: p.correctAttempts + (isCorrect ? 1 : 0),
                 lastPracticed: new Date().toISOString(),
               }
-            : p
+            : p,
         );
       } else {
         const newProgress: VerbProgress = {
@@ -128,23 +137,28 @@ export const useProgress = () => {
         };
         updatedProgress = [...progress, newProgress];
       }
-      
+
       setProgress(updatedProgress);
-      await AsyncStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify(updatedProgress));
-      
+      await AsyncStorage.setItem(
+        PROGRESS_STORAGE_KEY,
+        JSON.stringify(updatedProgress),
+      );
+
       // Update statistics
       const totalPracticed = updatedProgress.length;
-      
+
       const updatedStatistics: ProgressStatistics = {
         ...statistics,
         totalPracticed,
         totalStudyTime: statistics.totalStudyTime + 0.02, // Add ~1 minute per verb
         dailyGoalProgress: Math.min(statistics.dailyGoalProgress + 1, 10),
       };
-      
+
       setStatistics(updatedStatistics);
-      await AsyncStorage.setItem(STATISTICS_STORAGE_KEY, JSON.stringify(updatedStatistics));
-      
+      await AsyncStorage.setItem(
+        STATISTICS_STORAGE_KEY,
+        JSON.stringify(updatedStatistics),
+      );
     } catch (error) {
       console.error('Error updating progress:', error);
     }
@@ -156,15 +170,18 @@ export const useProgress = () => {
         ...statistics,
         dailyGoalProgress: 0,
       };
-      
+
       setStatistics(updatedStatistics);
-      await AsyncStorage.setItem(STATISTICS_STORAGE_KEY, JSON.stringify(updatedStatistics));
+      await AsyncStorage.setItem(
+        STATISTICS_STORAGE_KEY,
+        JSON.stringify(updatedStatistics),
+      );
     } catch (error) {
       console.error('Error resetting daily progress:', error);
     }
   };
   const getVerbProgress = (verbId: string): VerbProgress | undefined => {
-    return progress.find(p => p.verbId === verbId);
+    return progress.find((p) => p.verbId === verbId);
   };
 
   const resetProgress = async () => {

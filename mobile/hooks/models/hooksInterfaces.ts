@@ -6,7 +6,6 @@ export interface VerbProgress {
   difficulty: 'beginner' | 'intermediate' | 'advanced';
 }
 
-
 export interface ProgressStatistics {
   totalPracticed: number;
   currentStreak: number;

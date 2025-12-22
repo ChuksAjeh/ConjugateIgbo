@@ -1,5 +1,12 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Animated, Dimensions, Image } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Animated,
+  Dimensions,
+  Image,
+} from 'react-native';
 
 const { width, height } = Dimensions.get('window');
 const lionImage = require('../assets/images/lion.png');
@@ -62,7 +69,7 @@ export default function SplashScreen({ onFinish }: { onFinish: () => void }) {
             ]}
           >
             <Image source={lionImage} style={styles.lionImage} />
-          </View>
+          </View>,
         );
       }
     }

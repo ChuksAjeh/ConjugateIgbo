@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useMemo,
+  useCallback,
+  useRef,
+} from 'react';
 import {
   View,
   Text,
@@ -6,7 +12,9 @@ import {
   Animated,
   SafeAreaView,
   ScrollView,
-  Modal, Platform, StatusBar
+  Modal,
+  Platform,
+  StatusBar,
 } from 'react-native';
 import { RotateCcw, Volume2, FileText } from 'lucide-react-native';
 import { router } from 'expo-router';
@@ -19,12 +27,18 @@ import { useProgress } from '@/hooks/useProgress';
 import { usePurchases } from '@/hooks/usePurchases';
 import { useTheme } from '@/components/ThemeProvider';
 import { styles } from './indexStyles';
-import { pronounLabels, pronouns, tenses } from '@/app/(tabs)/models/interfaces';
+import {
+  pronounLabels,
+  pronouns,
+  tenses,
+} from '@/app/(tabs)/models/interfaces';
 
 export default function PracticeScreen() {
   const [currentVerb, setCurrentVerb] = useState<IgboVerb | null>(null);
   const [selectedTense, setSelectedTense] = useState<Tense>('present');
-  const [selectedPronoun, setSelectedPronoun] = useState<Pronoun>(() => pronouns[Math.floor(Math.random() * pronouns.length)]);
+  const [selectedPronoun, setSelectedPronoun] = useState<Pronoun>(
+    () => pronouns[Math.floor(Math.random() * pronouns.length)],
+  );
   const [showAnswer, setShowAnswer] = useState(false);
   const [fadeAnim] = useState(new Animated.Value(0));
   const [fallbackModalVisible, setFallbackModalVisible] = useState(false);
@@ -36,8 +50,12 @@ export default function PracticeScreen() {
   const [dailyCount, setDailyCount] = useState(0);
 
   // Determine what to show on the card based on Settings > Display Mode
-  const showEnglish = settings.displayMode === 'Verb and translation' || settings.displayMode === 'Only translation';
-  const showIgbo = settings.displayMode === 'Verb and translation' || settings.displayMode === 'Only verb';
+  const showEnglish =
+    settings.displayMode === 'Verb and translation' ||
+    settings.displayMode === 'Only translation';
+  const showIgbo =
+    settings.displayMode === 'Verb and translation' ||
+    settings.displayMode === 'Only verb';
 
   // Track last used dialect to trigger reloads when it changes
   const lastDialectRef = useRef(settings.dialect);
@@ -59,7 +77,9 @@ export default function PracticeScreen() {
       return settings.enabledTenses[t];
     });
     if (list.length === 0) {
-      const defaults: Tense[] = !isProUser ? ['present', 'past'] : ['present', 'past', 'future'];
+      const defaults: Tense[] = !isProUser
+        ? ['present', 'past']
+        : ['present', 'past', 'future'];
       const fallback = defaults.filter((t) => settings.enabledTenses[t]);
       if (fallback.length > 0) return fallback;
       return defaults;
@@ -73,18 +93,23 @@ export default function PracticeScreen() {
       // Reset any previous fallback notice; we'll show it again if we actually fall back
       setFallbackModalVisible(false);
 
-      const { verb, fellBackToDelta } = await verbService.getRandomVerbForDialect(settings.dialect as any);
+      const { verb, fellBackToDelta } =
+        await verbService.getRandomVerbForDialect(settings.dialect as any);
       setCurrentVerb(verb);
       if (fellBackToDelta) {
         setFallbackModalVisible(true);
       }
 
       // Pick a valid tense based on the latest settings and entitlement
-      const newTense = availableTenses[Math.floor(Math.random() * availableTenses.length)] as Tense;
+      const newTense = availableTenses[
+        Math.floor(Math.random() * availableTenses.length)
+      ] as Tense;
       setSelectedTense(newTense);
 
       // Randomize pronoun
-      const newPronoun = pronouns[Math.floor(Math.random() * pronouns.length)] as Pronoun;
+      const newPronoun = pronouns[
+        Math.floor(Math.random() * pronouns.length)
+      ] as Pronoun;
       setSelectedPronoun(newPronoun);
 
       // Reset answer state and animation
@@ -101,7 +126,9 @@ export default function PracticeScreen() {
   // Ensure selectedTense always respects current Settings/Pro availability
   useEffect(() => {
     if (!availableTenses.includes(selectedTense)) {
-      const newTense = availableTenses[Math.floor(Math.random() * availableTenses.length)] as Tense;
+      const newTense = availableTenses[
+        Math.floor(Math.random() * availableTenses.length)
+      ] as Tense;
       setSelectedTense(newTense);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -135,11 +162,18 @@ export default function PracticeScreen() {
           console.error('Error stopping animation:', error);
         }
       };
-    }, [currentVerb, loadNewVerb, fadeAnim])
+    }, [currentVerb, loadNewVerb, fadeAnim]),
   );
 
   // Type-safe access to conjugations (rule-based, with legacy fallback)
-  const correctAnswer = currentVerb ? getConjugatedForm(currentVerb, selectedTense, selectedPronoun, settings.dialect as any) : 'N/A';
+  const correctAnswer = currentVerb
+    ? getConjugatedForm(
+        currentVerb,
+        selectedTense,
+        selectedPronoun,
+        settings.dialect as any,
+      )
+    : 'N/A';
   console.log('Correct answer:', correctAnswer);
 
   const handleRevealAnswer = async () => {
@@ -154,14 +188,14 @@ export default function PracticeScreen() {
     Animated.timing(fadeAnim, {
       toValue: 1,
       duration: 300,
-      useNativeDriver: true
+      useNativeDriver: true,
     }).start();
   };
 
   const handleNextVerb = async () => {
     // Increment daily goal counter whenever user proceeds to the next card
     setDailyCount((prev) => prev + 1);
-    
+
     try {
       await loadNewVerb();
     } catch (error) {
@@ -179,7 +213,7 @@ export default function PracticeScreen() {
       // Navigate to verbs tab and show this specific verb
       router.push({
         pathname: '/(tabs)/verbs',
-        params: { verbId: currentVerb.id, openDetails: '1' }
+        params: { verbId: currentVerb.id, openDetails: '1' },
       });
     }
   };
@@ -200,37 +234,74 @@ export default function PracticeScreen() {
   // Show loading state while verb is loading
   if (!currentVerb) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <SafeAreaView
+        style={[styles.container, { backgroundColor: theme.colors.background }]}
+      >
         <View style={styles.loadingContainer}>
-          <Text style={[styles.loadingText, { color: theme.colors.text }]}>Loading verb...</Text>
+          <Text style={[styles.loadingText, { color: theme.colors.text }]}>
+            Loading verb...
+          </Text>
         </View>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: theme.colors.background }]}
+    >
       {/* Daily Goal Progress Bar */}
-      <View style={[styles.progressContainer, {
-        backgroundColor: theme.colors.background,
-        borderBottomColor: theme.colors.border,
-        paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 16 : 48
-      }]}>
-        <Text style={[styles.progressTitle, { color: theme.colors.textSecondary }]}>Daily goal</Text>
+      <View
+        style={[
+          styles.progressContainer,
+          {
+            backgroundColor: theme.colors.background,
+            borderBottomColor: theme.colors.border,
+            paddingTop:
+              Platform.OS === 'android'
+                ? (StatusBar.currentHeight || 0) + 16
+                : 48,
+          },
+        ]}
+      >
+        <Text
+          style={[styles.progressTitle, { color: theme.colors.textSecondary }]}
+        >
+          Daily goal
+        </Text>
         <Text style={[styles.progressCount]}>
-          <Text style={{ color: dailyCount >= settings.dailyGoal ? '#10b981' : '#ef4444' }}>{String(dailyCount)}</Text>
-          <Text style={{ color: theme.colors.textSecondary }}> / {String(settings.dailyGoal)}</Text>
+          <Text
+            style={{
+              color: dailyCount >= settings.dailyGoal ? '#10b981' : '#ef4444',
+            }}
+          >
+            {String(dailyCount)}
+          </Text>
+          <Text style={{ color: theme.colors.textSecondary }}>
+            {' '}
+            / {String(settings.dailyGoal)}
+          </Text>
         </Text>
       </View>
 
       <View style={styles.content}>
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContent}
+        >
           {/* Main Card */}
           <View style={styles.cardContainer}>
-            <View style={[styles.card, { backgroundColor: theme.colors.surface }]}>
+            <View
+              style={[styles.card, { backgroundColor: theme.colors.surface }]}
+            >
               {/* English meaning at top (optional) */}
               {showEnglish && (
-                <Text style={[styles.englishMeaning, { color: theme.colors.textSecondary }]}>
+                <Text
+                  style={[
+                    styles.englishMeaning,
+                    { color: theme.colors.textSecondary },
+                  ]}
+                >
                   {String(currentVerb.english)}
                 </Text>
               )}
@@ -243,34 +314,73 @@ export default function PracticeScreen() {
               )}
 
               {/* Tense badge */}
-              <View style={[styles.tenseBadge, { backgroundColor: getTenseBadgeColor(selectedTense) }]}>
+              <View
+                style={[
+                  styles.tenseBadge,
+                  { backgroundColor: getTenseBadgeColor(selectedTense) },
+                ]}
+              >
                 <Text style={styles.tenseBadgeText}>
-                  {selectedTense.charAt(0).toUpperCase() + selectedTense.slice(1)}
+                  {selectedTense.charAt(0).toUpperCase() +
+                    selectedTense.slice(1)}
                 </Text>
               </View>
 
               {/* Conjugated answer */}
               <View style={styles.answerSection}>
                 {/* Pronoun display */}
-                <Text style={[styles.pronounText, { color: theme.colors.textSecondary }]}>
+                <Text
+                  style={[
+                    styles.pronounText,
+                    { color: theme.colors.textSecondary },
+                  ]}
+                >
                   {pronounLabels[selectedPronoun]}
                 </Text>
 
                 {showAnswer ? (
-                  <TouchableOpacity onPress={handleNextVerb} activeOpacity={0.7}>
-                    <Animated.Text style={[styles.answerText, { opacity: fadeAnim, color: theme.colors.text }]}>
+                  <TouchableOpacity
+                    onPress={handleNextVerb}
+                    activeOpacity={0.7}
+                  >
+                    <Animated.Text
+                      style={[
+                        styles.answerText,
+                        { opacity: fadeAnim, color: theme.colors.text },
+                      ]}
+                    >
                       {String(correctAnswer)}
                     </Animated.Text>
                     <Animated.Text
-                      style={[styles.tapToNextText, { color: theme.colors.textSecondary, opacity: fadeAnim }]}>
+                      style={[
+                        styles.tapToNextText,
+                        {
+                          color: theme.colors.textSecondary,
+                          opacity: fadeAnim,
+                        },
+                      ]}
+                    >
                       Tap to continue
                     </Animated.Text>
                   </TouchableOpacity>
                 ) : (
                   <View style={styles.answerPlaceholder}>
-                    <View style={[styles.answerLine, { backgroundColor: theme.colors.border }]} />
-                    <TouchableOpacity style={styles.tapToShowButton} onPress={handleRevealAnswer}>
-                      <Text style={[styles.tapToShowText, { color: theme.colors.textSecondary }]}>
+                    <View
+                      style={[
+                        styles.answerLine,
+                        { backgroundColor: theme.colors.border },
+                      ]}
+                    />
+                    <TouchableOpacity
+                      style={styles.tapToShowButton}
+                      onPress={handleRevealAnswer}
+                    >
+                      <Text
+                        style={[
+                          styles.tapToShowText,
+                          { color: theme.colors.textSecondary },
+                        ]}
+                      >
                         Tap to show answer
                       </Text>
                     </TouchableOpacity>
@@ -284,21 +394,30 @@ export default function PracticeScreen() {
         {/* Bottom Action Buttons */}
         <View style={styles.bottomActions}>
           <TouchableOpacity
-            style={[styles.actionButton, { backgroundColor: theme.colors.surface }]}
+            style={[
+              styles.actionButton,
+              { backgroundColor: theme.colors.surface },
+            ]}
             onPress={handleNextVerb}
           >
             <RotateCcw size={24} color={theme.colors.textSecondary} />
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.actionButton, { backgroundColor: theme.colors.surface }]}
+            style={[
+              styles.actionButton,
+              { backgroundColor: theme.colors.surface },
+            ]}
             onPress={handleShowVerbDetails}
           >
             <FileText size={24} color={theme.colors.textSecondary} />
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.actionButton, { backgroundColor: theme.colors.surface }]}
+            style={[
+              styles.actionButton,
+              { backgroundColor: theme.colors.surface },
+            ]}
             onPress={handlePlayAudio}
           >
             <Volume2 size={24} color={theme.colors.textSecondary} />
@@ -312,18 +431,49 @@ export default function PracticeScreen() {
         animationType="fade"
         onRequestClose={() => setFallbackModalVisible(false)}
       >
-        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center' }}>
-          <View style={{ backgroundColor: theme.colors.surface, padding: 20, borderRadius: 12, width: '85%' }}>
-            <Text style={{ fontSize: 18, fontWeight: '600', marginBottom: 8, color: theme.colors.text }}>
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
+          <View
+            style={{
+              backgroundColor: theme.colors.surface,
+              padding: 20,
+              borderRadius: 12,
+              width: '85%',
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 18,
+                fontWeight: '600',
+                marginBottom: 8,
+                color: theme.colors.text,
+              }}
+            >
               Network or data issue
             </Text>
-            <Text style={{ color: theme.colors.textSecondary, marginBottom: 16 }}>
-              Failed to get verbs for {settings.dialect.charAt(0).toUpperCase() + settings.dialect.slice(1)} Igbo.
-              Defaulting to Delta Igbo until your connection is restored.
+            <Text
+              style={{ color: theme.colors.textSecondary, marginBottom: 16 }}
+            >
+              Failed to get verbs for{' '}
+              {settings.dialect.charAt(0).toUpperCase() +
+                settings.dialect.slice(1)}{' '}
+              Igbo. Defaulting to Delta Igbo until your connection is restored.
             </Text>
             <TouchableOpacity
               onPress={() => setFallbackModalVisible(false)}
-              style={{ alignSelf: 'flex-end', paddingVertical: 8, paddingHorizontal: 12, backgroundColor: '#3b82f6', borderRadius: 8 }}
+              style={{
+                alignSelf: 'flex-end',
+                paddingVertical: 8,
+                paddingHorizontal: 12,
+                backgroundColor: '#3b82f6',
+                borderRadius: 8,
+              }}
             >
               <Text style={{ color: '#ffffff', fontWeight: '600' }}>OK</Text>
             </TouchableOpacity>

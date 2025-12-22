@@ -1,5 +1,5 @@
 {
-  "name": "bolt-expo-starter",
+  "name": "ConjugateIgbo",
   "main": "expo-router/entry",
   "version": "1.0.0",
   "private": true,
@@ -12,7 +12,11 @@
     "build:web": "expo export --platform web",
     "lint": "eslint . --quiet",
     "android": "expo run:android",
-    "ios": "expo run:ios"
+    "ios": "expo run:ios",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "dependencies": {
     "@expo-google-fonts/inter": "^0.4.1",
@@ -56,8 +60,13 @@
   "devDependencies": {
     "@babel/core": "^7.25.2",
     "@types/react": "~19.1.10",
-    "eslint": "^9.38.0",
+    "@typescript-eslint/eslint-plugin": "^8.50.0",
+    "@typescript-eslint/parser": "^8.50.0",
+    "eslint": "^9.39.2",
     "eslint-config-expo": "~10.0.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
+    "prettier": "^3.7.4",
     "typescript": "~5.9.2"
   }
 }

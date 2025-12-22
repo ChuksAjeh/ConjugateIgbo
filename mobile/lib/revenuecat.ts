@@ -7,7 +7,9 @@ const REVENUECAT_API_KEY = process.env.REVENUECAT_API_KEY || '';
 // Keep a stable reference to the listener callback so we can remove it if supported
 let customerInfoListenerCb: ((info: CustomerInfo) => void) | null = null;
 
-export function configureRevenueCat(onCustomerInfo?: (info: CustomerInfo) => void) {
+export function configureRevenueCat(
+  onCustomerInfo?: (info: CustomerInfo) => void,
+) {
   // Skip configuration on web
   if (!(Platform.OS === 'ios' || Platform.OS === 'android')) {
     return;
@@ -24,8 +26,15 @@ export function configureRevenueCat(onCustomerInfo?: (info: CustomerInfo) => voi
     },
   });
 
-  if (customerInfoListenerCb && (Purchases as any).removeCustomerInfoUpdateListener) {
-    try { (Purchases as any).removeCustomerInfoUpdateListener(customerInfoListenerCb); } catch {}
+  if (
+    customerInfoListenerCb &&
+    (Purchases as any).removeCustomerInfoUpdateListener
+  ) {
+    try {
+      (Purchases as any).removeCustomerInfoUpdateListener(
+        customerInfoListenerCb,
+      );
+    } catch {}
   }
   customerInfoListenerCb = (info: CustomerInfo) => {
     onCustomerInfo?.(info);
@@ -34,8 +43,15 @@ export function configureRevenueCat(onCustomerInfo?: (info: CustomerInfo) => voi
 }
 
 export function cleanupRevenueCat() {
-  if (customerInfoListenerCb && (Purchases as any).removeCustomerInfoUpdateListener) {
-    try { (Purchases as any).removeCustomerInfoUpdateListener(customerInfoListenerCb); } catch {}
+  if (
+    customerInfoListenerCb &&
+    (Purchases as any).removeCustomerInfoUpdateListener
+  ) {
+    try {
+      (Purchases as any).removeCustomerInfoUpdateListener(
+        customerInfoListenerCb,
+      );
+    } catch {}
   }
   customerInfoListenerCb = null;
 }

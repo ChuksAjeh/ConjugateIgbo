@@ -1,5 +1,11 @@
 // Verb Service - Fetches verbs from backend, caches in-memory, seeds from offline list if needed
-import { IgboVerb, VerbDifficulty, VerbFrequency, VerbType, VerbDTO } from '@/models/verb';
+import {
+  IgboVerb,
+  VerbDifficulty,
+  VerbFrequency,
+  VerbType,
+  VerbDTO,
+} from '@/models/verb';
 import type { Dialect } from '@/lib/conjugateVerbs';
 import { offlineVerbs } from '@/data/igboVerbs';
 import { getItem, setItem } from '@/lib/storage';
@@ -57,7 +63,9 @@ class VerbService {
     });
   };
 
-  private async ensureLoaded(dialect: Dialect): Promise<{ dialectUsed: Dialect }> {
+  private async ensureLoaded(
+    dialect: Dialect,
+  ): Promise<{ dialectUsed: Dialect }> {
     const key = cacheKeyForDialect(dialect);
 
     // 1) Try cache for this dialect
@@ -68,7 +76,9 @@ class VerbService {
           const parsed = JSON.parse(cached) as IgboVerb[];
           if (Array.isArray(parsed) && parsed.length > 0) {
             this.cacheByDialect[dialect] = parsed;
-            console.log(`Verb service loaded ${parsed.length} ${dialect} verbs from cache`);
+            console.log(
+              `Verb service loaded ${parsed.length} ${dialect} verbs from cache`,
+            );
           }
         }
       }
@@ -87,27 +97,46 @@ class VerbService {
           const mapped = data.map(mapDtoToVerb);
           this.cacheByDialect[dialect] = mapped;
           await setItem(key, JSON.stringify(mapped));
-          console.log(`Verb service initialized from endpoint with ${mapped.length} ${dialect} verbs (cached)`);
+          console.log(
+            `Verb service initialized from endpoint with ${mapped.length} ${dialect} verbs (cached)`,
+          );
         }
       } catch (error) {
-        console.warn(`Fetching verbs from endpoint failed for ${dialect}.`, error);
+        console.warn(
+          `Fetching verbs from endpoint failed for ${dialect}.`,
+          error,
+        );
       }
     }
 
     // 3) Fallbacks
     // If requested dialect still empty and it's not delta, try delta
-    if (!this.cacheByDialect[dialect] || this.cacheByDialect[dialect]!.length === 0) {
+    if (
+      !this.cacheByDialect[dialect] ||
+      this.cacheByDialect[dialect]!.length === 0
+    ) {
       if (dialect !== 'delta') {
         await this.ensureLoaded('delta');
-        if (this.cacheByDialect['delta'] && this.cacheByDialect['delta']!.length > 0) {
+        if (
+          this.cacheByDialect['delta'] &&
+          this.cacheByDialect['delta']!.length > 0
+        ) {
           return { dialectUsed: 'delta' };
         }
       }
       // As a last resort, seed delta from offline
-      if (!this.cacheByDialect['delta'] || this.cacheByDialect['delta']!.length === 0) {
+      if (
+        !this.cacheByDialect['delta'] ||
+        this.cacheByDialect['delta']!.length === 0
+      ) {
         this.cacheByDialect['delta'] = offlineVerbs.slice(0, 10);
-        await setItem(cacheKeyForDialect('delta'), JSON.stringify(this.cacheByDialect['delta']));
-        console.log(`Verb service initialized delta with offline seed (${this.cacheByDialect['delta']!.length} verbs)`);
+        await setItem(
+          cacheKeyForDialect('delta'),
+          JSON.stringify(this.cacheByDialect['delta']),
+        );
+        console.log(
+          `Verb service initialized delta with offline seed (${this.cacheByDialect['delta']!.length} verbs)`,
+        );
         return { dialectUsed: 'delta' };
       }
     }
@@ -115,15 +144,20 @@ class VerbService {
     return { dialectUsed: dialect };
   }
 
-  async getAllVerbsForDialect(dialect: Dialect): Promise<{ verbs: IgboVerb[]; fellBackToDelta: boolean }> {
+  async getAllVerbsForDialect(
+    dialect: Dialect,
+  ): Promise<{ verbs: IgboVerb[]; fellBackToDelta: boolean }> {
     const { dialectUsed } = await this.ensureLoaded(dialect);
     const used = dialectUsed === 'delta' && dialect !== 'delta';
     const verbs = this.cacheByDialect[dialectUsed] || [];
     return { verbs, fellBackToDelta: used };
   }
 
-  async getRandomVerbForDialect(dialect: Dialect): Promise<{ verb: IgboVerb; fellBackToDelta: boolean }> {
-    const { verbs, fellBackToDelta } = await this.getAllVerbsForDialect(dialect);
+  async getRandomVerbForDialect(
+    dialect: Dialect,
+  ): Promise<{ verb: IgboVerb; fellBackToDelta: boolean }> {
+    const { verbs, fellBackToDelta } =
+      await this.getAllVerbsForDialect(dialect);
     const idx = Math.floor(Math.random() * Math.max(1, verbs.length));
     return { verb: verbs[idx], fellBackToDelta };
   }

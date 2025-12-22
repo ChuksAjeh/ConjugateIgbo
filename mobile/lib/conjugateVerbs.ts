@@ -19,7 +19,9 @@ function getVowelharmonyPronoun(stem: string): 'A' | 'E' {
 
 // Remove 'i' prefix from verb root
 function removePrefixI(root: string): string {
-  return root.startsWith('i') ||root.startsWith('ị') ? root.substring(1) : root;
+  return root.startsWith('i') || root.startsWith('ị')
+    ? root.substring(1)
+    : root;
 }
 
 // Determine vowel warmony prefix based on stem content
@@ -32,7 +34,7 @@ function getVowelharmonyPrefix(stem: string): 'a' | 'e' {
 
 function applyPresentRule(root: string, _pronoun: Pronoun): string {
   if (!root) return '';
-  
+
   const stem = removePrefixI(root);
   const prefix = getVowelharmonyPrefix(stem);
   return `${prefix}${stem}`;
@@ -83,7 +85,7 @@ function getDialectSurfaces(dialect: Dialect) {
     } as Record<Pronoun, string>,
     particles: {
       presentLink: 'na', // e.g., "I na ..."
-      futureAux: 'ga',   // e.g., "I ga ..."
+      futureAux: 'ga', // e.g., "I ga ..."
     },
   };
 
@@ -100,13 +102,16 @@ function getDialectSurfaces(dialect: Dialect) {
   }
 }
 
-export function generateConjugations(verb: IgboVerb, dialect: Dialect = 'delta'): Conjugations {
+export function generateConjugations(
+  verb: IgboVerb,
+  dialect: Dialect = 'delta',
+): Conjugations {
   const root = getRoot(verb);
   const stem = removePrefixI(root);
   const vowelPrefix = getVowelharmonyPronoun(stem);
   const rules = getDialectRules(dialect);
   const surfaces = getDialectSurfaces(dialect);
-  
+
   return {
     present: {
       m: `${vowelPrefix} ${surfaces.particles.presentLink} m ${rules.applyPresentRule(root, 'm')}`,
@@ -135,9 +140,18 @@ export function generateConjugations(verb: IgboVerb, dialect: Dialect = 'delta')
   };
 }
 
-export function getConjugatedForm(verb: IgboVerb, tense: Tense, pronoun: Pronoun, dialect: Dialect = 'delta'): string {
+export function getConjugatedForm(
+  verb: IgboVerb,
+  tense: Tense,
+  pronoun: Pronoun,
+  dialect: Dialect = 'delta',
+): string {
   // Prefer pre-computed conjugations if present (legacy data), otherwise generate
-  if (verb.conjugations && verb.conjugations[tense] && verb.conjugations[tense][pronoun]) {
+  if (
+    verb.conjugations &&
+    verb.conjugations[tense] &&
+    verb.conjugations[tense][pronoun]
+  ) {
     return verb.conjugations[tense][pronoun];
   }
   const conj = generateConjugations(verb, dialect);
@@ -153,11 +167,15 @@ export function getConjugatedForm(verb: IgboVerb, tense: Tense, pronoun: Pronoun
 
 // Normalize and compare user answer to the correct conjugation.
 // Allows minor spacing variations and case-insensitive comparison.
-export function checkConjugation(userAnswer: string, correctAnswer: string): boolean {
+export function checkConjugation(
+  userAnswer: string,
+  correctAnswer: string,
+): boolean {
   const normalizedUser = userAnswer.trim().toLowerCase();
   const normalizedCorrect = correctAnswer.trim().toLowerCase();
   return (
     normalizedUser === normalizedCorrect ||
-    normalizedUser.replace(/\s+/g, ' ') === normalizedCorrect.replace(/\s+/g, ' ')
+    normalizedUser.replace(/\s+/g, ' ') ===
+      normalizedCorrect.replace(/\s+/g, ' ')
   );
 }

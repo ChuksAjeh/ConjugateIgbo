@@ -9,5 +9,5 @@ export const pronounLabels: Record<Pronoun, string> = {
   o: 'Ọ (He/She/It)',
   anyi: 'Anyị (We)',
   unu: 'Unu (You all)',
-  wa: 'Wa (They)'
+  wa: 'Wa (They)',
 };

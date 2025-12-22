@@ -7,7 +7,7 @@ import {
   Alert,
   ActivityIndicator,
   Image,
-  Dimensions
+  Dimensions,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -19,7 +19,8 @@ import { presentPaywall } from '@/lib/revenuecatUI';
 
 export default function ProScreen() {
   const { theme, isDark } = useTheme();
-  const { isProUser, isLoading, purchasePro, restorePurchases, offerings } = usePurchases();
+  const { isProUser, isLoading, purchasePro, restorePurchases, offerings } =
+    usePurchases();
   const styles = createStyles(theme, isDark);
   const router = useRouter();
 
@@ -31,9 +32,15 @@ export default function ProScreen() {
   const handlePurchase = async () => {
     try {
       const offeringIdentifier = offerings?.current?.identifier;
-      console.log('[ProScreen] Presenting paywall with offering:', offeringIdentifier || 'default');
+      console.log(
+        '[ProScreen] Presenting paywall with offering:',
+        offeringIdentifier || 'default',
+      );
 
-      const result = await presentPaywall({ displayCloseButton: true, offeringIdentifier });
+      const result = await presentPaywall({
+        displayCloseButton: true,
+        offeringIdentifier,
+      });
       console.log('[ProScreen] Paywall result:', result);
 
       // Paywall closed - check if purchase was made
@@ -50,11 +57,11 @@ export default function ProScreen() {
       const message = err?.message;
       const userCancelled = err?.userCancelled; // Some versions provide this
 
-      console.log('[ProScreen] Paywall error:', { 
-        code, 
-        message, 
+      console.log('[ProScreen] Paywall error:', {
+        code,
+        message,
         userCancelled,
-        fullError: JSON.stringify(err, null, 2) 
+        fullError: JSON.stringify(err, null, 2),
       });
 
       // User cancelled - don't show an error
@@ -71,7 +78,10 @@ export default function ProScreen() {
         code === 'RC_UI_EXPORT_MISSING' ||
         !offerings?.current
       ) {
-        console.log('[ProScreen] Falling back to direct purchase. Reason:', code || 'no offerings');
+        console.log(
+          '[ProScreen] Falling back to direct purchase. Reason:',
+          code || 'no offerings',
+        );
         try {
           const ok = await purchasePro();
           if (!ok) {
@@ -91,7 +101,10 @@ export default function ProScreen() {
 
       // For other unexpected errors, show a generic error
       console.error('[ProScreen] Unexpected paywall error', err);
-      showAlert('Purchase Error', `Unable to present paywall: ${message || 'Unknown error'}`);
+      showAlert(
+        'Purchase Error',
+        `Unable to present paywall: ${message || 'Unknown error'}`,
+      );
     }
   };
 
@@ -111,20 +124,30 @@ export default function ProScreen() {
         }
       }, 250);
       return () => clearTimeout(t);
-    }, [offerings?.current?.identifier])
+    }, [offerings?.current?.identifier]),
   );
 
   const handleRestorePurchases = async () => {
     try {
       const success = await restorePurchases();
       if (success) {
-        showAlert('Purchases Restored!', 'Your Pro features have been restored successfully.', 'Great!');
+        showAlert(
+          'Purchases Restored!',
+          'Your Pro features have been restored successfully.',
+          'Great!',
+        );
       } else {
-        showAlert('No Purchases Found', "We couldn't find any previous purchases to restore.");
+        showAlert(
+          'No Purchases Found',
+          "We couldn't find any previous purchases to restore.",
+        );
       }
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
-      showAlert('Restore Failed', 'Unable to restore purchases. Please try again later.');
+      showAlert(
+        'Restore Failed',
+        'Unable to restore purchases. Please try again later.',
+      );
     }
   };
 
@@ -141,7 +164,7 @@ export default function ProScreen() {
   if (isProUser) return null;
 
   // Precompute a light-weight grid of lion icons for the fun fallback background
-    // eslint-disable-next-line react-hooks/rules-of-hooks
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const lionGrid = useMemo(() => {
     const { width, height } = Dimensions.get('window');
     const cell = 72; // size of each grid cell
@@ -162,7 +185,7 @@ export default function ProScreen() {
           }}
           resizeMode="contain"
           accessibilityIgnoresInvertColors
-        />
+        />,
       );
     }
     return (
@@ -187,9 +210,9 @@ export default function ProScreen() {
 
   // Fallback UI: playful screen with coral→deep red gradient, lion grid, and call-to-action
   return (
-    <SafeAreaView style={[styles.container, { padding: 16 }]}> 
+    <SafeAreaView style={[styles.container, { padding: 16 }]}>
       <LinearGradient
-        colors={["#ff7f50", "#dc2626", "#991b1b"]}
+        colors={['#ff7f50', '#dc2626', '#991b1b']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
@@ -245,7 +268,9 @@ export default function ProScreen() {
           {isLoading ? (
             <ActivityIndicator color="white" size="small" />
           ) : (
-            <Text style={{ color: 'white', fontSize: 16, fontWeight: '700' }}>Open Paywall</Text>
+            <Text style={{ color: 'white', fontSize: 16, fontWeight: '700' }}>
+              Open Paywall
+            </Text>
           )}
         </TouchableOpacity>
       </View>

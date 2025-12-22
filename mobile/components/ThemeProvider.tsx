@@ -63,14 +63,16 @@ const ThemeContext = createContext<{
 
 export const useTheme = () => useContext(ThemeContext);
 
-export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const { settings } = useSettings();
   const systemColorScheme = useColorScheme();
   const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
     let shouldUseDark = false;
-    
+
     switch (settings.appearance) {
       case 'dark':
         shouldUseDark = true;
@@ -82,7 +84,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         shouldUseDark = systemColorScheme === 'dark';
         break;
     }
-    
+
     setIsDark(shouldUseDark);
   }, [settings.appearance, systemColorScheme]);
 

@@ -102,7 +102,11 @@ export const rhymeCards: RhymeCard[] = [
     rhymePattern: '-ghi',
     verbs: [
       { igbo: 'ighi', english: 'to not know', pronunciation: 'ee-ghee' },
-      { igbo: 'ikpughi', english: 'to not carry', pronunciation: 'ee-kpu-ghee' },
+      {
+        igbo: 'ikpughi',
+        english: 'to not carry',
+        pronunciation: 'ee-kpu-ghee',
+      },
       { igbo: 'irighi', english: 'to not eat', pronunciation: 'ee-ree-ghee' },
     ],
   },
@@ -113,13 +117,17 @@ export const rhymeCards: RhymeCard[] = [
     verbs: [
       { igbo: 'itinye', english: 'to put', pronunciation: 'ee-teen-ye' },
       { igbo: 'ikenye', english: 'to share', pronunciation: 'ee-ken-ye' },
-      { igbo: 'iweghachiye', english: 'to return', pronunciation: 'ee-we-gha-chee-ye' },
+      {
+        igbo: 'iweghachiye',
+        english: 'to return',
+        pronunciation: 'ee-we-gha-chee-ye',
+      },
     ],
   },
 ];
 
 export const getRhymeCardById = (id: string): RhymeCard | undefined => {
-  return rhymeCards.find(card => card.id === id);
+  return rhymeCards.find((card) => card.id === id);
 };
 
 export const getRandomRhymeCard = (): RhymeCard => {
