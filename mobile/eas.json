@@ -22,7 +22,8 @@
   "submit": {
     "preview": {
       "android": {
-        "track": "internal"
+        "track": "internal",
+        "releaseStatus": "draft"
       }
     },
     "production": {}
