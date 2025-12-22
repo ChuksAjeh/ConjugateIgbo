@@ -55,5 +55,6 @@ jobs:
           --profile preview
           --latest
           --non-interactive
+          --no-wait
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
