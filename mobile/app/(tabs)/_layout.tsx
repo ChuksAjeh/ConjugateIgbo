@@ -60,6 +60,32 @@ export default function TabLayout() {
           ),
         }}
       />
+
+      {/* Hide non-screen files from the tab bar */}
+      <Tabs.Screen
+        name="proStyles"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="indexStyles"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="settingsStyles"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="models"
+        options={{
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }
