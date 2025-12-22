@@ -13,8 +13,6 @@ import { getItem, setItem } from '@/lib/storage';
 const BASE_URL = process.env.EXPO_PUBLIC_VERBS_ENDPOINT || '';
 const BASE = BASE_URL ? BASE_URL.replace(/\/$/, '') : '';
 const VERBS_CACHE_KEY_V2 = 'VERBS_CACHE_V2';
-const VERBS_CACHE_KEY_V1 = 'VERBS_CACHE_V1';
-
 const DIALECT_SLUG: Record<Dialect, string> = {
   delta: 'delta-igbo',
   central: 'central-igbo',

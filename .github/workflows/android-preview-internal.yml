@@ -53,6 +53,7 @@ jobs:
           eas submit
           --platform android
           --profile preview
+          --latest
           --non-interactive
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
