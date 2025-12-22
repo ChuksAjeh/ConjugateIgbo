@@ -2,7 +2,12 @@ import { Platform } from 'react-native';
 import Purchases, { CustomerInfo, LOG_LEVEL } from 'react-native-purchases';
 
 // Use your test key in development. For prod builds, prefer platform-specific keys via the Expo config plugin.
-const REVENUECAT_API_KEY = process.env.REVENUECAT_API_KEY || '';
+const REVENUECAT_API_KEY = process.env.EXPO_PUBLIC_REVENUECAT_API_KEY;
+
+
+if (!REVENUECAT_API_KEY) {
+  console.error("RevenueCat API key missing");
+}
 
 // Keep a stable reference to the listener callback so we can remove it if supported
 let customerInfoListenerCb: ((info: CustomerInfo) => void) | null = null;
