@@ -63,7 +63,7 @@ export async function presentCustomerCenter(options?: any) {
 
     return await rcPresentCustomerCenter(options ?? {});
   } catch (_e: any) {
-    // console.error('[RevenueCatUI] Failed to present customer center:', e.message);
+    // console.error('[RevenueCatUI] Failed to present customer center:', _e.message);
     const err: any = new Error(
       'RevenueCatUI module unavailable. Use a Development Client or prebuilt app.'
     );

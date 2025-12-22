@@ -44,10 +44,9 @@ export default function PracticeScreen() {
   const [fallbackModalVisible, setFallbackModalVisible] = useState(false);
 
   const { settings } = useSettings();
-  const { updateProgress } = useProgress();
+  const { statistics, updateProgress } = useProgress();
   const { isProUser } = usePurchases();
   const { theme } = useTheme();
-  const [dailyCount, setDailyCount] = useState(0);
 
   // Determine what to show on the card based on Settings > Display Mode
   const showEnglish =
@@ -177,13 +176,6 @@ export default function PracticeScreen() {
 
   const handleRevealAnswer = async () => {
     setShowAnswer(true);
-    if (currentVerb) {
-      try {
-        await updateProgress(currentVerb.id, true);
-      } catch {
-        // console.error('Error updating progress:', error);
-      }
-    }
     Animated.timing(fadeAnim, {
       toValue: 1,
       duration: 300,
@@ -193,7 +185,7 @@ export default function PracticeScreen() {
 
   const handleNextVerb = async () => {
     // Increment daily goal counter whenever user proceeds to the next card
-    setDailyCount((prev) => prev + 1);
+    await updateProgress();
 
     try {
       await loadNewVerb();
@@ -271,10 +263,13 @@ export default function PracticeScreen() {
         <Text style={[styles.progressCount]}>
           <Text
             style={{
-              color: dailyCount >= settings.dailyGoal ? '#10b981' : '#ef4444',
+              color:
+                statistics.dailyGoalProgress >= settings.dailyGoal
+                  ? '#10b981'
+                  : '#ef4444',
             }}
           >
-            {String(dailyCount)}
+            {String(statistics.dailyGoalProgress)}
           </Text>
           <Text style={{ color: theme.colors.textSecondary }}>
             {' '}
