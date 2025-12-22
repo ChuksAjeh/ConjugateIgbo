@@ -22,10 +22,11 @@ jobs:
         with:
           node-version: 20
           cache: npm
+          cache-dependency-path: mobile/package-lock.json
 
       - name: Install dependencies
-        working-directory: mobile
         run: npm ci
+        working-directory: mobile
 
       - name: Install EAS CLI
         run: npm install -g eas-cli
