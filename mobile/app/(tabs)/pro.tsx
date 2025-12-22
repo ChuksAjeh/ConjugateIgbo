@@ -135,6 +135,7 @@ export default function ProScreen() {
     if (isProUser) {
       // Replace with the Practice tab (index) so Pro users never see this screen
       try {
+        // @ts-ignore
         router.replace('/(tabs)/index');
       } catch {}
     }
