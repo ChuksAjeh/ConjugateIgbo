@@ -24,49 +24,46 @@ export default function ProScreen() {
   const styles = createStyles(theme, isDark);
   const router = useRouter();
 
+  /**
+   * Displays an alert with the given title and message.
+   *
+   * @param {string} title - The title of the alert.
+   * @param {string} message - The message of the alert.
+   * @param {string} [buttonText='OK'] - The text for the alert button.
+   * @returns {void}
+   */
   const showAlert = (title: string, message: string, buttonText = 'OK') => {
     Alert.alert(title, message, [{ text: buttonText, style: 'default' }]);
   };
 
-  // Try RevenueCat Paywall first, then fall back to direct purchase if unavailable
+  /**
+   * Handles the purchase flow by first attempting to show the RevenueCat paywall UI.
+   * If the paywall UI is unavailable (e.g., in Expo Go or non-native), it falls back
+   * to a direct purchase attempt using the purchasePro function.
+   *
+   * @returns {Promise<void>}
+   */
   const handlePurchase = async () => {
+    if (isProUser) return;
+
     try {
       const offeringIdentifier = offerings?.current?.identifier;
-      console.log(
-        '[ProScreen] Presenting paywall with offering:',
-        offeringIdentifier || 'default',
-      );
 
-      const result = await presentPaywall({
+      await presentPaywall({
         displayCloseButton: true,
         offeringIdentifier,
       });
-      console.log('[ProScreen] Paywall result:', result);
-
-      // Paywall closed - check if purchase was made
-      // The customer info listener should have already updated if purchase succeeded
-      // Give it a moment to process
-      setTimeout(() => {
-        console.log('[ProScreen] Post-paywall isProUser:', isProUser);
-      }, 500);
 
       return;
     } catch (error) {
       const err = error as any;
       const code = err?.code;
       const message = err?.message;
-      const userCancelled = err?.userCancelled; // Some versions provide this
-
-      console.log('[ProScreen] Paywall error:', {
-        code,
-        message,
-        userCancelled,
-        fullError: JSON.stringify(err, null, 2),
-      });
+      const userCancelled =
+        err?.userCancelled || code === 'PURCHASE_CANCELLED' || code === '1';
 
       // User cancelled - don't show an error
-      if (userCancelled || code === 'PURCHASE_CANCELLED') {
-        console.log('[ProScreen] User cancelled paywall');
+      if (userCancelled) {
         return;
       }
 
@@ -78,19 +75,8 @@ export default function ProScreen() {
         code === 'RC_UI_EXPORT_MISSING' ||
         !offerings?.current
       ) {
-        console.log(
-          '[ProScreen] Falling back to direct purchase. Reason:',
-          code || 'no offerings',
-        );
         try {
-          const ok = await purchasePro();
-          if (!ok) {
-            console.log('[ProScreen] Direct purchase returned false');
-            // Don't show alert - user may have cancelled
-            // Alert.alert('Purchase Not Completed', 'The purchase did not complete.');
-          } else {
-            console.log('[ProScreen] Direct purchase succeeded');
-          }
+          await purchasePro();
           return;
         } catch (e) {
           console.error('[ProScreen] Direct purchase error', e);
@@ -108,25 +94,23 @@ export default function ProScreen() {
     }
   };
 
-  // (Direct-purchase-only implementation removed in favor of paywall-first with fallback)
-
-  // Auto-present the paywall when this tab/screen gains focus
-  const hasPresentedRef = useRef(false);
+  // Auto-present the paywall when this tab/screen gains focus if user is not Pro
   useFocusEffect(
     useCallback(() => {
-      // Reset the gate on focus so revisiting the tab can show the paywall again
-      hasPresentedRef.current = false;
-      // Present shortly after focus to allow transitions to finish
+      if (isProUser || isLoading) return;
+
       const t = setTimeout(() => {
-        if (!hasPresentedRef.current) {
-          hasPresentedRef.current = true;
-          handlePurchase();
-        }
-      }, 250);
+        handlePurchase();
+      }, 500);
       return () => clearTimeout(t);
-    }, [offerings?.current?.identifier]),
+    }, [isProUser, isLoading, offerings?.current?.identifier]),
   );
 
+  /**
+   * Restores previous purchases and displays an alert with the result.
+   *
+   * @returns {Promise<void>}
+   */
   const handleRestorePurchases = async () => {
     try {
       const success = await restorePurchases();
@@ -151,17 +135,63 @@ export default function ProScreen() {
     }
   };
 
-  // If the user is already Pro: do not render this screen/tab. Redirect away.
-  useEffect(() => {
-    if (isProUser) {
-      // Replace with the Practice tab (index) so Pro users never see this screen
-      try {
-        // @ts-ignore
-        router.replace('/(tabs)/index');
-      } catch {}
-    }
-  }, [isProUser]);
-  if (isProUser) return null;
+  // If the user is already Pro, show a success message instead of redirecting or showing the paywall button
+  if (isProUser) {
+    return (
+      <SafeAreaView style={[styles.container, { padding: 16 }]}>
+        <LinearGradient
+          colors={['#10b981', '#059669', '#047857']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+        />
+        {lionGrid}
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <Text
+            accessibilityRole="header"
+            style={{
+              color: 'white',
+              fontSize: 28,
+              fontWeight: '800',
+              textAlign: 'center',
+              marginBottom: 8,
+            }}
+          >
+            You are a Pro!
+          </Text>
+          <Text
+            style={{
+              color: 'white',
+              opacity: 0.9,
+              fontSize: 16,
+              lineHeight: 24,
+              textAlign: 'center',
+              marginBottom: 20,
+              paddingHorizontal: 24,
+            }}
+          >
+            Thank you for supporting ConjugateIgbo. You have full access to all
+            features.
+          </Text>
+          <TouchableOpacity
+            onPress={() => router.replace('/(tabs)/')}
+            style={{
+              paddingVertical: 14,
+              paddingHorizontal: 28,
+              borderRadius: 12,
+              backgroundColor: 'white',
+              minWidth: 200,
+              alignItems: 'center',
+            }}
+          >
+            <Text style={{ color: '#047857', fontSize: 16, fontWeight: '700' }}>
+              Start Practicing
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   // Precompute a light-weight grid of lion icons for the fun fallback background
   // eslint-disable-next-line react-hooks/rules-of-hooks
