@@ -38,23 +38,29 @@ jobs:
 
       - name: Build Android (Preview)
         working-directory: mobile
-        run: >
-          eas build
-          --platform android
-          --profile preview
-          --non-interactive
-          --no-wait
+        id: build
+        run: |
+          BUILD_JSON=$(eas build \
+            --platform android \
+            --profile preview \
+            --non-interactive \
+            --no-wait \
+            --json)
+
+          echo "$BUILD_JSON"
+
+          BUILD_ID=$(echo "$BUILD_JSON" | jq -r '.[0].id')
+          echo "build_id=$BUILD_ID" >> $GITHUB_OUTPUT
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
 
       - name: Submit to Play Internal Testing
         working-directory: mobile
-        run: >
-          eas submit
-          --platform android
-          --profile preview
-          --latest
-          --non-interactive
-          --no-wait
+        run: |
+          eas submit \
+            --platform android \
+            --id ${{ steps.build.outputs.build_id }} \
+            --non-interactive \
+            --no-wait
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
