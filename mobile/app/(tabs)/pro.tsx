@@ -23,8 +23,6 @@ export default function ProScreen() {
   const styles = createStyles(theme, isDark);
   const router = useRouter();
 
-  // No decorative UI needed for the blank fallback design.
-
   const showAlert = (title: string, message: string, buttonText = 'OK') => {
     Alert.alert(title, message, [{ text: buttonText, style: 'default' }]);
   };
@@ -152,8 +150,6 @@ export default function ProScreen() {
     const total = cols * rows;
     const items: React.ReactNode[] = [];
     for (let i = 0; i < total; i++) {
-      const row = Math.floor(i / cols);
-      const col = i % cols;
       items.push(
         <Image
           key={`lion-${i}`}
