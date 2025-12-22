@@ -34,7 +34,7 @@ const defaultSettings: AppSettings = {
     imperative: false,
     imperfect: false,
     conditional: false,
-    subjunctive: false
+    subjunctive: false,
   },
   notifications: {
     daily: true,
@@ -95,7 +95,10 @@ async function loadFromStorageOnce() {
       currentSettings = { ...defaultSettings, ...parsed } as AppSettings;
     } else {
       // Persist defaults on the first run to keep storage in sync
-      await AsyncStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(currentSettings));
+      await AsyncStorage.setItem(
+        SETTINGS_STORAGE_KEY,
+        JSON.stringify(currentSettings),
+      );
     }
   } catch (e) {
     console.error('Error loading settings:', e);
@@ -143,7 +146,10 @@ export const useSettings = () => {
       // Shallow merge. Callers supply nested merges as needed (existing callers do).
       currentSettings = { ...currentSettings, ...newSettings } as AppSettings;
       notifyAll();
-      await AsyncStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(currentSettings));
+      await AsyncStorage.setItem(
+        SETTINGS_STORAGE_KEY,
+        JSON.stringify(currentSettings),
+      );
     } catch (error) {
       console.error('Error saving settings:', error);
     }
@@ -153,7 +159,10 @@ export const useSettings = () => {
     try {
       currentSettings = { ...defaultSettings };
       notifyAll();
-      await AsyncStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(currentSettings));
+      await AsyncStorage.setItem(
+        SETTINGS_STORAGE_KEY,
+        JSON.stringify(currentSettings),
+      );
     } catch (error) {
       console.error('Error resetting settings:', error);
     }

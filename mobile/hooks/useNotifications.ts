@@ -16,26 +16,30 @@ Notifications.setNotificationHandler({
 
 export const useNotifications = () => {
   const [expoPushToken, setExpoPushToken] = useState<string>('');
-  const [notification, setNotification] = useState<Notifications.Notification | null>(null);
-  
+  const [notification, setNotification] =
+    useState<Notifications.Notification | null>(null);
+
   useEffect(() => {
     let notificationSubscription: Notifications.Subscription | undefined;
     let responseSubscription: Notifications.Subscription | undefined;
 
-    registerForPushNotificationsAsync().then(token => {
+    registerForPushNotificationsAsync().then((token) => {
       if (token) {
         setExpoPushToken(token);
       }
     });
 
     // Listen for notifications
-    notificationSubscription = Notifications.addNotificationReceivedListener(notification => {
-      setNotification(notification);
-    });
+    notificationSubscription = Notifications.addNotificationReceivedListener(
+      (notification) => {
+        setNotification(notification);
+      },
+    );
 
-    responseSubscription = Notifications.addNotificationResponseReceivedListener(response => {
-      console.log('Notification response:', response);
-    });
+    responseSubscription =
+      Notifications.addNotificationResponseReceivedListener((response) => {
+        console.log('Notification response:', response);
+      });
 
     return () => {
       notificationSubscription?.remove();
@@ -60,7 +64,7 @@ export const useNotifications = () => {
       await Notifications.scheduleNotificationAsync({
         content: {
           title: 'Time to practice Igbo! 🦁',
-          body: 'Keep your streak going with today\'s verb practice',
+          body: "Keep your streak going with today's verb practice",
           data: { type: 'daily_reminder' },
         },
         trigger: {
@@ -103,17 +107,17 @@ async function registerForPushNotificationsAsync() {
 
   const { status: existingStatus } = await Notifications.getPermissionsAsync();
   let finalStatus = existingStatus;
-  
+
   if (existingStatus !== 'granted') {
     const { status } = await Notifications.requestPermissionsAsync();
     finalStatus = status;
   }
-  
+
   if (finalStatus !== 'granted') {
     console.log('Failed to get push token for push notification!');
     return null;
   }
-  
+
   try {
     token = await Notifications.getExpoPushTokenAsync({
       projectId: Constants.expoConfig?.extra?.eas?.projectId,

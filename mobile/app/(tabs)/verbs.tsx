@@ -21,14 +21,21 @@ import { useTheme } from '@/components/ThemeProvider';
 import { getConjugatedForm } from '@/lib/conjugateVerbs';
 import { useSettings } from '@/hooks/useSettings';
 import { usePurchases } from '@/hooks/usePurchases';
-import { pronounLabels, pronouns, tenses as tenseList } from '@/app/(tabs)/models/interfaces';
+import {
+  pronounLabels,
+  pronouns,
+  tenses as tenseList,
+} from '@/app/(tabs)/models/interfaces';
 
 type FilterType = 'all' | 'common' | 'regular' | 'irregular';
 type SortType = 'alphabetical' | 'frequency' | 'difficulty';
 
 export default function VerbsScreen() {
   const { theme, isDark } = useTheme();
-  const { verbId, openDetails } = useLocalSearchParams<{ verbId?: string; openDetails?: string }>();
+  const { verbId, openDetails } = useLocalSearchParams<{
+    verbId?: string;
+    openDetails?: string;
+  }>();
   const [verbs, setVerbs] = useState<IgboVerb[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -44,14 +51,16 @@ export default function VerbsScreen() {
         setIsLoading(true);
         const allVerbs = await verbService.getAllVerbs();
         setVerbs(allVerbs);
-        
+
         // Only auto-open details if explicitly requested via openDetails flag
         if (verbId && openDetails) {
-          const targetVerb = allVerbs.find(verb => verb.id === verbId);
+          const targetVerb = allVerbs.find((verb) => verb.id === verbId);
           if (targetVerb) {
             setSelectedVerb(targetVerb);
             // Clear the flag so subsequent visits to Verbs don't auto-open
-            try { router.setParams({ openDetails: undefined }); } catch {}
+            try {
+              router.setParams({ openDetails: undefined });
+            } catch {}
           }
         }
       } catch (error) {
@@ -60,7 +69,7 @@ export default function VerbsScreen() {
         setIsLoading(false);
       }
     };
-    
+
     loadVerbs();
   }, [verbId, openDetails]);
 
@@ -71,26 +80,32 @@ export default function VerbsScreen() {
     React.useCallback(() => {
       // Only reopen automatically if explicitly requested via openDetails flag
       if (verbId && openDetails && !selectedVerb) {
-        const targetVerb = verbs.find(v => v.id === verbId);
+        const targetVerb = verbs.find((v) => v.id === verbId);
         if (targetVerb) {
           setSelectedVerb(targetVerb);
           // Clear the flag once handled so Verbs tab doesn't auto-open on future visits
-          try { router.setParams({ openDetails: undefined }); } catch {}
+          try {
+            router.setParams({ openDetails: undefined });
+          } catch {}
         }
       }
       return () => {};
-    }, [verbId, openDetails, verbs, selectedVerb])
+    }, [verbId, openDetails, verbs, selectedVerb]),
   );
 
   const filteredAndSortedVerbs = useMemo(() => {
     const q = searchQuery.toLowerCase();
-    let filtered = verbs.filter(verb => {
+    let filtered = verbs.filter((verb) => {
       const matchesSearch =
         (verb.igbo ?? '').toLowerCase().includes(q) ||
         (verb.english ?? '').toLowerCase().includes(q);
 
-      const matchesFilter = selectedFilter === 'all' ||
-        (selectedFilter === 'common' && (verb.freqRank != null ? verb.freqRank <= 100 : verb.frequency === 'high')) ||
+      const matchesFilter =
+        selectedFilter === 'all' ||
+        (selectedFilter === 'common' &&
+          (verb.freqRank != null
+            ? verb.freqRank <= 100
+            : verb.frequency === 'high')) ||
         (selectedFilter === 'regular' && verb.type === 'regular') ||
         (selectedFilter === 'irregular' && verb.type === 'irregular');
 
@@ -107,7 +122,9 @@ export default function VerbsScreen() {
       }
       // Fallback to legacy label if provided
       // @ts-ignore legacy optional
-      return frequencyOrder[(v as any).frequency as keyof typeof frequencyOrder] ?? 1;
+      return (
+        frequencyOrder[(v as any).frequency as keyof typeof frequencyOrder] ?? 1
+      );
     };
 
     return filtered.sort((a, b) => {
@@ -117,8 +134,15 @@ export default function VerbsScreen() {
         case 'frequency':
           return getFreqScore(b) - getFreqScore(a);
         case 'difficulty':
-          const difficultyOrder = { beginner: 1, intermediate: 2, advanced: 3 } as const;
-          return (difficultyOrder[a.difficulty ?? 'beginner'] ?? 1) - (difficultyOrder[b.difficulty ?? 'beginner'] ?? 1);
+          const difficultyOrder = {
+            beginner: 1,
+            intermediate: 2,
+            advanced: 3,
+          } as const;
+          return (
+            (difficultyOrder[a.difficulty ?? 'beginner'] ?? 1) -
+            (difficultyOrder[b.difficulty ?? 'beginner'] ?? 1)
+          );
         default:
           return 0;
       }
@@ -132,7 +156,9 @@ export default function VerbsScreen() {
     >
       <View style={styles.verbItemContent}>
         <View style={styles.verbItemHeader}>
-          <Text style={[styles.verbInfinitive, { color: theme.colors.text }]}>{item.igbo}</Text>
+          <Text style={[styles.verbInfinitive, { color: theme.colors.text }]}>
+            {item.igbo}
+          </Text>
           <View style={styles.verbBadges}>
             <View style={[styles.badge, getBadgeStyle(item)]}>
               <Text style={[styles.badgeText, getBadgeTextStyle(item)]}>
@@ -144,51 +170,92 @@ export default function VerbsScreen() {
             </TouchableOpacity>
           </View>
         </View>
-        
-        <Text style={[styles.verbMeaning, { color: theme.colors.textSecondary }]}>&ldquo;{item.english}&rdquo;</Text>
+
+        <Text
+          style={[styles.verbMeaning, { color: theme.colors.textSecondary }]}
+        >
+          &ldquo;{item.english}&rdquo;
+        </Text>
         <View style={styles.verbMeta}>
-          <Text style={[styles.verbType, { color: theme.colors.textSecondary }]}>{item.type}</Text>
-          <Text style={[styles.verbDifficulty, { color: theme.colors.textSecondary }]}>{item.difficulty}</Text>
+          <Text
+            style={[styles.verbType, { color: theme.colors.textSecondary }]}
+          >
+            {item.type}
+          </Text>
+          <Text
+            style={[
+              styles.verbDifficulty,
+              { color: theme.colors.textSecondary },
+            ]}
+          >
+            {item.difficulty}
+          </Text>
         </View>
       </View>
     </TouchableOpacity>
   );
 
-  const rankToLabel = (rank?: number | null, legacy?: string): 'high' | 'medium' | 'low' => {
+  const rankToLabel = (
+    rank?: number | null,
+    legacy?: string,
+  ): 'high' | 'medium' | 'low' => {
     if (typeof rank === 'number') {
       if (rank <= 100) return 'high';
       if (rank <= 300) return 'medium';
       return 'low';
     }
-    if (legacy === 'high' || legacy === 'medium' || legacy === 'low') return legacy;
+    if (legacy === 'high' || legacy === 'medium' || legacy === 'low')
+      return legacy;
     return 'low';
   };
 
   const getBadgeStyle = (verb: IgboVerb) => {
     const label = rankToLabel(verb.freqRank, (verb as any).frequency);
     switch (label) {
-      case 'high': return styles.badgeHigh;
-      case 'medium': return styles.badgeMedium;
-      case 'low': return styles.badgeLow;
-      default: return styles.badgeMedium;
+      case 'high':
+        return styles.badgeHigh;
+      case 'medium':
+        return styles.badgeMedium;
+      case 'low':
+        return styles.badgeLow;
+      default:
+        return styles.badgeMedium;
     }
   };
 
   const getBadgeTextStyle = (verb: IgboVerb) => {
     const label = rankToLabel(verb.freqRank, (verb as any).frequency);
     switch (label) {
-      case 'high': return styles.badgeTextHigh;
-      case 'medium': return styles.badgeTextMedium;
-      case 'low': return styles.badgeTextLow;
-      default: return styles.badgeTextMedium;
+      case 'high':
+        return styles.badgeTextHigh;
+      case 'medium':
+        return styles.badgeTextMedium;
+      case 'low':
+        return styles.badgeTextLow;
+      default:
+        return styles.badgeTextMedium;
     }
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <View style={[styles.header, { backgroundColor: theme.colors.background, borderBottomColor: theme.colors.border }]}>
-        <Text style={[styles.headerTitle, { color: theme.colors.text }]}>Verbs</Text>
-        <Text style={[styles.headerSubtitle, { color: theme.colors.textSecondary }]}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: theme.colors.background }]}
+    >
+      <View
+        style={[
+          styles.header,
+          {
+            backgroundColor: theme.colors.background,
+            borderBottomColor: theme.colors.border,
+          },
+        ]}
+      >
+        <Text style={[styles.headerTitle, { color: theme.colors.text }]}>
+          Verbs
+        </Text>
+        <Text
+          style={[styles.headerSubtitle, { color: theme.colors.textSecondary }]}
+        >
           {filteredAndSortedVerbs.length} verbs
         </Text>
       </View>
@@ -205,9 +272,12 @@ export default function VerbsScreen() {
             placeholderTextColor="#9ca3af"
           />
         </View>
-        
+
         <TouchableOpacity
-          style={[styles.filterButton, { backgroundColor: theme.colors.surface }]}
+          style={[
+            styles.filterButton,
+            { backgroundColor: theme.colors.surface },
+          ]}
           onPress={() => setShowFilters(true)}
         >
           <Filter size={20} color="#6b7280" />
@@ -217,7 +287,12 @@ export default function VerbsScreen() {
       {/* Filter Summary */}
       {(selectedFilter !== 'all' || sortBy !== 'alphabetical') && (
         <View style={styles.filterSummary}>
-          <Text style={[styles.filterSummaryText, { color: theme.colors.textSecondary }]}>
+          <Text
+            style={[
+              styles.filterSummaryText,
+              { color: theme.colors.textSecondary },
+            ]}
+          >
             {selectedFilter !== 'all' && `Filter: ${selectedFilter} • `}
             Sort: {sortBy}
           </Text>
@@ -227,7 +302,11 @@ export default function VerbsScreen() {
               setSortBy('alphabetical');
             }}
           >
-            <Text style={[styles.clearFilters, { color: theme.colors.primary }]}>Clear</Text>
+            <Text
+              style={[styles.clearFilters, { color: theme.colors.primary }]}
+            >
+              Clear
+            </Text>
           </TouchableOpacity>
         </View>
       )}
@@ -235,16 +314,18 @@ export default function VerbsScreen() {
       {/* Verbs List */}
       {isLoading ? (
         <View style={styles.loadingContainer}>
-          <Text style={[styles.loadingText, { color: theme.colors.text }]}>Loading verbs...</Text>
+          <Text style={[styles.loadingText, { color: theme.colors.text }]}>
+            Loading verbs...
+          </Text>
         </View>
       ) : (
-      <FlatList
-        data={filteredAndSortedVerbs}
-        renderItem={renderVerbItem}
-        keyExtractor={(item) => item.id}
-        style={styles.verbsList}
-        showsVerticalScrollIndicator={false}
-      />
+        <FlatList
+          data={filteredAndSortedVerbs}
+          renderItem={renderVerbItem}
+          keyExtractor={(item) => item.id}
+          style={styles.verbsList}
+          showsVerticalScrollIndicator={false}
+        />
       )}
 
       {/* Filter Modal */}
@@ -253,9 +334,24 @@ export default function VerbsScreen() {
         animationType="slide"
         presentationStyle="pageSheet"
       >
-        <SafeAreaView style={[styles.modalContainer, { backgroundColor: theme.colors.background }]}>
-          <View style={[styles.modalHeader, { backgroundColor: theme.colors.surface, borderBottomColor: theme.colors.border }]}>
-            <Text style={[styles.modalTitle, { color: theme.colors.text }]}>Filters & Sorting</Text>
+        <SafeAreaView
+          style={[
+            styles.modalContainer,
+            { backgroundColor: theme.colors.background },
+          ]}
+        >
+          <View
+            style={[
+              styles.modalHeader,
+              {
+                backgroundColor: theme.colors.surface,
+                borderBottomColor: theme.colors.border,
+              },
+            ]}
+          >
+            <Text style={[styles.modalTitle, { color: theme.colors.text }]}>
+              Filters & Sorting
+            </Text>
             <TouchableOpacity onPress={() => setShowFilters(false)}>
               <X size={24} color={theme.colors.text} />
             </TouchableOpacity>
@@ -264,7 +360,14 @@ export default function VerbsScreen() {
           <ScrollView style={styles.modalContent}>
             {/* Filter Options */}
             <View style={styles.filterSection}>
-              <Text style={[styles.filterSectionTitle, { color: theme.colors.text }]}>Filter by</Text>
+              <Text
+                style={[
+                  styles.filterSectionTitle,
+                  { color: theme.colors.text },
+                ]}
+              >
+                Filter by
+              </Text>
               {[
                 { key: 'all', label: 'All Verbs' },
                 { key: 'common', label: 'Common Verbs' },
@@ -276,15 +379,24 @@ export default function VerbsScreen() {
                   style={[
                     styles.filterOption,
                     { backgroundColor: theme.colors.surface },
-                    selectedFilter === filter.key && { ...styles.filterOptionActive, backgroundColor: isDark ? '#1e40af' : '#eff6ff', borderColor: theme.colors.primary }
+                    selectedFilter === filter.key && {
+                      ...styles.filterOptionActive,
+                      backgroundColor: isDark ? '#1e40af' : '#eff6ff',
+                      borderColor: theme.colors.primary,
+                    },
                   ]}
                   onPress={() => setSelectedFilter(filter.key as FilterType)}
                 >
-                  <Text style={[
-                    styles.filterOptionText,
-                    { color: theme.colors.text },
-                    selectedFilter === filter.key && { color: theme.colors.primary, fontWeight: '500' }
-                  ]}>
+                  <Text
+                    style={[
+                      styles.filterOptionText,
+                      { color: theme.colors.text },
+                      selectedFilter === filter.key && {
+                        color: theme.colors.primary,
+                        fontWeight: '500',
+                      },
+                    ]}
+                  >
                     {filter.label}
                   </Text>
                 </TouchableOpacity>
@@ -293,7 +405,14 @@ export default function VerbsScreen() {
 
             {/* Sort Options */}
             <View style={styles.filterSection}>
-              <Text style={[styles.filterSectionTitle, { color: theme.colors.text }]}>Sort by</Text>
+              <Text
+                style={[
+                  styles.filterSectionTitle,
+                  { color: theme.colors.text },
+                ]}
+              >
+                Sort by
+              </Text>
               {[
                 { key: 'alphabetical', label: 'Alphabetical' },
                 { key: 'frequency', label: 'Frequency' },
@@ -304,15 +423,24 @@ export default function VerbsScreen() {
                   style={[
                     styles.filterOption,
                     { backgroundColor: theme.colors.surface },
-                    sortBy === sort.key && { ...styles.filterOptionActive, backgroundColor: isDark ? '#1e40af' : '#eff6ff', borderColor: theme.colors.primary }
+                    sortBy === sort.key && {
+                      ...styles.filterOptionActive,
+                      backgroundColor: isDark ? '#1e40af' : '#eff6ff',
+                      borderColor: theme.colors.primary,
+                    },
                   ]}
                   onPress={() => setSortBy(sort.key as SortType)}
                 >
-                  <Text style={[
-                    styles.filterOptionText,
-                    { color: theme.colors.text },
-                    sortBy === sort.key && { color: theme.colors.primary, fontWeight: '500' }
-                  ]}>
+                  <Text
+                    style={[
+                      styles.filterOptionText,
+                      { color: theme.colors.text },
+                      sortBy === sort.key && {
+                        color: theme.colors.primary,
+                        fontWeight: '500',
+                      },
+                    ]}
+                  >
                     {sort.label}
                   </Text>
                 </TouchableOpacity>
@@ -328,16 +456,33 @@ export default function VerbsScreen() {
         animationType="slide"
         presentationStyle="pageSheet"
       >
-        <SafeAreaView style={[styles.modalContainer, { backgroundColor: theme.colors.background }]}>
-          <View style={[styles.modalHeader, { backgroundColor: theme.colors.surface, borderBottomColor: theme.colors.border }]}>
-            <Text style={[styles.modalTitle, { color: theme.colors.text }]}>Verb Details</Text>
-            <TouchableOpacity onPress={() => {
-              setSelectedVerb(null);
-              if (verbId) {
-                // If we came from practice page, navigate back
-                router.back();
-              }
-            }}>
+        <SafeAreaView
+          style={[
+            styles.modalContainer,
+            { backgroundColor: theme.colors.background },
+          ]}
+        >
+          <View
+            style={[
+              styles.modalHeader,
+              {
+                backgroundColor: theme.colors.surface,
+                borderBottomColor: theme.colors.border,
+              },
+            ]}
+          >
+            <Text style={[styles.modalTitle, { color: theme.colors.text }]}>
+              Verb Details
+            </Text>
+            <TouchableOpacity
+              onPress={() => {
+                setSelectedVerb(null);
+                if (verbId) {
+                  // If we came from practice page, navigate back
+                  router.back();
+                }
+              }}
+            >
               <X size={24} color={theme.colors.text} />
             </TouchableOpacity>
           </View>
@@ -372,9 +517,20 @@ const VerbDetailContent = ({ verb, theme }: { verb: IgboVerb; theme: any }) => {
 
   return (
     <View style={styles.verbDetailContainer}>
-      <Text style={[styles.verbTitle, { color: theme.colors.text }]}>{verb.igbo}</Text>
+      <Text style={[styles.verbTitle, { color: theme.colors.text }]}>
+        {verb.igbo}
+      </Text>
       {verb.english ? (
-        <Text style={[styles.verbMeaning, { color: theme.colors.textSecondary, textAlign: 'center', marginBottom: 16 }]}>
+        <Text
+          style={[
+            styles.verbMeaning,
+            {
+              color: theme.colors.textSecondary,
+              textAlign: 'center',
+              marginBottom: 16,
+            },
+          ]}
+        >
           “{verb.english}”
         </Text>
       ) : null}
@@ -382,12 +538,24 @@ const VerbDetailContent = ({ verb, theme }: { verb: IgboVerb; theme: any }) => {
       {/* Render each available tense with pronouns and conjugations */}
       {availableTenses.map((tense) => (
         <View key={tense} style={styles.tenseGroup}>
-          <Text style={[styles.tenseGroupTitle, { color: theme.colors.text }]}>{titleCase(tense)}</Text>
+          <Text style={[styles.tenseGroupTitle, { color: theme.colors.text }]}>
+            {titleCase(tense)}
+          </Text>
           {pronouns.map((p: Pronoun) => {
-            const value = getConjugatedForm(verb, tense, p, settings.dialect as any);
+            const value = getConjugatedForm(
+              verb,
+              tense,
+              p,
+              settings.dialect as any,
+            );
             return (
               <View key={`${tense}-${p}`} style={styles.conjugationRow}>
-                <Text style={[styles.pronounLabel, { color: theme.colors.textSecondary }]}>
+                <Text
+                  style={[
+                    styles.pronounLabel,
+                    { color: theme.colors.textSecondary },
+                  ]}
+                >
                   {pronounLabels[p]}
                 </Text>
                 <Text style={[styles.conjugationValue, { color: '#ef4444' }]}>
@@ -406,21 +574,23 @@ const Switch = ({ value, onValueChange, trackColor, thumbColor }: any) => (
   <TouchableOpacity
     style={[
       styles.switch,
-      { backgroundColor: value ? trackColor.true : trackColor.false }
+      { backgroundColor: value ? trackColor.true : trackColor.false },
     ]}
     onPress={() => onValueChange(!value)}
   >
-    <View style={[
-      styles.switchThumb,
-      { backgroundColor: thumbColor },
-      value && styles.switchThumbActive
-    ]} />
+    <View
+      style={[
+        styles.switchThumb,
+        { backgroundColor: thumbColor },
+        value && styles.switchThumbActive,
+      ]}
+    />
   </TouchableOpacity>
 );
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1
+    flex: 1,
   },
   header: {
     paddingTop: 16,

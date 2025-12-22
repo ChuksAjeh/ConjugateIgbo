@@ -1,5 +1,12 @@
 import { Tabs } from 'expo-router';
-import { Book, Settings, Crown, Zap, TrendingUp, Music } from 'lucide-react-native';
+import {
+  Book,
+  Settings,
+  Crown,
+  Zap,
+  TrendingUp,
+  Music,
+} from 'lucide-react-native';
 import { usePurchases } from '@/hooks/usePurchases';
 
 export default function TabLayout() {
@@ -16,23 +23,20 @@ export default function TabLayout() {
           fontWeight: '500',
           fontFamily: 'Inter-SemiBold',
         },
-      }}>
+      }}
+    >
       <Tabs.Screen
         name="index"
         options={{
           title: 'Practice',
-          tabBarIcon: ({ size, color }) => (
-            <Zap size={size} color={color} />
-          ),
+          tabBarIcon: ({ size, color }) => <Zap size={size} color={color} />,
         }}
       />
       <Tabs.Screen
         name="verbs"
         options={{
           title: 'Verbs',
-          tabBarIcon: ({ size, color }) => (
-            <Book size={size} color={color} />
-          ),
+          tabBarIcon: ({ size, color }) => <Book size={size} color={color} />,
         }}
       />
       {/* Conditionally render the Pro tab: hide it completely for Pro users */}

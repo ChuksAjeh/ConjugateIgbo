@@ -1,7 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useFonts, Inter_400Regular, Inter_600SemiBold, Inter_700Bold } from '@expo-google-fonts/inter';
+import {
+  useFonts,
+  Inter_400Regular,
+  Inter_600SemiBold,
+  Inter_700Bold,
+} from '@expo-google-fonts/inter';
 import * as SplashScreen from 'expo-splash-screen';
 import { useFrameworkReady } from '@/hooks/useFrameworkReady';
 import CustomSplashScreen from '@/components/SplashScreen';
@@ -38,9 +43,7 @@ export default function RootLayout() {
   }
 
   if (showCustomSplash) {
-    return (
-      <CustomSplashScreen onFinish={() => setShowCustomSplash(false)} />
-    );
+    return <CustomSplashScreen onFinish={() => setShowCustomSplash(false)} />;
   }
 
   return (

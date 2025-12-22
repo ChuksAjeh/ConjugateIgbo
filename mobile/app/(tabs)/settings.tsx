@@ -10,22 +10,21 @@ import {
   Modal,
   ActivityIndicator,
   TextInput,
-
 } from 'react-native';
 import {
-  Moon, 
-  Sun, 
-  Bell, 
-  Target, 
-  Volume2, 
+  Moon,
+  Sun,
+  Bell,
+  Target,
+  Volume2,
   Eye,
-  MessageCircle, 
+  MessageCircle,
   ChevronRight,
   X,
   Lock,
   Globe,
   ShoppingBag,
-  Smartphone
+  Smartphone,
 } from 'lucide-react-native';
 import { useSettings } from '@/hooks/useSettings';
 import { usePurchases } from '@/hooks/usePurchases';
@@ -53,20 +52,20 @@ export default function SettingsScreen() {
         Alert.alert(
           'Purchases Restored!',
           'Your Pro features have been restored successfully.',
-          [{ text: 'Great!', style: 'default' }]
+          [{ text: 'Great!', style: 'default' }],
         );
       } else {
         Alert.alert(
           'No Purchases Found',
-          'We couldn\'t find any previous purchases to restore.',
-          [{ text: 'OK', style: 'default' }]
+          "We couldn't find any previous purchases to restore.",
+          [{ text: 'OK', style: 'default' }],
         );
       }
     } catch (error) {
       Alert.alert(
         'Restore Failed',
         'Unable to restore purchases. Please try again later.',
-        [{ text: 'OK', style: 'default' }]
+        [{ text: 'OK', style: 'default' }],
       );
     }
   };
@@ -75,25 +74,30 @@ export default function SettingsScreen() {
     try {
       await presentCustomerCenter({});
     } catch (e) {
-      Alert.alert(
-        'Unable to open Customer Center',
-        'Please try again later.',
-        [{ text: 'OK', style: 'default' }]
-      );
+      Alert.alert('Unable to open Customer Center', 'Please try again later.', [
+        { text: 'OK', style: 'default' },
+      ]);
     }
   };
 
   const getAppearanceLabel = () => {
     switch (settings.appearance) {
-      case 'light': return 'Light';
-      case 'dark': return 'Dark';
-      case 'system': return 'System';
-      default: return 'Light';
+      case 'light':
+        return 'Light';
+      case 'dark':
+        return 'Dark';
+      case 'system':
+        return 'System';
+      default:
+        return 'Light';
     }
   };
 
   const handleContactUs = () => {
-    Alert.alert('Contact Us', 'This would open a contact form or email client.');
+    Alert.alert(
+      'Contact Us',
+      'This would open a contact form or email client.',
+    );
   };
 
   const handleSaveGoal = () => {
@@ -112,31 +116,35 @@ export default function SettingsScreen() {
   };
 
   const handleSaveReminder = () => {
-    updateSettings({ 
-      notifications: { 
-        ...settings.notifications, 
-        reminderTime: tempTime 
-      }
+    updateSettings({
+      notifications: {
+        ...settings.notifications,
+        reminderTime: tempTime,
+      },
     });
     setShowReminderModal(false);
   };
 
-  const SettingsSection = ({ title, children }: { title: string; children: React.ReactNode }) => (
+  const SettingsSection = ({
+    title,
+    children,
+  }: {
+    title: string;
+    children: React.ReactNode;
+  }) => (
     <View style={styles.section}>
       <Text style={styles.sectionTitle}>{title}</Text>
-      <View style={styles.sectionContent}>
-        {children}
-      </View>
+      <View style={styles.sectionContent}>{children}</View>
     </View>
   );
 
-  const SettingsItem = ({ 
-    icon: Icon, 
-    title, 
-    subtitle, 
-    onPress, 
+  const SettingsItem = ({
+    icon: Icon,
+    title,
+    subtitle,
+    onPress,
     rightElement,
-    isLocked = false
+    isLocked = false,
   }: {
     icon: any;
     title: string;
@@ -145,21 +153,38 @@ export default function SettingsScreen() {
     rightElement?: React.ReactNode;
     isLocked?: boolean;
   }) => (
-    <TouchableOpacity 
-      style={[styles.settingsItem, isLocked && styles.lockedItem]} 
+    <TouchableOpacity
+      style={[styles.settingsItem, isLocked && styles.lockedItem]}
       onPress={onPress}
       disabled={!onPress || isLocked}
     >
       <View style={styles.settingsItemLeft}>
         <View style={[styles.settingsItemIcon, isLocked && styles.lockedIcon]}>
-          {isLocked ? <Lock size={16} color="#9ca3af" /> : <Icon size={20} color="#6b7280" />}
+          {isLocked ? (
+            <Lock size={16} color="#9ca3af" />
+          ) : (
+            <Icon size={20} color="#6b7280" />
+          )}
         </View>
         <View>
           <View style={styles.titleRow}>
-            <Text style={[styles.settingsItemTitle, isLocked && styles.lockedText]}>{title}</Text>
+            <Text
+              style={[styles.settingsItemTitle, isLocked && styles.lockedText]}
+            >
+              {title}
+            </Text>
             {isLocked && <Text style={styles.proLabel}>PRO</Text>}
           </View>
-          {subtitle && <Text style={[styles.settingsItemSubtitle, isLocked && styles.lockedText]}>{subtitle}</Text>}
+          {subtitle && (
+            <Text
+              style={[
+                styles.settingsItemSubtitle,
+                isLocked && styles.lockedText,
+              ]}
+            >
+              {subtitle}
+            </Text>
+          )}
         </View>
       </View>
       <View style={styles.settingsItemRight}>
@@ -203,9 +228,23 @@ export default function SettingsScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={[styles.header, { backgroundColor: theme.colors.background, borderBottomColor: theme.colors.border }]}>
-        <Text style={[styles.headerTitle, { color: theme.colors.text }]}>Settings</Text>
-        <Text style={[styles.headerSubtitle, { color: theme.colors.textSecondary }]}>Customize your learning experience</Text>
+      <View
+        style={[
+          styles.header,
+          {
+            backgroundColor: theme.colors.background,
+            borderBottomColor: theme.colors.border,
+          },
+        ]}
+      >
+        <Text style={[styles.headerTitle, { color: theme.colors.text }]}>
+          Settings
+        </Text>
+        <Text
+          style={[styles.headerSubtitle, { color: theme.colors.textSecondary }]}
+        >
+          Customize your learning experience
+        </Text>
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
@@ -217,18 +256,22 @@ export default function SettingsScreen() {
             subtitle={`Currently: ${settings.dialect.charAt(0).toUpperCase() + settings.dialect.slice(1)} Igbo`}
             onPress={() => setShowDialectModal(true)}
           />
-          
+
           <SettingsItem
             icon={Moon}
             title="Appearance"
             subtitle={getAppearanceLabel()}
             onPress={() => setShowAppearanceModal(true)}
           />
-          
+
           <SettingsItem
             icon={Bell}
             title="Daily Reminders"
-            subtitle={settings.notifications.daily ? `Enabled at ${settings.notifications.reminderTime}` : 'Disabled'}
+            subtitle={
+              settings.notifications.daily
+                ? `Enabled at ${settings.notifications.reminderTime}`
+                : 'Disabled'
+            }
             onPress={() => setShowReminderModal(true)}
           />
         </SettingsSection>
@@ -236,25 +279,25 @@ export default function SettingsScreen() {
         {/* Practice */}
         <SettingsSection title="Practice">
           <Text style={styles.subSectionTitle}>Indicative Tenses</Text>
-          
+
           <ToggleItem
             icon={Target}
             title="Present"
             value={settings.enabledTenses.present}
-            onValueChange={(value) => 
-              updateSettings({ 
-                enabledTenses: { ...settings.enabledTenses, present: value }
+            onValueChange={(value) =>
+              updateSettings({
+                enabledTenses: { ...settings.enabledTenses, present: value },
               })
             }
           />
-          
+
           <ToggleItem
             icon={Target}
             title="Past"
             value={settings.enabledTenses.past}
-            onValueChange={(value) => 
-              updateSettings({ 
-                enabledTenses: { ...settings.enabledTenses, past: value }
+            onValueChange={(value) =>
+              updateSettings({
+                enabledTenses: { ...settings.enabledTenses, past: value },
               })
             }
           />
@@ -263,9 +306,9 @@ export default function SettingsScreen() {
             icon={Target}
             title="Imperfect"
             value={settings.enabledTenses.imperfect}
-            onValueChange={(value) => 
-              updateSettings({ 
-                enabledTenses: { ...settings.enabledTenses, imperfect: value }
+            onValueChange={(value) =>
+              updateSettings({
+                enabledTenses: { ...settings.enabledTenses, imperfect: value },
               })
             }
             isLocked={!isProUser}
@@ -275,9 +318,12 @@ export default function SettingsScreen() {
             icon={Target}
             title="Conditional"
             value={settings.enabledTenses.conditional}
-            onValueChange={(value) => 
-              updateSettings({ 
-                enabledTenses: { ...settings.enabledTenses, conditional: value }
+            onValueChange={(value) =>
+              updateSettings({
+                enabledTenses: {
+                  ...settings.enabledTenses,
+                  conditional: value,
+                },
               })
             }
             isLocked={!isProUser}
@@ -287,9 +333,9 @@ export default function SettingsScreen() {
             icon={Target}
             title="Future"
             value={settings.enabledTenses.future}
-            onValueChange={(value) => 
-              updateSettings({ 
-                enabledTenses: { ...settings.enabledTenses, future: value }
+            onValueChange={(value) =>
+              updateSettings({
+                enabledTenses: { ...settings.enabledTenses, future: value },
               })
             }
             isLocked={!isProUser}
@@ -301,9 +347,12 @@ export default function SettingsScreen() {
             icon={Target}
             title="Subjunctive"
             value={settings.enabledTenses.subjunctive}
-            onValueChange={(value) => 
-              updateSettings({ 
-                enabledTenses: { ...settings.enabledTenses, subjunctive: value }
+            onValueChange={(value) =>
+              updateSettings({
+                enabledTenses: {
+                  ...settings.enabledTenses,
+                  subjunctive: value,
+                },
               })
             }
             isLocked={!isProUser}
@@ -313,15 +362,17 @@ export default function SettingsScreen() {
             icon={Target}
             title="Imperative"
             value={settings.enabledTenses.imperative}
-            onValueChange={(value) => 
-              updateSettings({ 
-                enabledTenses: { ...settings.enabledTenses, imperative: value }
+            onValueChange={(value) =>
+              updateSettings({
+                enabledTenses: { ...settings.enabledTenses, imperative: value },
               })
             }
             isLocked={!isProUser}
           />
 
-          <Text style={styles.subSectionTitle}>Translation and Infinitives</Text>
+          <Text style={styles.subSectionTitle}>
+            Translation and Infinitives
+          </Text>
 
           <SettingsItem
             icon={Eye}
@@ -343,7 +394,11 @@ export default function SettingsScreen() {
           <SettingsItem
             icon={Target}
             title="Daily Goal"
-            subtitle={isProUser ? `${settings.dailyGoal} verbs per day` : '100 verbs per day (Pro required to change)'}
+            subtitle={
+              isProUser
+                ? `${settings.dailyGoal} verbs per day`
+                : '100 verbs per day (Pro required to change)'
+            }
             onPress={isProUser ? () => setShowGoalModal(true) : undefined}
             isLocked={!isProUser}
           />
@@ -357,7 +412,9 @@ export default function SettingsScreen() {
             subtitle="Restore Pro features after reinstalling"
             onPress={handleRestorePurchases}
             rightElement={
-              isLoading ? <ActivityIndicator size="small" color="#6b7280" /> : null
+              isLoading ? (
+                <ActivityIndicator size="small" color="#6b7280" />
+              ) : null
             }
           />
           <SettingsItem
@@ -369,8 +426,15 @@ export default function SettingsScreen() {
         </SettingsSection>
 
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Feedback</Text>
-          <View style={[styles.sectionContent, { backgroundColor: theme.colors.surface }]}>
+          <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
+            Feedback
+          </Text>
+          <View
+            style={[
+              styles.sectionContent,
+              { backgroundColor: theme.colors.surface },
+            ]}
+          >
             <SettingsItem
               icon={MessageCircle}
               title="Contact Us"
@@ -405,19 +469,21 @@ export default function SettingsScreen() {
           </View>
           <View style={styles.modalContent}>
             <View style={styles.reminderToggleContainer}>
-              <Text style={styles.reminderToggleLabel}>Enable Daily Reminders</Text>
+              <Text style={styles.reminderToggleLabel}>
+                Enable Daily Reminders
+              </Text>
               <Switch
                 value={settings.notifications.daily}
-                onValueChange={(value) => 
-                  updateSettings({ 
-                    notifications: { ...settings.notifications, daily: value }
+                onValueChange={(value) =>
+                  updateSettings({
+                    notifications: { ...settings.notifications, daily: value },
                   })
                 }
                 trackColor={{ false: '#f3f4f6', true: '#3b82f6' }}
                 thumbColor="#ffffff"
               />
             </View>
-            
+
             {settings.notifications.daily && (
               <View style={styles.timePickerContainer}>
                 <Text style={styles.timePickerLabel}>Reminder Time</Text>
@@ -429,7 +495,10 @@ export default function SettingsScreen() {
                       onChangeText={(text) => {
                         const hours = parseInt(text) || 0;
                         if (hours >= 0 && hours <= 23) {
-                          handleTimeChange(hours, parseInt(tempTime.split(':')[1]) || 0);
+                          handleTimeChange(
+                            hours,
+                            parseInt(tempTime.split(':')[1]) || 0,
+                          );
                         }
                       }}
                       keyboardType="numeric"
@@ -443,7 +512,10 @@ export default function SettingsScreen() {
                       onChangeText={(text) => {
                         const minutes = parseInt(text) || 0;
                         if (minutes >= 0 && minutes <= 59) {
-                          handleTimeChange(parseInt(tempTime.split(':')[0]) || 0, minutes);
+                          handleTimeChange(
+                            parseInt(tempTime.split(':')[0]) || 0,
+                            minutes,
+                          );
                         }
                       }}
                       keyboardType="numeric"
@@ -453,7 +525,10 @@ export default function SettingsScreen() {
                   </View>
                   <Text style={styles.timeFormat}>24-hour format</Text>
                 </View>
-                <TouchableOpacity style={styles.saveButton} onPress={handleSaveReminder}>
+                <TouchableOpacity
+                  style={styles.saveButton}
+                  onPress={handleSaveReminder}
+                >
                   <Text style={styles.saveButtonText}>Save Time</Text>
                 </TouchableOpacity>
               </View>
@@ -490,7 +565,10 @@ export default function SettingsScreen() {
               />
               <Text style={styles.goalUnit}>verbs per day</Text>
             </View>
-            <TouchableOpacity style={styles.saveButton} onPress={handleSaveGoal}>
+            <TouchableOpacity
+              style={styles.saveButton}
+              onPress={handleSaveGoal}
+            >
               <Text style={styles.saveButtonText}>Save Goal</Text>
             </TouchableOpacity>
           </View>
@@ -512,15 +590,31 @@ export default function SettingsScreen() {
           </View>
           <View style={styles.modalContent}>
             {[
-              { key: 'light', label: 'Light', icon: Sun, description: 'Always use light theme' },
-              { key: 'dark', label: 'Dark', icon: Moon, description: 'Always use dark theme' },
-              { key: 'system', label: 'System', icon: Smartphone, description: 'Follow device settings' },
+              {
+                key: 'light',
+                label: 'Light',
+                icon: Sun,
+                description: 'Always use light theme',
+              },
+              {
+                key: 'dark',
+                label: 'Dark',
+                icon: Moon,
+                description: 'Always use dark theme',
+              },
+              {
+                key: 'system',
+                label: 'System',
+                icon: Smartphone,
+                description: 'Follow device settings',
+              },
             ].map((appearance) => (
               <TouchableOpacity
                 key={appearance.key}
                 style={[
                   styles.appearanceOption,
-                  settings.appearance === appearance.key && styles.selectedOption
+                  settings.appearance === appearance.key &&
+                    styles.selectedOption,
                 ]}
                 onPress={() => {
                   updateSettings({ appearance: appearance.key as any });
@@ -532,13 +626,18 @@ export default function SettingsScreen() {
                     <appearance.icon size={20} color="#6b7280" />
                   </View>
                   <View>
-                    <Text style={[
-                      styles.appearanceLabel,
-                      settings.appearance === appearance.key && styles.selectedOptionText
-                    ]}>
+                    <Text
+                      style={[
+                        styles.appearanceLabel,
+                        settings.appearance === appearance.key &&
+                          styles.selectedOptionText,
+                      ]}
+                    >
                       {appearance.label}
                     </Text>
-                    <Text style={styles.appearanceDescription}>{appearance.description}</Text>
+                    <Text style={styles.appearanceDescription}>
+                      {appearance.description}
+                    </Text>
                   </View>
                 </View>
               </TouchableOpacity>
@@ -561,22 +660,26 @@ export default function SettingsScreen() {
             </TouchableOpacity>
           </View>
           <View style={styles.modalContent}>
-            {(['Verb and translation', 'Only translation', 'Only verb'] as const).map((mode) => (
+            {(
+              ['Verb and translation', 'Only translation', 'Only verb'] as const
+            ).map((mode) => (
               <TouchableOpacity
                 key={mode}
                 style={[
                   styles.optionItem,
-                  settings.displayMode === mode && styles.selectedOption
+                  settings.displayMode === mode && styles.selectedOption,
                 ]}
                 onPress={() => {
                   updateSettings({ displayMode: mode });
                   setShowDisplayModal(false);
                 }}
               >
-                <Text style={[
-                  styles.optionText,
-                  settings.displayMode === mode && styles.selectedOptionText
-                ]}>
+                <Text
+                  style={[
+                    styles.optionText,
+                    settings.displayMode === mode && styles.selectedOptionText,
+                  ]}
+                >
                   {mode}
                 </Text>
               </TouchableOpacity>
@@ -600,17 +703,37 @@ export default function SettingsScreen() {
           </View>
           <View style={styles.modalContent}>
             {[
-              { key: 'central', label: 'Central Igbo', description: 'Standard Igbo (Owerri/Umuahia)' },
-              { key: 'delta', label: 'Delta Igbo', description: 'Western Igbo dialect' },
-              { key: 'anambra', label: 'Anambra Igbo', description: 'Northern Igbo dialect' },
-              { key: 'imo', label: 'Imo Igbo', description: 'Central-Southern dialect' },
-              { key: 'abia', label: 'Abia Igbo', description: 'Eastern dialect' },
+              {
+                key: 'central',
+                label: 'Central Igbo',
+                description: 'Standard Igbo (Owerri/Umuahia)',
+              },
+              {
+                key: 'delta',
+                label: 'Delta Igbo',
+                description: 'Western Igbo dialect',
+              },
+              {
+                key: 'anambra',
+                label: 'Anambra Igbo',
+                description: 'Northern Igbo dialect',
+              },
+              {
+                key: 'imo',
+                label: 'Imo Igbo',
+                description: 'Central-Southern dialect',
+              },
+              {
+                key: 'abia',
+                label: 'Abia Igbo',
+                description: 'Eastern dialect',
+              },
             ].map((dialect) => (
               <TouchableOpacity
                 key={dialect.key}
                 style={[
                   styles.dialectOption,
-                  settings.dialect === dialect.key && styles.selectedOption
+                  settings.dialect === dialect.key && styles.selectedOption,
                 ]}
                 onPress={() => {
                   updateSettings({ dialect: dialect.key as any });
@@ -618,13 +741,18 @@ export default function SettingsScreen() {
                 }}
               >
                 <View>
-                  <Text style={[
-                    styles.dialectLabel,
-                    settings.dialect === dialect.key && styles.selectedOptionText
-                  ]}>
+                  <Text
+                    style={[
+                      styles.dialectLabel,
+                      settings.dialect === dialect.key &&
+                        styles.selectedOptionText,
+                    ]}
+                  >
                     {dialect.label}
                   </Text>
-                  <Text style={styles.dialectDescription}>{dialect.description}</Text>
+                  <Text style={styles.dialectDescription}>
+                    {dialect.description}
+                  </Text>
                 </View>
               </TouchableOpacity>
             ))}
