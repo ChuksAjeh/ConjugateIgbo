@@ -150,8 +150,6 @@ export default function ProScreen() {
     const total = cols * rows;
     const items: React.ReactNode[] = [];
     for (let i = 0; i < total; i++) {
-      const row = Math.floor(i / cols);
-      const col = i % cols;
       items.push(
         <Image
           key={`lion-${i}`}
