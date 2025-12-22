@@ -158,7 +158,7 @@ export function getConjugatedForm(
 
   // Check if the tense exists in the generated conjugations
   if (!conj[tense]) {
-    console.warn(`Tense "${tense}" not yet implemented for verb: ${verb.igbo}`);
+    // console.warn(`Tense "${tense}" not yet implemented for verb: ${verb.igbo}`);
     return '';
   }
 

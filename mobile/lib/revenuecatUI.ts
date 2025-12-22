@@ -25,18 +25,18 @@ export async function presentPaywall(options?: any) {
     }
 
     return await rcPresentPaywall(options ?? {});
-  } catch (e: any) {
-    console.error('[RevenueCatUI] Failed to present paywall:', e.message);
+  } catch (_e: any) {
+    // console.error('[RevenueCatUI] Failed to present paywall:', e.message);
     
     // Check if it's a module loading error
-    if (e?.code === 'MODULE_NOT_FOUND' || e?.message?.includes('Cannot find module')) {
+    if (_e?.code === 'MODULE_NOT_FOUND' || _e?.message?.includes('Cannot find module')) {
       const err: any = new Error(
         'RevenueCatUI module unavailable. Use a Development Client or prebuilt app.'
       );
       err.code = 'RC_UI_UNAVAILABLE_NATIVE';
       throw err;
     }
-    throw e;
+    throw _e;
   }
 }
 
@@ -60,8 +60,8 @@ export async function presentCustomerCenter(options?: any) {
     }
 
     return await rcPresentCustomerCenter(options ?? {});
-  } catch (e: any) {
-    console.error('[RevenueCatUI] Failed to present customer center:', e.message);
+  } catch (_e: any) {
+    // console.error('[RevenueCatUI] Failed to present customer center:', e.message);
     const err: any = new Error(
       'RevenueCatUI module unavailable. Use a Development Client or prebuilt app.'
     );

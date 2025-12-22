@@ -37,8 +37,8 @@ export const useNotifications = () => {
     );
 
     responseSubscription =
-      Notifications.addNotificationResponseReceivedListener((response) => {
-        console.log('Notification response:', response);
+      Notifications.addNotificationResponseReceivedListener((_response) => {
+        // console.log('Notification response:', _response);
       });
 
     return () => {
@@ -53,7 +53,7 @@ export const useNotifications = () => {
       await Notifications.cancelAllScheduledNotificationsAsync();
 
       if (Platform.OS === 'web') {
-        console.log('Push notifications not supported on web');
+        // console.log('Push notifications not supported on web');
         return;
       }
 
@@ -74,18 +74,18 @@ export const useNotifications = () => {
         } as Notifications.CalendarTriggerInput,
       });
 
-      console.log('Daily reminder scheduled for', time);
-    } catch (error) {
-      console.error('Error scheduling notification:', error);
+      // console.log('Daily reminder scheduled for', time);
+    } catch {
+      // console.error('Error scheduling notification:', error);
     }
   };
 
   const cancelDailyReminder = async () => {
     try {
       await Notifications.cancelAllScheduledNotificationsAsync();
-      console.log('Daily reminders cancelled');
-    } catch (error) {
-      console.error('Error cancelling notifications:', error);
+      // console.log('Daily reminders cancelled');
+    } catch {
+      // console.error('Error cancelling notifications:', error);
     }
   };
 
@@ -114,7 +114,7 @@ async function registerForPushNotificationsAsync() {
   }
 
   if (finalStatus !== 'granted') {
-    console.log('Failed to get push token for push notification!');
+    // console.log('Failed to get push token for push notification!');
     return null;
   }
 
@@ -122,8 +122,8 @@ async function registerForPushNotificationsAsync() {
     token = await Notifications.getExpoPushTokenAsync({
       projectId: Constants.expoConfig?.extra?.eas?.projectId,
     });
-  } catch (error) {
-    console.error('Error getting push token:', error);
+  } catch {
+    // console.error('Error getting push token:', error);
     return null;
   }
 

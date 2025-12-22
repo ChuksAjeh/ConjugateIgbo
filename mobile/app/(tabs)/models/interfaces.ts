@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { IgboVerb, Pronoun, Tense } from '@/models/verb';
+import { Pronoun, Tense } from '@/models/verb';
 
 export const tenses: Tense[] = ['present', 'past', 'future'];
 export const pronouns: Pronoun[] = ['m', 'i', 'o', 'anyi', 'unu', 'wa'];

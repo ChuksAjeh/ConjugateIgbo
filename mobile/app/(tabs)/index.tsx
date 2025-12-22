@@ -117,9 +117,8 @@ export default function PracticeScreen() {
       fadeAnim.setValue(0);
 
       return verb;
-    } catch (error) {
-      console.error('Error loading verb:', error);
-      throw error;
+    } catch {
+      // throw error;
     }
   }, [availableTenses, fadeAnim, settings.dialect]);
 
@@ -147,8 +146,8 @@ export default function PracticeScreen() {
           if (!currentVerb) {
             await loadNewVerb();
           }
-        } catch (error) {
-          console.error('Error refreshing practice card on focus:', error);
+        } catch {
+          // console.error('Error refreshing practice card on focus:', error);
         }
       };
 
@@ -158,8 +157,8 @@ export default function PracticeScreen() {
         isActive = false;
         try {
           fadeAnim.stopAnimation();
-        } catch (error) {
-          console.error('Error stopping animation:', error);
+        } catch {
+          // console.error('Error stopping animation:', error);
         }
       };
     }, [currentVerb, loadNewVerb, fadeAnim]),
@@ -174,15 +173,15 @@ export default function PracticeScreen() {
         settings.dialect as any,
       )
     : 'N/A';
-  console.log('Correct answer:', correctAnswer);
+  // console.log('Correct answer:', correctAnswer);
 
   const handleRevealAnswer = async () => {
     setShowAnswer(true);
     if (currentVerb) {
       try {
         await updateProgress(currentVerb.id, true);
-      } catch (error) {
-        console.error('Error updating progress:', error);
+      } catch {
+        // console.error('Error updating progress:', error);
       }
     }
     Animated.timing(fadeAnim, {
@@ -198,14 +197,14 @@ export default function PracticeScreen() {
 
     try {
       await loadNewVerb();
-    } catch (error) {
-      console.error('Error loading next verb:', error);
+    } catch {
+      // console.error('Error loading next verb:', error);
     }
   };
 
   const handlePlayAudio = () => {
     // Audio playback would be implemented here
-    console.log('Playing audio for:', currentVerb?.igbo);
+    // console.log('Playing audio for:', currentVerb?.igbo);
   };
 
   const handleShowVerbDetails = () => {

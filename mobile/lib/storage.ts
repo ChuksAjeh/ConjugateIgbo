@@ -6,15 +6,19 @@ let memoryStore: Record<string, string> = {};
 // Dynamic requires to avoid hard dependency crashes
 let AsyncStorage: any = null;
 try {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   AsyncStorage = require('@react-native-async-storage/async-storage').default;
-} catch (_) {}
+} catch {
+  // ignore
+}
 
 let FileSystem: any = null;
 try {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   FileSystem = require('expo-file-system');
-} catch (_) {}
+} catch {
+  // ignore
+}
 
 const FS_DIR = FileSystem ? FileSystem.documentDirectory : null;
 const FS_FILE = FS_DIR ? FS_DIR + 'conjugate_igbo_store.json' : null;

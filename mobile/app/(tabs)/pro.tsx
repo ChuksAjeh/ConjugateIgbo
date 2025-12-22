@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useEffect, useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -19,7 +19,7 @@ import { presentPaywall } from '@/lib/revenuecatUI';
 
 export default function ProScreen() {
   const { theme, isDark } = useTheme();
-  const { isProUser, isLoading, purchasePro, restorePurchases, offerings } =
+  const { isProUser, isLoading, purchasePro, offerings } =
     usePurchases();
   const styles = createStyles(theme, isDark);
   const router = useRouter();
@@ -43,7 +43,7 @@ export default function ProScreen() {
    *
    * @returns {Promise<void>}
    */
-  const handlePurchase = async () => {
+  const handlePurchase = useCallback(async () => {
     if (isProUser) return;
 
     try {
@@ -78,21 +78,21 @@ export default function ProScreen() {
         try {
           await purchasePro();
           return;
-        } catch (e) {
-          console.error('[ProScreen] Direct purchase error', e);
+        } catch {
+          // console.error('[ProScreen] Direct purchase error', e);
           Alert.alert('Purchase Error', 'Unable to start purchase.');
           return;
         }
       }
 
       // For other unexpected errors, show a generic error
-      console.error('[ProScreen] Unexpected paywall error', err);
+      // console.error('[ProScreen] Unexpected paywall error', err);
       showAlert(
         'Purchase Error',
         `Unable to present paywall: ${message || 'Unknown error'}`,
       );
     }
-  };
+  }, [isProUser, offerings, purchasePro]);
 
   // Auto-present the paywall when this tab/screen gains focus if user is not Pro
   useFocusEffect(
@@ -103,37 +103,52 @@ export default function ProScreen() {
         handlePurchase();
       }, 500);
       return () => clearTimeout(t);
-    }, [isProUser, isLoading, offerings?.current?.identifier]),
+    }, [handlePurchase, isProUser, isLoading]),
   );
 
-  /**
-   * Restores previous purchases and displays an alert with the result.
-   *
-   * @returns {Promise<void>}
-   */
-  const handleRestorePurchases = async () => {
-    try {
-      const success = await restorePurchases();
-      if (success) {
-        showAlert(
-          'Purchases Restored!',
-          'Your Pro features have been restored successfully.',
-          'Great!',
-        );
-      } else {
-        showAlert(
-          'No Purchases Found',
-          "We couldn't find any previous purchases to restore.",
-        );
-      }
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error) {
-      showAlert(
-        'Restore Failed',
-        'Unable to restore purchases. Please try again later.',
+  // Precompute a light-weight grid of lion icons for the fun fallback background
+  const lionGrid = useMemo(() => {
+    const { width, height } = Dimensions.get('window');
+    const cell = 72; // size of each grid cell
+    const cols = Math.max(4, Math.ceil(width / cell));
+    const rows = Math.max(8, Math.ceil(height / cell));
+    const total = cols * rows;
+    const items: React.ReactNode[] = [];
+    for (let i = 0; i < total; i++) {
+      items.push(
+        <Image
+          key={`lion-${i}`}
+          source={require('@/assets/images/lion.png')}
+          style={{
+            width: 28,
+            height: 28,
+            opacity: 0.08,
+            margin: 8,
+          }}
+          resizeMode="contain"
+          accessibilityIgnoresInvertColors
+        />,
       );
     }
-  };
+    return (
+      <View
+        pointerEvents="none"
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          paddingTop: 24,
+          paddingHorizontal: 16,
+          flexDirection: 'row',
+          flexWrap: 'wrap',
+        }}
+      >
+        {items}
+      </View>
+    );
+  }, []);
 
   // If the user is already Pro, show a success message instead of redirecting or showing the paywall button
   if (isProUser) {
@@ -192,51 +207,6 @@ export default function ProScreen() {
       </SafeAreaView>
     );
   }
-
-  // Precompute a light-weight grid of lion icons for the fun fallback background
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  const lionGrid = useMemo(() => {
-    const { width, height } = Dimensions.get('window');
-    const cell = 72; // size of each grid cell
-    const cols = Math.max(4, Math.ceil(width / cell));
-    const rows = Math.max(8, Math.ceil(height / cell));
-    const total = cols * rows;
-    const items: React.ReactNode[] = [];
-    for (let i = 0; i < total; i++) {
-      items.push(
-        <Image
-          key={`lion-${i}`}
-          source={require('@/assets/images/lion.png')}
-          style={{
-            width: 28,
-            height: 28,
-            opacity: 0.08,
-            margin: 8,
-          }}
-          resizeMode="contain"
-          accessibilityIgnoresInvertColors
-        />,
-      );
-    }
-    return (
-      <View
-        pointerEvents="none"
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          paddingTop: 24,
-          paddingHorizontal: 16,
-          flexDirection: 'row',
-          flexWrap: 'wrap',
-        }}
-      >
-        {items}
-      </View>
-    );
-  }, []);
 
   // Fallback UI: playful screen with coral→deep red gradient, lion grid, and call-to-action
   return (

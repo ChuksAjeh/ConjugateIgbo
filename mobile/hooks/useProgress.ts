@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 // import AsyncStorage from '@react-native-async-storage/async-storage';
-import { ProgressStatistics } from '@/hooks/models/hooksInterfaces';
-import { VerbProgress } from '@/hooks/models/hooksInterfaces';
+import { ProgressStatistics, VerbProgress } from '@/hooks/models/hooksInterfaces';
 
 const PROGRESS_STORAGE_KEY = 'igbo_verb_progress';
 const STATISTICS_STORAGE_KEY = 'igbo_verb_statistics';
@@ -61,8 +60,8 @@ export const useProgress = () => {
       } else {
         setStatistics(getDefaultStatistics());
       }
-    } catch (error) {
-      console.error('Error loading progress:', error);
+    } catch {
+      // console.error('Error loading progress:', error);
     } finally {
       setIsLoading(false);
     }
@@ -106,8 +105,8 @@ export const useProgress = () => {
           );
         }
       }
-    } catch (error) {
-      console.error('Error updating streak:', error);
+    } catch {
+      // console.error('Error updating streak:', error);
     }
   };
   const updateProgress = async (verbId: string, isCorrect: boolean) => {
@@ -159,8 +158,8 @@ export const useProgress = () => {
         STATISTICS_STORAGE_KEY,
         JSON.stringify(updatedStatistics),
       );
-    } catch (error) {
-      console.error('Error updating progress:', error);
+    } catch {
+      // console.error('Error updating progress:', error);
     }
   };
 
@@ -176,8 +175,8 @@ export const useProgress = () => {
         STATISTICS_STORAGE_KEY,
         JSON.stringify(updatedStatistics),
       );
-    } catch (error) {
-      console.error('Error resetting daily progress:', error);
+    } catch {
+      // console.error('Error resetting daily progress:', error);
     }
   };
   const getVerbProgress = (verbId: string): VerbProgress | undefined => {
@@ -190,8 +189,8 @@ export const useProgress = () => {
       setStatistics(getDefaultStatistics());
       await AsyncStorage.removeItem(PROGRESS_STORAGE_KEY);
       await AsyncStorage.removeItem(STATISTICS_STORAGE_KEY);
-    } catch (error) {
-      console.error('Error resetting progress:', error);
+    } catch {
+      // console.error('Error resetting progress:', error);
     }
   };
 

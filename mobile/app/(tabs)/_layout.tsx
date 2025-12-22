@@ -4,8 +4,6 @@ import {
   Settings,
   Crown,
   Zap,
-  TrendingUp,
-  Music,
 } from 'lucide-react-native';
 import { usePurchases } from '@/hooks/usePurchases';
 
