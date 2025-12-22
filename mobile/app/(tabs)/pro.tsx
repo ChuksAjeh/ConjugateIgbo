@@ -189,7 +189,7 @@ export default function ProScreen() {
             features.
           </Text>
           <TouchableOpacity
-            onPress={() => router.replace('/(tabs)/')}
+            onPress={() => router.replace('/(tabs)')}
             style={{
               paddingVertical: 14,
               paddingHorizontal: 28,

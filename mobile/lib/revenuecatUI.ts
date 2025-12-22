@@ -18,8 +18,9 @@ export async function presentPaywall(options?: any) {
   }
 
   try {
-    const { presentPaywall: rcPresentPaywall } = await import('react-native-purchases-ui');
-    
+    const RevenueCatUI = (await import('react-native-purchases-ui')) as any;
+    const rcPresentPaywall = RevenueCatUI.presentPaywall;
+
     if (typeof rcPresentPaywall !== 'function') {
       throw new Error('presentPaywall is not a function in react-native-purchases-ui');
     }
@@ -53,8 +54,9 @@ export async function presentCustomerCenter(options?: any) {
   }
 
   try {
-    const { presentCustomerCenter: rcPresentCustomerCenter } = await import('react-native-purchases-ui');
-    
+    const RevenueCatUI = (await import('react-native-purchases-ui')) as any;
+    const rcPresentCustomerCenter = RevenueCatUI.presentCustomerCenter;
+
     if (typeof rcPresentCustomerCenter !== 'function') {
       throw new Error('presentCustomerCenter is not a function in react-native-purchases-ui');
     }
