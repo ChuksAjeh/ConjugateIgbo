@@ -2,7 +2,7 @@ import { Platform } from 'react-native';
 import Purchases, { CustomerInfo, LOG_LEVEL } from 'react-native-purchases';
 
 // Use your test key in development. For prod builds, prefer platform-specific keys via the Expo config plugin.
-const REVENUECAT_API_KEY = process.env.EXPO_PUBLIC_REVENUECAT_API_KEY;
+const REVENUECAT_API_KEY = process.env.EXPO_PUBLIC_API_URL;
 
 
 if (!REVENUECAT_API_KEY) {
