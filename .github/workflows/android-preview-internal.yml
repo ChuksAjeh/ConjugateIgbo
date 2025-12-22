@@ -43,7 +43,7 @@ jobs:
           --platform android
           --profile preview
           --non-interactive
-          --wait
+          --no-wait
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
 
