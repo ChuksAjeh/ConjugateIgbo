@@ -9,7 +9,10 @@
       "distribution": "internal"
     },
     "preview": {
-      "distribution": "internal"
+      "distribution": "internal",
+      "android": {
+        "buildType": "app-bundle"
+      }
     },
     "production": {
       "autoIncrement": true
@@ -18,7 +21,8 @@
   "submit": {
     "preview": {
       "android": {
-        "track": "internal"
+        "track": "internal",
+        "artifactType": "bundle"
       }
     },
     "production": {}
