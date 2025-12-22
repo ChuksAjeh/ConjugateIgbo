@@ -23,8 +23,6 @@ export default function ProScreen() {
   const styles = createStyles(theme, isDark);
   const router = useRouter();
 
-  // No decorative UI needed for the blank fallback design.
-
   const showAlert = (title: string, message: string, buttonText = 'OK') => {
     Alert.alert(title, message, [{ text: buttonText, style: 'default' }]);
   };

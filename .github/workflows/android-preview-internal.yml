@@ -37,6 +37,7 @@ jobs:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
 
       - name: Build Android (Preview)
+        working-directory: mobile
         run: >
           eas build
           --platform android
@@ -47,6 +48,7 @@ jobs:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
 
       - name: Submit to Play Internal Testing
+        working-directory: mobile
         run: >
           eas submit
           --platform android
