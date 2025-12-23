@@ -44,10 +44,9 @@ export default function PracticeScreen() {
   const [fallbackModalVisible, setFallbackModalVisible] = useState(false);
 
   const { settings } = useSettings();
-  const { updateProgress } = useProgress();
+  const { statistics, updateProgress } = useProgress();
   const { isProUser } = usePurchases();
   const { theme } = useTheme();
-  const [dailyCount, setDailyCount] = useState(0);
 
   // Determine what to show on the card based on Settings > Display Mode
   const showEnglish =
@@ -117,9 +116,8 @@ export default function PracticeScreen() {
       fadeAnim.setValue(0);
 
       return verb;
-    } catch (error) {
-      console.error('Error loading verb:', error);
-      throw error;
+    } catch {
+      // throw error;
     }
   }, [availableTenses, fadeAnim, settings.dialect]);
 
@@ -147,8 +145,8 @@ export default function PracticeScreen() {
           if (!currentVerb) {
             await loadNewVerb();
           }
-        } catch (error) {
-          console.error('Error refreshing practice card on focus:', error);
+        } catch(error: any) {
+          console.error('[PracticeScreen] Error refreshing practice card on focus:', error);
         }
       };
 
@@ -158,8 +156,8 @@ export default function PracticeScreen() {
         isActive = false;
         try {
           fadeAnim.stopAnimation();
-        } catch (error) {
-          console.error('Error stopping animation:', error);
+        } catch (error: any) {
+          console.error('[PracticeScreen] Error stopping animation:', error);
         }
       };
     }, [currentVerb, loadNewVerb, fadeAnim]),
@@ -174,17 +172,9 @@ export default function PracticeScreen() {
         settings.dialect as any,
       )
     : 'N/A';
-  console.log('Correct answer:', correctAnswer);
 
   const handleRevealAnswer = async () => {
     setShowAnswer(true);
-    if (currentVerb) {
-      try {
-        await updateProgress(currentVerb.id, true);
-      } catch (error) {
-        console.error('Error updating progress:', error);
-      }
-    }
     Animated.timing(fadeAnim, {
       toValue: 1,
       duration: 300,
@@ -194,18 +184,18 @@ export default function PracticeScreen() {
 
   const handleNextVerb = async () => {
     // Increment daily goal counter whenever user proceeds to the next card
-    setDailyCount((prev) => prev + 1);
+    await updateProgress();
 
     try {
       await loadNewVerb();
-    } catch (error) {
-      console.error('Error loading next verb:', error);
+    } catch(error: any) {
+      console.error('[PracticeScreen] Error loading next verb:', error);
     }
   };
 
   const handlePlayAudio = () => {
     // Audio playback would be implemented here
-    console.log('Playing audio for:', currentVerb?.igbo);
+    console.info('[PracticeScreen] Playing audio for:', currentVerb?.igbo);
   };
 
   const handleShowVerbDetails = () => {
@@ -272,10 +262,13 @@ export default function PracticeScreen() {
         <Text style={[styles.progressCount]}>
           <Text
             style={{
-              color: dailyCount >= settings.dailyGoal ? '#10b981' : '#ef4444',
+              color:
+                statistics.dailyGoalProgress >= settings.dailyGoal
+                  ? '#10b981'
+                  : '#ef4444',
             }}
           >
-            {String(dailyCount)}
+            {String(statistics.dailyGoalProgress)}
           </Text>
           <Text style={{ color: theme.colors.textSecondary }}>
             {' '}

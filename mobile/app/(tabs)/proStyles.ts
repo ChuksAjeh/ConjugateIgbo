@@ -1,7 +1,7 @@
 import { StyleSheet, Dimensions } from 'react-native';
 import { Theme } from '@/components/ThemeProvider';
 
-const { width, height } = Dimensions.get('window');
+const { height } = Dimensions.get('window');
 
 export const createStyles = (theme: Theme, isDark: boolean) =>
   StyleSheet.create({

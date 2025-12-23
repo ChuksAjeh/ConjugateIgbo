@@ -10,11 +10,9 @@ import {
   Modal,
   ScrollView,
 } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
-import { router } from 'expo-router';
+import { useLocalSearchParams, router } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Search, Filter, Volume2, X, Book } from 'lucide-react-native';
+import { Search, Filter, Volume2, X } from 'lucide-react-native';
 import { IgboVerb, Tense, Pronoun } from '@/models/verb';
 import { verbService } from '@/lib/verbService';
 import { useTheme } from '@/components/ThemeProvider';
@@ -60,11 +58,13 @@ export default function VerbsScreen() {
             // Clear the flag so subsequent visits to Verbs don't auto-open
             try {
               router.setParams({ openDetails: undefined });
-            } catch {}
+            } catch (error) {
+              console.error('[VerbsScreen] Error clearing openDetails flag:', error);
+            }
           }
         }
-      } catch (error) {
-        console.error('Error loading verbs:', error);
+      } catch(error: any) {
+        console.error('[VerbsScreen]Error loading verbs:', error);
       } finally {
         setIsLoading(false);
       }
@@ -569,24 +569,6 @@ const VerbDetailContent = ({ verb, theme }: { verb: IgboVerb; theme: any }) => {
     </View>
   );
 };
-
-const Switch = ({ value, onValueChange, trackColor, thumbColor }: any) => (
-  <TouchableOpacity
-    style={[
-      styles.switch,
-      { backgroundColor: value ? trackColor.true : trackColor.false },
-    ]}
-    onPress={() => onValueChange(!value)}
-  >
-    <View
-      style={[
-        styles.switchThumb,
-        { backgroundColor: thumbColor },
-        value && styles.switchThumbActive,
-      ]}
-    />
-  </TouchableOpacity>
-);
 
 const styles = StyleSheet.create({
   container: {

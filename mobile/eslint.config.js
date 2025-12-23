@@ -14,7 +14,7 @@ module.exports = defineConfig([
 
       // Sensible Expo / RN defaults
       'no-unused-vars': 'warn',
-      'no-console': 'warn',
+      'no-console': 'off',
     },
   },
 ]);

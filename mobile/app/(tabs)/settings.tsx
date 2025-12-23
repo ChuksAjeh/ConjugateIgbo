@@ -61,7 +61,7 @@ export default function SettingsScreen() {
           [{ text: 'OK', style: 'default' }],
         );
       }
-    } catch (error) {
+    } catch {
       Alert.alert(
         'Restore Failed',
         'Unable to restore purchases. Please try again later.',
@@ -73,7 +73,7 @@ export default function SettingsScreen() {
   const handleOpenCustomerCenter = async () => {
     try {
       await presentCustomerCenter({});
-    } catch (e) {
+    } catch {
       Alert.alert('Unable to open Customer Center', 'Please try again later.', [
         { text: 'OK', style: 'default' },
       ]);

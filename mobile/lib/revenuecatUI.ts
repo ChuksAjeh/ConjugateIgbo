@@ -2,102 +2,70 @@ import { Platform } from 'react-native';
 
 const isNative = Platform.OS === 'ios' || Platform.OS === 'android';
 
-// Lightweight wrappers that safely import the UI module only on native.
+/**
+ * Safely imports and calls presentPaywall from react-native-purchases-ui.
+ * Falls back to throwing an error if the module is not available (e.g., on web or in Expo Go).
+ *
+ * @param {Object} [options] - Optional configuration for the paywall.
+ * @param {string} [options.offeringIdentifier] - Specific offering to display.
+ * @param {boolean} [options.displayCloseButton] - Whether to show the close button.
+ * @returns {Promise<any>} A promise that resolves when the paywall is dismissed or a purchase is made.
+ * @throws {Error} Throws an error if RevenueCatUI is not available on the current platform or environment.
+ */
 export async function presentPaywall(options?: any) {
   if (!isNative) {
-    const err: any = new Error('RevenueCatUI is not available on web.');
-    err.code = 'RC_UI_UNAVAILABLE_WEB';
-    throw err;
+    throw new Error('RevenueCatUI is not available on web.');
   }
+
   try {
-    console.log(
-      '[revenuecatUI] Attempting to import react-native-purchases-ui...',
-    );
-    const ui = await import('react-native-purchases-ui');
+    const RevenueCatUI = (await import('react-native-purchases-ui')) as any;
+    const rcPresentPaywall = RevenueCatUI.presentPaywall;
 
-    console.log(
-      '[revenuecatUI] Module imported. Available exports:',
-      Object.keys(ui),
-    );
-
-    // Try different possible export patterns
-    const fn =
-      ui.presentPaywall ||
-      (ui as any).default?.presentPaywall ||
-      (ui as any).RevenueCatUI?.presentPaywall ||
-      (ui as any).default;
-
-    console.log(
-      '[revenuecatUI] presentPaywall function found:',
-      !!fn,
-      typeof fn,
-    );
-
-    if (!fn || typeof fn !== 'function') {
-      const err: any = new Error(
-        'presentPaywall export not found in react-native-purchases-ui',
-      );
-      err.code = 'RC_UI_EXPORT_MISSING';
-      err.availableExports = Object.keys(ui);
-      throw err;
+    if (typeof rcPresentPaywall !== 'function') {
+      throw new Error('presentPaywall is not a function in react-native-purchases-ui');
     }
 
-    console.log('[revenuecatUI] Calling presentPaywall with options:', options);
-    const result = await fn(options ?? {});
-    console.log('[revenuecatUI] presentPaywall completed with result:', result);
-
-    return result;
-  } catch (e: any) {
-    console.error('[revenuecatUI] presentPaywall failed:', {
-      message: e?.message,
-      code: e?.code,
-      availableExports: e?.availableExports,
-    });
-
-    // If it's a module loading error, throw with our custom code
-    if (
-      !e?.code ||
-      e.code === 'MODULE_NOT_FOUND' ||
-      e?.message?.includes('Cannot find module')
-    ) {
+    return await rcPresentPaywall(options ?? {});
+  } catch (_e: any) {
+    console.error('[RevenueCatUI] Failed to present paywall:', _e.message);
+    
+    // Check if it's a module loading error
+    if (_e?.code === 'MODULE_NOT_FOUND' || _e?.message?.includes('Cannot find module')) {
       const err: any = new Error(
-        `RevenueCatUI module unavailable. Build and run a Development Client or prebuilt app (not Expo Go). Original: ${e?.message || e}`,
+        'RevenueCatUI module unavailable. Use a Development Client or prebuilt app.'
       );
       err.code = 'RC_UI_UNAVAILABLE_NATIVE';
       throw err;
     }
-
-    // Otherwise, rethrow the original error (it might be user cancellation or other RC error)
-    throw e;
+    throw _e;
   }
 }
 
+/**
+ * Safely imports and calls presentCustomerCenter from react-native-purchases-ui.
+ *
+ * @param {Object} [options] - Optional configuration for the customer center.
+ * @returns {Promise<any>} A promise that resolves when the customer center is dismissed.
+ * @throws {Error} Throws an error if RevenueCatUI is not available on the current platform or environment.
+ */
 export async function presentCustomerCenter(options?: any) {
   if (!isNative) {
-    const err: any = new Error('RevenueCatUI is not available on web.');
-    err.code = 'RC_UI_UNAVAILABLE_WEB';
-    throw err;
+    throw new Error('RevenueCatUI is not available on web.');
   }
+
   try {
-    const ui = await import('react-native-purchases-ui');
+    const RevenueCatUI = (await import('react-native-purchases-ui')) as any;
+    const rcPresentCustomerCenter = RevenueCatUI.presentCustomerCenter;
 
-    const fn =
-      ui.presentCustomerCenter ||
-      (ui as any).default?.presentCustomerCenter ||
-      (ui as any).RevenueCatUI?.presentCustomerCenter;
-
-    if (!fn || typeof fn !== 'function') {
-      const err: any = new Error(
-        'presentCustomerCenter export not found in react-native-purchases-ui',
-      );
-      err.code = 'RC_UI_EXPORT_MISSING';
-      throw err;
+    if (typeof rcPresentCustomerCenter !== 'function') {
+      throw new Error('presentCustomerCenter is not a function in react-native-purchases-ui');
     }
 
-    return fn(options ?? {});
-  } catch (e: any) {
+    return await rcPresentCustomerCenter(options ?? {});
+  } catch (_e: any) {
+    console.error('[RevenueCatUI] Failed to present customer center:', _e.message);
     const err: any = new Error(
-      `RevenueCatUI module unavailable. Build and run a Development Client or prebuilt app (not Expo Go). Original: ${e?.message || e}`,
+      'RevenueCatUI module unavailable. Use a Development Client or prebuilt app.'
     );
     err.code = 'RC_UI_UNAVAILABLE_NATIVE';
     throw err;

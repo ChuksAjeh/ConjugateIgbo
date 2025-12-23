@@ -7,24 +7,42 @@ import Purchases, {
   PurchasesOfferings,
 } from 'react-native-purchases';
 
-const ENTITLEMENT_ID = 'entldefbca344e';
+/**
+ * RevenueCat configuration constants.
+ * These match the project's setup in the RevenueCat dashboard.
+ */
+const ENTITLEMENT_ID = 'ConjugateIgbo Pro';
+const PRODUCT_ID = 'conjugate_igbo_pro'; // Lifetime/Pro product ID
 
 const isNative = Platform.OS === 'ios' || Platform.OS === 'android';
 
-// Some versions of @types for react-native-purchases do not export `Package`.
-// Use a relaxed type here to avoid type errors while keeping runtime correct.
-export type PurchasesPackage = any;
-
+/**
+ * Hook to manage RevenueCat purchases and customer status.
+ *
+ * @returns {Object} An object containing purchase state and methods.
+ * @returns {boolean} returns.isProUser - Whether the user has an active Pro entitlement.
+ * @returns {boolean} returns.isLoading - Whether the purchase data is currently loading.
+ * @returns {PurchasesPackage[]} returns.packages - Available packages for purchase.
+ * @returns {PurchasesOfferings | null} returns.offerings - Current RevenueCat offerings.
+ * @returns {CustomerInfo | null} returns.customerInfo - Detailed customer information.
+ * @returns {Function} returns.purchasePro - Function to purchase the Pro/Lifetime package.
+ * @returns {Function} returns.purchasePackage - Function to purchase a specific package.
+ * @returns {Function} returns.restorePurchases - Function to restore previous purchases.
+ */
 export const usePurchases = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo | null>(null);
   const [offerings, setOfferings] = useState<PurchasesOfferings | null>(null);
 
+  // Check if the user has the 'ConjugateIgbo Pro' entitlement active
   const isProUser = !!customerInfo?.entitlements?.active?.[ENTITLEMENT_ID];
-  const packages: PurchasesPackage[] = useMemo(() => {
+
+  // Get available packages from the current offering
+  const packages = useMemo(() => {
     return offerings?.current?.availablePackages ?? [];
   }, [offerings]);
 
+  // Keep a ref to setCustomerInfo for the listener to avoid stale closure issues
   const setCustomerInfoRef = useRef(setCustomerInfo);
   setCustomerInfoRef.current = setCustomerInfo;
 
@@ -36,6 +54,9 @@ export const usePurchases = () => {
 
     let didCancel = false;
 
+    /**
+     * Loads initial customer info and offerings from RevenueCat.
+     */
     async function load() {
       try {
         setIsLoading(true);
@@ -47,8 +68,8 @@ export const usePurchases = () => {
           setCustomerInfo(info);
           setOfferings(offs);
         }
-      } catch (e) {
-        console.warn('RevenueCat init failed', e);
+      } catch(e: any) {
+        console.warn('[usePurchases] RevenueCat initialization failed:', e);
       } finally {
         if (!didCancel) setIsLoading(false);
       }
@@ -56,20 +77,28 @@ export const usePurchases = () => {
 
     load();
 
-    const listener: any = Purchases.addCustomerInfoUpdateListener((info) => {
+    // Listen for updates to customer info (e.g., after a purchase or restore)
+    const listener = Purchases.addCustomerInfoUpdateListener((info) => {
       setCustomerInfoRef.current(info);
     });
 
     return () => {
-      // RevenueCat v9 returns a listener object with a remove() method
+      // Cleanup listener on unmount
       try {
+        // @ts-ignore - RevenueCat v9 listener has remove()
         listener?.remove?.();
       } catch {}
       didCancel = true;
     };
   }, []);
 
-  const purchasePackage = useCallback(async (pkg: PurchasesPackage) => {
+  /**
+   * Performs a purchase for a specific RevenueCat package.
+   *
+   * @param {any} pkg - The RevenueCat package to purchase.
+   * @returns {Promise<boolean>} A promise that resolves to true if the purchase was successful and the entitlement is active.
+   */
+  const purchasePackage = useCallback(async (pkg: any) => {
     if (!isNative) return false;
     try {
       setIsLoading(true);
@@ -79,21 +108,46 @@ export const usePurchases = () => {
     } catch (e) {
       const err = e as PurchasesError;
       if (err?.code === PURCHASES_ERROR_CODE.PURCHASE_CANCELLED_ERROR) {
-        return false; // user cancelled
+        return false; // User cancelled the purchase
       }
-      console.error('Purchase failed', err);
+      console.error('[usePurchases] Purchase failed:', err);
       return false;
     } finally {
       setIsLoading(false);
     }
   }, []);
 
+  /**
+   * Attempts to purchase the Pro/Lifetime package.
+   * Searches for a package matching the product identifier or common keywords.
+   *
+   * @returns {Promise<boolean>} A promise that resolves to true if the purchase was successful and the entitlement is active.
+   */
   const purchasePro = useCallback(async (): Promise<boolean> => {
-    const lifetime = packages.find((p) => p.identifier === 'lifetime');
-    if (!lifetime) return false;
-    return purchasePackage(lifetime);
+    const proPackage = packages.find(
+      (p) =>
+        p.product.identifier === PRODUCT_ID ||
+        p.packageType === 'LIFETIME' ||
+        p.identifier === 'lifetime' ||
+        p.identifier === 'pro'
+    );
+
+    if (!proPackage) {
+       console.warn(
+        '[usePurchases] No Pro package found. Available:',
+        packages.map((p) => p.identifier)
+      );
+      return false;
+    }
+
+    return purchasePackage(proPackage);
   }, [packages, purchasePackage]);
 
+  /**
+   * Restores previous purchases for the user.
+   *
+   * @returns {Promise<boolean>} A promise that resolves to true if the restoration was successful and the entitlement is active.
+   */
   const restorePurchases = useCallback(async (): Promise<boolean> => {
     if (!isNative) return false;
     try {
@@ -101,8 +155,8 @@ export const usePurchases = () => {
       const info = await Purchases.restorePurchases();
       setCustomerInfo(info);
       return !!info.entitlements?.active?.[ENTITLEMENT_ID];
-    } catch (e) {
-      console.error('Restore failed', e);
+    } catch(e: any) {
+      console.error('[usePurchases] Restore failed:', e);
       return false;
     } finally {
       setIsLoading(false);

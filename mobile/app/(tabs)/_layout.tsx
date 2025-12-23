@@ -4,8 +4,6 @@ import {
   Settings,
   Crown,
   Zap,
-  TrendingUp,
-  Music,
 } from 'lucide-react-native';
 import { usePurchases } from '@/hooks/usePurchases';
 
@@ -58,6 +56,32 @@ export default function TabLayout() {
           tabBarIcon: ({ size, color }) => (
             <Settings size={size} color={color} />
           ),
+        }}
+      />
+
+      {/* Hide non-screen files from the tab bar */}
+      <Tabs.Screen
+        name="proStyles"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="indexStyles"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="settingsStyles"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="models"
+        options={{
+          href: null,
         }}
       />
     </Tabs>
