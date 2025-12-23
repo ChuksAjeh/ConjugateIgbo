@@ -68,8 +68,8 @@ export const usePurchases = () => {
           setCustomerInfo(info);
           setOfferings(offs);
         }
-      } catch {
-        // console.warn('[usePurchases] RevenueCat initialization failed:', e);
+      } catch(e: any) {
+        console.warn('[usePurchases] RevenueCat initialization failed:', e);
       } finally {
         if (!didCancel) setIsLoading(false);
       }
@@ -110,7 +110,7 @@ export const usePurchases = () => {
       if (err?.code === PURCHASES_ERROR_CODE.PURCHASE_CANCELLED_ERROR) {
         return false; // User cancelled the purchase
       }
-      // console.error('[usePurchases] Purchase failed:', err);
+      console.error('[usePurchases] Purchase failed:', err);
       return false;
     } finally {
       setIsLoading(false);
@@ -133,10 +133,10 @@ export const usePurchases = () => {
     );
 
     if (!proPackage) {
-      /* console.warn(
+       console.warn(
         '[usePurchases] No Pro package found. Available:',
         packages.map((p) => p.identifier)
-      ); */
+      );
       return false;
     }
 
@@ -155,8 +155,8 @@ export const usePurchases = () => {
       const info = await Purchases.restorePurchases();
       setCustomerInfo(info);
       return !!info.entitlements?.active?.[ENTITLEMENT_ID];
-    } catch {
-      // console.error('[usePurchases] Restore failed:', e);
+    } catch(e: any) {
+      console.error('[usePurchases] Restore failed:', e);
       return false;
     } finally {
       setIsLoading(false);

@@ -71,14 +71,14 @@ class VerbService {
           const parsed = JSON.parse(cached) as IgboVerb[];
           if (Array.isArray(parsed) && parsed.length > 0) {
             this.cacheByDialect[dialect] = parsed;
-            /* console.log(
-              `Verb service loaded ${parsed.length} ${dialect} verbs from cache`,
-            ); */
+            console.info(
+              `[verbService] Verb service loaded ${parsed.length} ${dialect} verbs from cache`,
+            );
           }
         }
       }
-    } catch {
-      // console.warn(`Failed to parse verbs cache for ${dialect}, ignoring:`, e);
+    } catch(e: any) {
+      console.warn(`[verbService] Failed to parse verbs cache for ${dialect}, ignoring:`, e);
     }
 
     // 2) Try to fetch from API for this dialect
@@ -92,15 +92,15 @@ class VerbService {
           const mapped = data.map(mapDtoToVerb);
           this.cacheByDialect[dialect] = mapped;
           await setItem(key, JSON.stringify(mapped));
-          /* console.log(
-            `Verb service initialized from endpoint with ${mapped.length} ${dialect} verbs (cached)`,
-          ); */
+          console.info(
+            `[verbService] Verb service initialized from endpoint with ${mapped.length} ${dialect} verbs (cached)`,
+          );
         }
-      } catch {
-        /* console.warn(
-          `Fetching verbs from endpoint failed for ${dialect}.`,
+      } catch(error: any) {
+        console.error(
+          `[verbService] Fetching verbs from endpoint failed for ${dialect}.`,
           error,
-        ); */
+        );
       }
     }
 
@@ -129,9 +129,9 @@ class VerbService {
           cacheKeyForDialect('delta'),
           JSON.stringify(this.cacheByDialect['delta']),
         );
-        /* console.log(
-          `Verb service initialized delta with offline seed (${this.cacheByDialect['delta']!.length} verbs)`,
-        ); */
+        console.info(
+          `[verbService] Verb service initialized delta with offline seed (${this.cacheByDialect['delta']!.length} verbs)`,
+        );
         return { dialectUsed: 'delta' };
       }
     }

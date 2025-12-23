@@ -145,8 +145,8 @@ export default function PracticeScreen() {
           if (!currentVerb) {
             await loadNewVerb();
           }
-        } catch {
-          // console.error('Error refreshing practice card on focus:', error);
+        } catch(error: any) {
+          console.error('[PracticeScreen] Error refreshing practice card on focus:', error);
         }
       };
 
@@ -156,8 +156,8 @@ export default function PracticeScreen() {
         isActive = false;
         try {
           fadeAnim.stopAnimation();
-        } catch {
-          // console.error('Error stopping animation:', error);
+        } catch (error: any) {
+          console.error('[PracticeScreen] Error stopping animation:', error);
         }
       };
     }, [currentVerb, loadNewVerb, fadeAnim]),
@@ -172,7 +172,6 @@ export default function PracticeScreen() {
         settings.dialect as any,
       )
     : 'N/A';
-  // console.log('Correct answer:', correctAnswer);
 
   const handleRevealAnswer = async () => {
     setShowAnswer(true);
@@ -189,14 +188,14 @@ export default function PracticeScreen() {
 
     try {
       await loadNewVerb();
-    } catch {
-      // console.error('Error loading next verb:', error);
+    } catch(error: any) {
+      console.error('[PracticeScreen] Error loading next verb:', error);
     }
   };
 
   const handlePlayAudio = () => {
     // Audio playback would be implemented here
-    // console.log('Playing audio for:', currentVerb?.igbo);
+    console.info('[PracticeScreen] Playing audio for:', currentVerb?.igbo);
   };
 
   const handleShowVerbDetails = () => {

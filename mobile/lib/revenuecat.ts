@@ -16,7 +16,7 @@ export function configureRevenueCat() {
   }
 
   if (!REVENUECAT_API_KEY) {
-    // console.error('[RevenueCat] API key missing. Check your environment variables.');
+    console.error('[RevenueCat] API key missing. Check your environment variables.');
     return;
   }
 

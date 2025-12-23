@@ -78,15 +78,14 @@ export default function ProScreen() {
         try {
           await purchasePro();
           return;
-        } catch {
-          // console.error('[ProScreen] Direct purchase error', e);
+        } catch(e: any) {
+          console.error('[ProScreen] Direct purchase error', e);
           Alert.alert('Purchase Error', 'Unable to start purchase.');
           return;
         }
       }
-
       // For other unexpected errors, show a generic error
-      // console.error('[ProScreen] Unexpected paywall error', err);
+      console.error('[ProScreen] Unexpected paywall error', err);
       showAlert(
         'Purchase Error',
         `Unable to present paywall: ${message || 'Unknown error'}`,

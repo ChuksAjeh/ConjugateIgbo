@@ -100,8 +100,8 @@ async function loadFromStorageOnce() {
         JSON.stringify(currentSettings),
       );
     }
-  } catch {
-    // console.error('Error loading settings:', e);
+  } catch(e: any) {
+    console.error('[useSettings] Error loading settings:', e);
   } finally {
     initialized = true;
     // Notify all subscribers of the initial value
@@ -150,8 +150,8 @@ export const useSettings = () => {
         SETTINGS_STORAGE_KEY,
         JSON.stringify(currentSettings),
       );
-    } catch {
-      // console.error('Error saving settings:', error);
+    } catch(error: any) {
+      console.error('[useSettings] Error saving settings:', error);
     }
   };
 
@@ -163,8 +163,8 @@ export const useSettings = () => {
         SETTINGS_STORAGE_KEY,
         JSON.stringify(currentSettings),
       );
-    } catch {
-      // console.error('Error resetting settings:', error);
+    } catch(error: any) {
+      console.error('[useSettings] Error resetting settings:', error);
     }
   };
 

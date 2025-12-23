@@ -58,11 +58,13 @@ export default function VerbsScreen() {
             // Clear the flag so subsequent visits to Verbs don't auto-open
             try {
               router.setParams({ openDetails: undefined });
-            } catch {}
+            } catch (error) {
+              console.error('[VerbsScreen] Error clearing openDetails flag:', error);
+            }
           }
         }
-      } catch {
-        // console.error('Error loading verbs:', error);
+      } catch(error: any) {
+        console.error('[VerbsScreen]Error loading verbs:', error);
       } finally {
         setIsLoading(false);
       }
