@@ -14,7 +14,7 @@ import {
   ScrollView,
   Modal,
   Platform,
-  StatusBar,
+  StatusBar, Button
 } from 'react-native';
 import { RotateCcw, Volume2, FileText } from 'lucide-react-native';
 import { router } from 'expo-router';
@@ -32,6 +32,8 @@ import {
   pronouns,
   tenses,
 } from '@/app/(tabs)/models/interfaces';
+
+import * as Sentry from '@sentry/react-native';
 
 export default function PracticeScreen() {
   const [currentVerb, setCurrentVerb] = useState<IgboVerb | null>(null);
@@ -220,6 +222,8 @@ export default function PracticeScreen() {
         return '#6b7280';
     }
   };
+
+
 
   // Show loading state while verb is loading
   if (!currentVerb) {

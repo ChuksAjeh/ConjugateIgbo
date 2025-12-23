@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
+import * as Sentry from '@sentry/react-native';
 
 // Configure notification behavior
 Notifications.setNotificationHandler({
@@ -76,7 +77,15 @@ export const useNotifications = () => {
 
       console.info('[useNotifications] Daily reminder scheduled for', time);
     } catch(error: any) {
-      console.error('[useNotifications] Error scheduling notification:', error);
+      Sentry.captureException(error, {
+        tags: {
+          feature: 'notifications',
+          hook: 'useNotifications',
+        },
+        extra: {
+          context: 'Error scheduling notification',
+        },
+      });
     }
   };
 
@@ -85,7 +94,15 @@ export const useNotifications = () => {
       await Notifications.cancelAllScheduledNotificationsAsync();
       console.info('[useNotifications] Daily reminders cancelled');
     } catch(error: any) {
-      console.error('[useNotifications] Error cancelling notifications:', error);
+      Sentry.captureException(error, {
+        tags: {
+          feature: 'notifications',
+          hook: 'useNotifications',
+        },
+        extra: {
+          context: 'Error cancelling notifications',
+        },
+      });
     }
   };
 

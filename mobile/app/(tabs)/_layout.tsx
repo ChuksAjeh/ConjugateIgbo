@@ -84,6 +84,11 @@ export default function TabLayout() {
           href: null,
         }}
       />
+    <Tabs.Screen
+      name={"models/interfaces"}
+      options={{
+        href: null,
+      }}/>
     </Tabs>
   );
 }
