@@ -16,7 +16,7 @@ import { useRouter } from 'expo-router';
 import { usePurchases } from '@/hooks/usePurchases';
 import { useTheme } from '@/components/ThemeProvider';
 import { createStyles } from '@/styles/proStyles';
-import { presentPaywall } from '@/lib/revenuecatUI';
+import { showPaywall } from '@/lib/revenuecatUI';
 
 export default function ProScreen() {
   const { theme, isDark } = useTheme();
@@ -50,7 +50,7 @@ export default function ProScreen() {
     try {
       const offeringIdentifier = offerings?.current?.identifier;
 
-      await presentPaywall({
+      await showPaywall({
         displayCloseButton: true,
         offeringIdentifier,
       });

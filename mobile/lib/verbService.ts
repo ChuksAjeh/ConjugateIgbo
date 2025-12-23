@@ -175,6 +175,10 @@ class VerbService {
       if (Array.isArray(data) && data.length > 0) {
         const mapped = data.map(mapDtoToVerb);
         this.cacheByDialect[dialect] = mapped;
+        Sentry.logger.info(
+          `[verbService] Final verb count for ${dialect}: ${mapped.length}`,
+          { tags: { feature: 'verb-service' } }
+        );
         try {
           await setItem(key, JSON.stringify(mapped));
         } catch (storageError: any) {
