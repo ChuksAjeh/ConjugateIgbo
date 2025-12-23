@@ -26,12 +26,12 @@ import { useSettings } from '@/hooks/useSettings';
 import { useProgress } from '@/hooks/useProgress';
 import { usePurchases } from '@/hooks/usePurchases';
 import { useTheme } from '@/components/ThemeProvider';
-import { styles } from './indexStyles';
+import { styles } from '@/styles/indexStyles';
 import {
   pronounLabels,
   pronouns,
   tenses,
-} from '@/app/(tabs)/models/interfaces';
+} from '@/models/interfaces';
 
 import * as Sentry from '@sentry/react-native';
 

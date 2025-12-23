@@ -15,7 +15,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { usePurchases } from '@/hooks/usePurchases';
 import { useTheme } from '@/components/ThemeProvider';
-import { createStyles } from './proStyles';
+import { createStyles } from '@/styles/proStyles';
 import { presentPaywall } from '@/lib/revenuecatUI';
 
 export default function ProScreen() {

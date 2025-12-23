@@ -24,7 +24,7 @@ import {
   pronounLabels,
   pronouns,
   tenses as tenseList,
-} from '@/app/(tabs)/models/interfaces';
+} from '@/models/interfaces';
 
 type FilterType = 'all' | 'common' | 'regular' | 'irregular';
 type SortType = 'alphabetical' | 'frequency' | 'difficulty';
