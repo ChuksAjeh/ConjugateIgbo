@@ -19,7 +19,7 @@ export default {
     splash: {
       image: './assets/images/icon.png',
       resizeMode: 'contain',
-      backgroundColor: '#ffffff',
+      backgroundColor: '#AD1102',
     },
 
     newArchEnabled: true,
