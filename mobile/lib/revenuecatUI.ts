@@ -52,7 +52,7 @@ export async function presentPaywall(options?: any) {
  * @returns {Promise<any>} A promise that resolves when the customer center is dismissed.
  * @throws {Error} Throws an error if RevenueCatUI is not available on the current platform or environment.
  */
-export async function presentCustomerCenter(options?: any) {
+export async function presentCustomerCenter(options?: any): Promise<any> {
   if (!isNative) {
     throw new Error('RevenueCatUI is not available on web.');
   }
