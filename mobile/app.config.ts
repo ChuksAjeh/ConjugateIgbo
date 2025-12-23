@@ -45,7 +45,7 @@ export default {
     ],
 
     notification: {
-      icon: './assets/notification-icon.png',
+      icon: './assets/images/notification-icon.png',
       color: '#000000',
     },
 
