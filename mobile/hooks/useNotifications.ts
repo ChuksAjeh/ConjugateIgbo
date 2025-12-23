@@ -39,7 +39,11 @@ export const useNotifications = () => {
 
     responseSubscription =
       Notifications.addNotificationResponseReceivedListener((_response) => {
-        console.info('[useNotifications] Notification response:', _response);
+        Sentry.captureMessage('Notification response', {
+          level: 'info',
+          extra: { response: _response },
+          tags: { feature: 'notifications' },
+        });
       });
 
     return () => {
@@ -54,7 +58,10 @@ export const useNotifications = () => {
       await Notifications.cancelAllScheduledNotificationsAsync();
 
       if (Platform.OS === 'web') {
-        console.warn('[useNotifications] Push notifications not supported on web');
+        Sentry.captureMessage('[useNotifications] Push notifications not supported on web', {
+          level: 'warning',
+          tags: { feature: 'notifications' },
+        });
         return;
       }
 
@@ -75,7 +82,10 @@ export const useNotifications = () => {
         } as Notifications.CalendarTriggerInput,
       });
 
-      console.info('[useNotifications] Daily reminder scheduled for', time);
+      Sentry.captureMessage(`[useNotifications] Daily reminder scheduled for ${time}`, {
+        level: 'info',
+        tags: { feature: 'notifications', hook:'useNotifications' },
+      });
     } catch(error: any) {
       Sentry.captureException(error, {
         tags: {
@@ -92,7 +102,13 @@ export const useNotifications = () => {
   const cancelDailyReminder = async () => {
     try {
       await Notifications.cancelAllScheduledNotificationsAsync();
-      console.info('[useNotifications] Daily reminders cancelled');
+      Sentry.captureMessage('[useNotifications] Daily reminders cancelled', {
+        level: 'info',
+        tags: {
+          feature: 'notifications',
+          hook: 'useNotifications'
+        },
+      });
     } catch(error: any) {
       Sentry.captureException(error, {
         tags: {
@@ -131,7 +147,10 @@ async function registerForPushNotificationsAsync() {
   }
 
   if (finalStatus !== 'granted') {
-    console.warn('[useNotifications] Failed to get push token for push notification!');
+    Sentry.captureMessage('[useNotifications] Failed to get push token for push notification!', {
+      level: 'warning',
+      tags: { feature: 'notifications' },
+    });
     return null;
   }
 
@@ -140,7 +159,16 @@ async function registerForPushNotificationsAsync() {
       projectId: Constants.expoConfig?.extra?.eas?.projectId,
     });
   } catch(error: any) {
-    console.error('[useNotifications] Error getting push token:', error);
+    Sentry.captureException(error, {
+      tags: {
+        feature: 'notifications',
+        hook: 'useNotifications',
+        context: 'registerForPushNotificationsAsync',
+      },
+      extra: {
+        message: 'Error getting push token',
+      },
+    });
     return null;
   }
 

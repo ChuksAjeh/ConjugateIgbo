@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import * as Sentry from '@sentry/react-native';
 import {
   View,
   Text,
@@ -59,12 +60,18 @@ export default function VerbsScreen() {
             try {
               router.setParams({ openDetails: undefined });
             } catch (error) {
-              console.error('[VerbsScreen] Error clearing openDetails flag:', error);
+              Sentry.captureException(error, {
+                tags: { feature: 'verbs', screen: 'VerbsScreen' },
+                extra: { context: 'Clearing openDetails flag' },
+              });
             }
           }
         }
       } catch(error: any) {
-        console.error('[VerbsScreen]Error loading verbs:', error);
+        Sentry.captureException(error, {
+          tags: { feature: 'verbs', screen: 'VerbsScreen' },
+          extra: { context: 'Loading verbs' },
+        });
       } finally {
         setIsLoading(false);
       }

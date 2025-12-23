@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import * as Sentry from '@sentry/react-native';
 import { Tense } from '@/models/verb';
 
 // Type-safe enabledTenses that only includes actual Tense types
@@ -101,7 +102,10 @@ async function loadFromStorageOnce() {
       );
     }
   } catch(e: any) {
-    console.error('[useSettings] Error loading settings:', e);
+    Sentry.captureException(e, {
+      tags: { feature: 'settings', hook: 'useSettings' },
+      extra: { context: 'Loading settings' },
+    });
   } finally {
     initialized = true;
     // Notify all subscribers of the initial value
@@ -151,7 +155,10 @@ export const useSettings = () => {
         JSON.stringify(currentSettings),
       );
     } catch(error: any) {
-      console.error('[useSettings] Error saving settings:', error);
+      Sentry.captureException(error, {
+        tags: { feature: 'settings', hook: 'useSettings' },
+        extra: { context: 'Error Saving settings' },
+      });
     }
   };
 
@@ -164,7 +171,10 @@ export const useSettings = () => {
         JSON.stringify(currentSettings),
       );
     } catch(error: any) {
-      console.error('[useSettings] Error resetting settings:', error);
+      Sentry.captureException(error, {
+        tags: { feature: 'settings', hook: 'useSettings' },
+        extra: { context: 'Error Resetting settings' },
+      });
     }
   };
 

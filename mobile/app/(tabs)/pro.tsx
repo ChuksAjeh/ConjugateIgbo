@@ -1,4 +1,5 @@
 import React, { useCallback, useMemo } from 'react';
+import * as Sentry from '@sentry/react-native';
 import {
   View,
   Text,
@@ -79,13 +80,19 @@ export default function ProScreen() {
           await purchasePro();
           return;
         } catch(e: any) {
-          console.error('[ProScreen] Direct purchase error', e);
+          Sentry.captureException(e, {
+            tags: { feature: 'pro', screen: 'ProScreen' },
+            extra: { context: 'Direct purchase fallback' },
+          });
           Alert.alert('Purchase Error', 'Unable to start purchase.');
           return;
         }
       }
       // For other unexpected errors, show a generic error
-      console.error('[ProScreen] Unexpected paywall error', err);
+      Sentry.captureException(err, {
+        tags: { feature: 'pro', screen: 'ProScreen' },
+        extra: { context: 'Unexpected paywall error' },
+      });
       showAlert(
         'Purchase Error',
         `Unable to present paywall: ${message || 'Unknown error'}`,

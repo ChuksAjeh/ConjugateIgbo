@@ -1,4 +1,5 @@
 import { Platform } from 'react-native';
+import * as Sentry from '@sentry/react-native';
 
 const isNative = Platform.OS === 'ios' || Platform.OS === 'android';
 
@@ -27,7 +28,10 @@ export async function presentPaywall(options?: any) {
 
     return await rcPresentPaywall(options ?? {});
   } catch (_e: any) {
-    console.error('[RevenueCatUI] Failed to present paywall:', _e.message);
+    Sentry.captureException(_e, {
+      tags: { feature: 'revenuecat-ui' },
+      extra: { context: 'Failed to present paywall' },
+    });
     
     // Check if it's a module loading error
     if (_e?.code === 'MODULE_NOT_FOUND' || _e?.message?.includes('Cannot find module')) {
@@ -63,7 +67,10 @@ export async function presentCustomerCenter(options?: any) {
 
     return await rcPresentCustomerCenter(options ?? {});
   } catch (_e: any) {
-    console.error('[RevenueCatUI] Failed to present customer center:', _e.message);
+    Sentry.captureException(_e, {
+      tags: { feature: 'revenuecat-ui' },
+      extra: { context: 'Failed to present customer center' },
+    });
     const err: any = new Error(
       'RevenueCatUI module unavailable. Use a Development Client or prebuilt app.'
     );

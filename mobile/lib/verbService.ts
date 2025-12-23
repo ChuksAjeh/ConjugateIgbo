@@ -1,4 +1,5 @@
 // Verb Service - Fetches verbs from backend, caches in-memory, seeds from offline list if needed
+import * as Sentry from '@sentry/react-native';
 import {
   IgboVerb,
   VerbDTO,
@@ -75,20 +76,28 @@ class VerbService {
           const parsed = JSON.parse(cached) as IgboVerb[];
           if (Array.isArray(parsed) && parsed.length > 0) {
             this.cacheByDialect[dialect] = parsed;
-            console.info(
-              `[verbService] Verb service loaded ${parsed.length} ${dialect} verbs from cache`,
-            );
+            Sentry.captureMessage(`[verbService] Verb service loaded ${parsed.length} ${dialect} verbs from cache`, {
+              level: 'info',
+              tags: { feature: 'verb-service' },
+            });
           }
         }
       }
     } catch(e: any) {
-      console.warn(`[verbService] Failed to parse verbs cache for ${dialect}, ignoring:`, e);
+      Sentry.captureMessage(`[verbService] Failed to parse verbs cache for ${dialect}`, {
+        level: 'warning',
+        tags: { feature: 'verb-service' },
+        extra: { error: e },
+      });
     }
 
     // 2) Try to fetch from API for this dialect
     if (BASE && !this.cacheByDialect[dialect]) {
       const endpoint = `${BASE}/${DIALECT_SLUG[dialect]}/verbs/all`;
-      console.info(`[verbService] Fetching verbs from endpoint: ${endpoint}`);
+      Sentry.captureMessage(`[verbService] Fetching verbs from endpoint: ${endpoint}`, {
+        level: 'info',
+        tags: { feature: 'verb-service' },
+      });
       try {
         const res = await fetch(endpoint);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -97,15 +106,16 @@ class VerbService {
           const mapped = data.map(mapDtoToVerb);
           this.cacheByDialect[dialect] = mapped;
           await setItem(key, JSON.stringify(mapped));
-          console.info(
-            `[verbService] Verb service initialized from endpoint with ${mapped.length} ${dialect} verbs (cached)`,
-          );
+          Sentry.captureMessage(`[verbService] Verb service initialized from endpoint with ${mapped.length} ${dialect} verbs (cached)`, {
+            level: 'info',
+            tags: { feature: 'verb-service' },
+          });
         }
       } catch(error: any) {
-        console.error(
-          `[verbService] Fetching verbs from endpoint failed for ${dialect}.`,
-          error,
-        );
+        Sentry.captureException(error, {
+          tags: { feature: 'verb-service' },
+          extra: { context: `Fetching verbs from endpoint failed for ${dialect}` },
+        });
       }
     }
 
@@ -134,9 +144,10 @@ class VerbService {
           cacheKeyForDialect('delta'),
           JSON.stringify(this.cacheByDialect['delta']),
         );
-        console.info(
-          `[verbService] Verb service initialized delta with offline seed (${this.cacheByDialect['delta']!.length} verbs)`,
-        );
+        Sentry.captureMessage(`[verbService] Verb service initialized delta with offline seed (${this.cacheByDialect['delta']!.length} verbs)`, {
+          level: 'info',
+          tags: { feature: 'verb-service' },
+        });
         return { dialectUsed: 'delta' };
       }
     }
