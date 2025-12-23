@@ -29,7 +29,7 @@ import {
 import { useSettings } from '@/hooks/useSettings';
 import { usePurchases } from '@/hooks/usePurchases';
 import { useTheme } from '@/components/ThemeProvider';
-import { createStyles } from './settingsStyles';
+import { createStyles } from '@/styles/settingsStyles';
 import { presentCustomerCenter } from '@/lib/revenuecatUI';
 
 export default function SettingsScreen() {

@@ -222,7 +222,7 @@ class VerbService {
   ): Promise<{ verbs: IgboVerb[]; fellBackToDelta: boolean }> {
     const { dialectUsed } = await this.ensureLoaded(dialect);
     const used = dialectUsed === 'delta' && dialect !== 'delta';
-    const verbs = this.cacheByDialect[dialectUsed] || [];
+    const verbs = [...(this.cacheByDialect[dialectUsed] || [])];
 
     if (verbs.length === 0) {
       Sentry.captureMessage(
