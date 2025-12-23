@@ -142,27 +142,13 @@ class VerbService {
     }
   }
 
-<<<<<<< Updated upstream
-=======
-<<<<<<< Updated upstream
-    // 2) Try to fetch from API for this dialect
-    if (!this.cacheByDialect[dialect]) {
-      if (!BASE) {
-        Sentry.logger.warn(
-          `[verbService] BASE_URL missing, skipping API fetch for ${dialect}`,
-=======
->>>>>>> Stashed changes
   /**
    * Attempts to fetch verbs from the API for the given dialect.
    * @param {Dialect} dialect - The dialect to fetch.
    * @private
    */
   private async fetchFromAPI(dialect: Dialect): Promise<void> {
-<<<<<<< Updated upstream
-    if (this.cacheByDialect[dialect]) return;
 
-=======
->>>>>>> Stashed changes
     if (!BASE) {
       Sentry.logger.warn(
         `[verbService] BASE_URL missing, skipping API fetch for ${dialect}`,
@@ -189,13 +175,6 @@ class VerbService {
       if (Array.isArray(data) && data.length > 0) {
         const mapped = data.map(mapDtoToVerb);
         this.cacheByDialect[dialect] = mapped;
-<<<<<<< Updated upstream
-=======
-        Sentry.logger.info(
-          `[verbService] Final verb count for ${dialect}: ${mapped.length}`,
-          { tags: { feature: 'verb-service' } }
-        );
->>>>>>> Stashed changes
         try {
           await setItem(key, JSON.stringify(mapped));
         } catch (storageError: any) {
@@ -206,10 +185,6 @@ class VerbService {
         }
         Sentry.logger.info(
           `[verbService] Verb service initialized from endpoint with ${mapped.length} ${dialect} verbs (cached)`,
-<<<<<<< Updated upstream
-=======
->>>>>>> Stashed changes
->>>>>>> Stashed changes
           {
             tags: { feature: 'verb-service' },
           },
@@ -268,6 +243,17 @@ class VerbService {
         this.cacheByDialect['delta']!.length === 0
       ) {
         this.cacheByDialect['delta'] = offlineVerbs.slice(0, 10);
+        try {
+          await setItem(
+            cacheKeyForDialect('delta'),
+            JSON.stringify(this.cacheByDialect['delta']),
+          );
+        } catch (storageError: any) {
+          Sentry.captureException(storageError, {
+            tags: { feature: 'verb-service' },
+            extra: { context: 'Failed to save offline seed to cache' },
+          });
+        }
         Sentry.logger.info(
           `[verbService] Verb service initialized delta with offline seed (${
             this.cacheByDialect['delta']!.length
