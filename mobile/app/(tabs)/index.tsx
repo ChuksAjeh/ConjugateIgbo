@@ -14,7 +14,7 @@ import {
   ScrollView,
   Modal,
   Platform,
-  StatusBar, Button
+  StatusBar
 } from 'react-native';
 import { RotateCcw, Volume2, FileText } from 'lucide-react-native';
 import { router } from 'expo-router';
