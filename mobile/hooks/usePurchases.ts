@@ -70,8 +70,7 @@ export const usePurchases = () => {
           setOfferings(offs);
         }
       } catch(e: any) {
-        Sentry.captureMessage(`[usePurchases] RevenueCat initialization failed: ${e?.message || e}`, {
-          level: 'warning',
+        Sentry.logger.warn(`[usePurchases] RevenueCat initialization failed: ${e?.message || e}`, {
           tags: { feature: 'purchases', hook: 'usePurchases' },
           extra: { error: e },
         });
@@ -141,8 +140,7 @@ export const usePurchases = () => {
     );
 
     if (!proPackage) {
-      Sentry.captureMessage('No Pro package found', {
-        level: 'warning',
+      Sentry.logger.warn('No Pro package found', {
         tags: { feature: 'purchases', hook: 'usePurchases' },
         extra: { availablePackages: packages.map((p) => p.identifier) },
       });
