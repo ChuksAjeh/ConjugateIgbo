@@ -39,13 +39,15 @@ function mapDtoToVerb(dto: VerbDTO): IgboVerb {
 class VerbService {
   private cacheByDialect: Partial<Record<Dialect, IgboVerb[]>> = {};
 
-  private migrateV1ToV2 = (arr: any[]): IgboVerb[] => {
-    return arr.map((v: any) => {
+  private migrateV1ToV2 = (arr: any[], dialect: Dialect): IgboVerb[] => {
+    let migratedCount = 0;
+    const migrated = arr.map((v: any) => {
       // If already aligned, return as-is
       if (v && typeof v === 'object' && 'igbo' in v && 'english' in v) {
         return { ...v, id: String(v.id ?? v.igbo) } as IgboVerb;
       }
       // Legacy shape with infinitive/meaning
+      migratedCount++;
       return {
         id: String(v.id ?? v.infinitive ?? ''),
         igbo: v.infinitive ?? '',
@@ -61,6 +63,18 @@ class VerbService {
         examples: v.examples,
       } as IgboVerb;
     });
+
+    if (migratedCount > 0) {
+      Sentry.captureMessage(
+        `[verbService] Migrated ${migratedCount} legacy verbs to V2 for ${dialect}`,
+        {
+          level: 'info',
+          tags: { feature: 'verb-service' },
+        },
+      );
+    }
+
+    return migrated;
   };
 
   private async ensureLoaded(
@@ -73,49 +87,86 @@ class VerbService {
       if (!this.cacheByDialect[dialect]) {
         const cached = await getItem(key);
         if (cached) {
-          const parsed = JSON.parse(cached) as IgboVerb[];
+          const parsed = JSON.parse(cached) as any[];
           if (Array.isArray(parsed) && parsed.length > 0) {
-            this.cacheByDialect[dialect] = parsed;
-            Sentry.captureMessage(`[verbService] Verb service loaded ${parsed.length} ${dialect} verbs from cache`, {
-              level: 'info',
-              tags: { feature: 'verb-service' },
-            });
+            const mapped = this.migrateV1ToV2(parsed, dialect);
+            this.cacheByDialect[dialect] = mapped;
+            Sentry.captureMessage(
+              `[verbService] Verb service loaded ${mapped.length} ${dialect} verbs from cache`,
+              {
+                level: 'info',
+                tags: { feature: 'verb-service' },
+              },
+            );
           }
         }
       }
-    } catch(e: any) {
-      Sentry.captureMessage(`[verbService] Failed to parse verbs cache for ${dialect}`, {
-        level: 'warning',
+    } catch (e: any) {
+      Sentry.captureException(e, {
         tags: { feature: 'verb-service' },
-        extra: { error: e },
+        extra: { context: `Failed to load/parse verbs cache for ${dialect}` },
       });
     }
 
     // 2) Try to fetch from API for this dialect
-    if (BASE && !this.cacheByDialect[dialect]) {
-      const endpoint = `${BASE}/${DIALECT_SLUG[dialect]}/verbs/all`;
-      Sentry.captureMessage(`[verbService] Fetching verbs from endpoint: ${endpoint}`, {
-        level: 'info',
-        tags: { feature: 'verb-service' },
-      });
-      try {
-        const res = await fetch(endpoint);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = (await res.json()) as VerbDTO[];
-        if (Array.isArray(data) && data.length > 0) {
-          const mapped = data.map(mapDtoToVerb);
-          this.cacheByDialect[dialect] = mapped;
-          await setItem(key, JSON.stringify(mapped));
-          Sentry.captureMessage(`[verbService] Verb service initialized from endpoint with ${mapped.length} ${dialect} verbs (cached)`, {
+    if (!this.cacheByDialect[dialect]) {
+      if (!BASE) {
+        Sentry.captureMessage(
+          `[verbService] BASE_URL missing, skipping API fetch for ${dialect}`,
+          {
+            level: 'warning',
+            tags: { feature: 'verb-service' },
+          },
+        );
+      } else {
+        const endpoint = `${BASE}/${DIALECT_SLUG[dialect]}/verbs/all`;
+        Sentry.captureMessage(
+          `[verbService] Fetching verbs from endpoint: ${endpoint}`,
+          {
             level: 'info',
             tags: { feature: 'verb-service' },
+          },
+        );
+        try {
+          const res = await fetch(endpoint);
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const data = (await res.json()) as VerbDTO[];
+          if (Array.isArray(data) && data.length > 0) {
+            const mapped = data.map(mapDtoToVerb);
+            this.cacheByDialect[dialect] = mapped;
+            try {
+              await setItem(key, JSON.stringify(mapped));
+            } catch (storageError: any) {
+              Sentry.captureException(storageError, {
+                tags: { feature: 'verb-service' },
+                extra: { context: `Failed to save ${dialect} verbs to cache` },
+              });
+            }
+            Sentry.captureMessage(
+              `[verbService] Verb service initialized from endpoint with ${mapped.length} ${dialect} verbs (cached)`,
+              {
+                level: 'info',
+                tags: { feature: 'verb-service' },
+              },
+            );
+          } else {
+            Sentry.captureMessage(
+              `[verbService] API returned empty or invalid data for ${dialect}`,
+              {
+                level: 'warning',
+                tags: { feature: 'verb-service' },
+                extra: { data },
+              },
+            );
+          }
+        } catch (error: any) {
+          Sentry.captureException(error, {
+            tags: { feature: 'verb-service' },
+            extra: {
+              context: `Fetching verbs from endpoint failed for ${dialect}`,
+            },
           });
         }
-      } catch(error: any) {
-        Sentry.captureException(error, {
-          tags: { feature: 'verb-service' },
-          extra: { context: `Fetching verbs from endpoint failed for ${dialect}` },
-        });
       }
     }
 
@@ -126,6 +177,13 @@ class VerbService {
       this.cacheByDialect[dialect]!.length === 0
     ) {
       if (dialect !== 'delta') {
+        Sentry.captureMessage(
+          `[verbService] No verbs for ${dialect}, attempting fallback to delta`,
+          {
+            level: 'info',
+            tags: { feature: 'verb-service' },
+          },
+        );
         await this.ensureLoaded('delta');
         if (
           this.cacheByDialect['delta'] &&
@@ -140,14 +198,26 @@ class VerbService {
         this.cacheByDialect['delta']!.length === 0
       ) {
         this.cacheByDialect['delta'] = offlineVerbs.slice(0, 10);
-        await setItem(
-          cacheKeyForDialect('delta'),
-          JSON.stringify(this.cacheByDialect['delta']),
+        try {
+          await setItem(
+            cacheKeyForDialect('delta'),
+            JSON.stringify(this.cacheByDialect['delta']),
+          );
+        } catch (storageError: any) {
+          Sentry.captureException(storageError, {
+            tags: { feature: 'verb-service' },
+            extra: { context: 'Failed to save offline seed to cache' },
+          });
+        }
+        Sentry.captureMessage(
+          `[verbService] Verb service initialized delta with offline seed (${
+            this.cacheByDialect['delta']!.length
+          } verbs)`,
+          {
+            level: 'info',
+            tags: { feature: 'verb-service' },
+          },
         );
-        Sentry.captureMessage(`[verbService] Verb service initialized delta with offline seed (${this.cacheByDialect['delta']!.length} verbs)`, {
-          level: 'info',
-          tags: { feature: 'verb-service' },
-        });
         return { dialectUsed: 'delta' };
       }
     }
@@ -161,6 +231,17 @@ class VerbService {
     const { dialectUsed } = await this.ensureLoaded(dialect);
     const used = dialectUsed === 'delta' && dialect !== 'delta';
     const verbs = this.cacheByDialect[dialectUsed] || [];
+
+    if (verbs.length === 0) {
+      Sentry.captureMessage(
+        `[verbService] No verbs available for dialect: ${dialect}`,
+        {
+          level: 'error',
+          tags: { feature: 'verb-service' },
+        },
+      );
+    }
+
     return { verbs, fellBackToDelta: used };
   }
 
@@ -169,6 +250,17 @@ class VerbService {
   ): Promise<{ verb: IgboVerb; fellBackToDelta: boolean }> {
     const { verbs, fellBackToDelta } =
       await this.getAllVerbsForDialect(dialect);
+
+    if (verbs.length === 0) {
+      Sentry.captureMessage(
+        `[verbService] Cannot get random verb: verb list is empty for ${dialect}`,
+        {
+          level: 'error',
+          tags: { feature: 'verb-service' },
+        },
+      );
+    }
+
     const idx = Math.floor(Math.random() * Math.max(1, verbs.length));
     return { verb: verbs[idx], fellBackToDelta };
   }
