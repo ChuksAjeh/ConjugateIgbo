@@ -6,8 +6,12 @@ import {
 import type { Dialect } from '@/lib/conjugateVerbs';
 import { offlineVerbs } from '@/data/igboVerbs';
 import { getItem, setItem } from '@/lib/storage';
+import Constants from 'expo-constants';
 
-const BASE_URL = process.env.EXPO_PUBLIC_API_URL || '';
+const BASE_URL =
+  Constants.expoConfig?.extra?.EXPO_PUBLIC_API_URL ??
+  Constants.manifest?.extra?.EXPO_PUBLIC_API_URL ??
+  '';
 const BASE = BASE_URL ? BASE_URL.replace(/\/$/, '') : '';
 const VERBS_CACHE_KEY_V2 = 'VERBS_CACHE_V2';
 const DIALECT_SLUG: Record<Dialect, string> = {
@@ -84,6 +88,7 @@ class VerbService {
     // 2) Try to fetch from API for this dialect
     if (BASE && !this.cacheByDialect[dialect]) {
       const endpoint = `${BASE}/${DIALECT_SLUG[dialect]}/verbs/all`;
+      console.info(`[verbService] Fetching verbs from endpoint: ${endpoint}`);
       try {
         const res = await fetch(endpoint);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
