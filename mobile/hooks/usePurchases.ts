@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Platform } from 'react-native';
+import * as Sentry from '@sentry/react-native';
 import Purchases, {
   CustomerInfo,
   PurchasesError,
@@ -69,7 +70,11 @@ export const usePurchases = () => {
           setOfferings(offs);
         }
       } catch(e: any) {
-        console.warn('[usePurchases] RevenueCat initialization failed:', e);
+        Sentry.captureMessage(`[usePurchases] RevenueCat initialization failed: ${e?.message || e}`, {
+          level: 'warning',
+          tags: { feature: 'purchases', hook: 'usePurchases' },
+          extra: { error: e },
+        });
       } finally {
         if (!didCancel) setIsLoading(false);
       }
@@ -110,7 +115,10 @@ export const usePurchases = () => {
       if (err?.code === PURCHASES_ERROR_CODE.PURCHASE_CANCELLED_ERROR) {
         return false; // User cancelled the purchase
       }
-      console.error('[usePurchases] Purchase failed:', err);
+      Sentry.captureException(err, {
+        tags: { feature: 'purchases', hook: 'usePurchases' },
+        extra: { context: 'Purchase failed' },
+      });
       return false;
     } finally {
       setIsLoading(false);
@@ -133,10 +141,11 @@ export const usePurchases = () => {
     );
 
     if (!proPackage) {
-       console.warn(
-        '[usePurchases] No Pro package found. Available:',
-        packages.map((p) => p.identifier)
-      );
+      Sentry.captureMessage('No Pro package found', {
+        level: 'warning',
+        tags: { feature: 'purchases', hook: 'usePurchases' },
+        extra: { availablePackages: packages.map((p) => p.identifier) },
+      });
       return false;
     }
 
@@ -156,7 +165,10 @@ export const usePurchases = () => {
       setCustomerInfo(info);
       return !!info.entitlements?.active?.[ENTITLEMENT_ID];
     } catch(e: any) {
-      console.error('[usePurchases] Restore failed:', e);
+      Sentry.captureException(e, {
+        tags: { feature: 'purchases', hook: 'usePurchases' },
+        extra: { context: 'Restore failed' },
+      });
       return false;
     } finally {
       setIsLoading(false);

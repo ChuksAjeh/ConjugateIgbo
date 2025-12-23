@@ -1,4 +1,5 @@
 // Rule-based conjugation engine for Igbo verbs
+import * as Sentry from '@sentry/react-native';
 import { Conjugations, IgboVerb, Pronoun, Tense } from '@/models/verb';
 
 // Supported dialects (keep in sync with settings.dialect)
@@ -158,7 +159,11 @@ export function getConjugatedForm(
 
   // Check if the tense exists in the generated conjugations
   if (!conj[tense]) {
-    console.warn(`[conjugateVerbs] Tense "${tense}" not yet implemented for verb: ${verb.igbo}`);
+    Sentry.captureMessage(`[conjugateVerbs] Tense "${tense}" not yet implemented for verb: ${verb.igbo}`, {
+      level: 'warning',
+      tags: { feature: 'conjugation' },
+      extra: { verbId: verb.id, igbo: verb.igbo, tense },
+    });
     return '';
   }
 

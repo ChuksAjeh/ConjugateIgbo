@@ -42,6 +42,14 @@ export default {
       'expo-font',
       'expo-web-browser',
       'expo-notifications',
+      [
+        '@sentry/react-native/expo',
+        {
+          url: 'https://sentry.io/',
+          project: 'conjugateigbo',
+          organization: 'chuksajeh',
+        },
+      ],
     ],
 
     notification: {

@@ -1,4 +1,5 @@
 import { Platform } from 'react-native';
+import * as Sentry from '@sentry/react-native';
 import Purchases, { LOG_LEVEL } from 'react-native-purchases';
 
 const REVENUECAT_API_KEY = process.env.EXPO_PUBLIC_REVENUECAT_API_KEY;
@@ -16,7 +17,10 @@ export function configureRevenueCat() {
   }
 
   if (!REVENUECAT_API_KEY) {
-    console.error('[RevenueCat] API key missing. Check your environment variables.');
+    Sentry.captureMessage('[RevenueCat] API key missing. Check your environment variables.', {
+      level: 'error',
+      tags: { feature: 'revenuecat' },
+    });
     return;
   }
 

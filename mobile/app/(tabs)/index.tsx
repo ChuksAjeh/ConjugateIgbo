@@ -14,7 +14,7 @@ import {
   ScrollView,
   Modal,
   Platform,
-  StatusBar,
+  StatusBar
 } from 'react-native';
 import { RotateCcw, Volume2, FileText } from 'lucide-react-native';
 import { router } from 'expo-router';
@@ -32,6 +32,8 @@ import {
   pronouns,
   tenses,
 } from '@/app/(tabs)/models/interfaces';
+
+import * as Sentry from '@sentry/react-native';
 
 export default function PracticeScreen() {
   const [currentVerb, setCurrentVerb] = useState<IgboVerb | null>(null);
@@ -146,7 +148,10 @@ export default function PracticeScreen() {
             await loadNewVerb();
           }
         } catch(error: any) {
-          console.error('[PracticeScreen] Error refreshing practice card on focus:', error);
+          Sentry.captureException(error, {
+            tags: { feature: 'practice - card focus', screen: 'PracticeScreen' },
+            extra: { context: 'Refreshing practice card on focus' },
+          });
         }
       };
 
@@ -157,7 +162,10 @@ export default function PracticeScreen() {
         try {
           fadeAnim.stopAnimation();
         } catch (error: any) {
-          console.error('[PracticeScreen] Error stopping animation:', error);
+          Sentry.captureException(error, {
+            tags: { feature: 'practice - card focus', screen: 'PracticeScreen' },
+            extra: { context: 'Error Stopping animation' },
+          });
         }
       };
     }, [currentVerb, loadNewVerb, fadeAnim]),
@@ -189,13 +197,19 @@ export default function PracticeScreen() {
     try {
       await loadNewVerb();
     } catch(error: any) {
-      console.error('[PracticeScreen] Error loading next verb:', error);
+      Sentry.captureException(error, {
+        tags: { feature: 'practice - load a verb', screen: 'PracticeScreen' },
+        extra: { context: 'Error loading next verb' },
+      });
     }
   };
 
   const handlePlayAudio = () => {
     // Audio playback would be implemented here
-    console.info('[PracticeScreen] Playing audio for:', currentVerb?.igbo);
+    Sentry.captureMessage(`[PracticeScreen] Playing audio for: ${currentVerb?.igbo}`, {
+      level: 'debug',
+      tags: { feature: 'practice - play card audio', screen: 'PracticeScreen' },
+    });
   };
 
   const handleShowVerbDetails = () => {
@@ -220,6 +234,8 @@ export default function PracticeScreen() {
         return '#6b7280';
     }
   };
+
+
 
   // Show loading state while verb is loading
   if (!currentVerb) {
