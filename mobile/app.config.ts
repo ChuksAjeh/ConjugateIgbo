@@ -42,7 +42,6 @@ export default {
       'expo-font',
       'expo-web-browser',
       'expo-notifications',
-      "@sentry/react-native",
       [
         '@sentry/react-native/expo',
         {
