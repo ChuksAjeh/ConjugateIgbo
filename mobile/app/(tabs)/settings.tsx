@@ -35,6 +35,12 @@ import { presentCustomerCenter } from '@/lib/revenuecatUI';
 export default function SettingsScreen() {
   const { settings, updateSettings } = useSettings();
   const { isProUser, restorePurchases, isLoading } = usePurchases();
+
+  const isLockedItem = (locked: boolean) => {
+    if (isLoading) return false; // Don't show as locked while loading
+    return locked;
+  };
+
   const { theme, isDark } = useTheme();
   const styles = createStyles(theme, isDark);
   const [showReminderModal, setShowReminderModal] = useState(false);
@@ -311,7 +317,7 @@ export default function SettingsScreen() {
                 enabledTenses: { ...settings.enabledTenses, imperfect: value },
               })
             }
-            isLocked={!isProUser}
+            isLocked={isLockedItem(!isProUser)}
           />
 
           <ToggleItem
@@ -326,7 +332,7 @@ export default function SettingsScreen() {
                 },
               })
             }
-            isLocked={!isProUser}
+            isLocked={isLockedItem(!isProUser)}
           />
 
           <ToggleItem
@@ -338,7 +344,7 @@ export default function SettingsScreen() {
                 enabledTenses: { ...settings.enabledTenses, future: value },
               })
             }
-            isLocked={!isProUser}
+            isLocked={isLockedItem(!isProUser)}
           />
 
           <Text style={styles.subSectionTitle}>Other Tenses</Text>
@@ -355,7 +361,7 @@ export default function SettingsScreen() {
                 },
               })
             }
-            isLocked={!isProUser}
+            isLocked={isLockedItem(!isProUser)}
           />
 
           <ToggleItem
@@ -367,7 +373,7 @@ export default function SettingsScreen() {
                 enabledTenses: { ...settings.enabledTenses, imperative: value },
               })
             }
-            isLocked={!isProUser}
+            isLocked={isLockedItem(!isProUser)}
           />
 
           <Text style={styles.subSectionTitle}>
@@ -395,12 +401,12 @@ export default function SettingsScreen() {
             icon={Target}
             title="Daily Goal"
             subtitle={
-              isProUser
+              !isLoading && isProUser
                 ? `${settings.dailyGoal} verbs per day`
                 : '100 verbs per day (Pro required to change)'
             }
-            onPress={isProUser ? () => setShowGoalModal(true) : undefined}
-            isLocked={!isProUser}
+            onPress={!isLoading && isProUser ? () => setShowGoalModal(true) : undefined}
+            isLocked={isLockedItem(!isProUser)}
           />
         </SettingsSection>
 

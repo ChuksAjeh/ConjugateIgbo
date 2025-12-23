@@ -100,6 +100,17 @@ export default function ProScreen() {
     }
   }, [isProUser, offerings, purchasePro]);
 
+  // If the user is already Pro, redirect them out of here
+  // We use useFocusEffect to handle this as soon as they land here, 
+  // or if they become Pro while on this screen.
+  useFocusEffect(
+    useCallback(() => {
+      if (!isLoading && isProUser) {
+        router.replace('/(tabs)');
+      }
+    }, [isProUser, isLoading, router])
+  );
+
   // Auto-present the paywall when this tab/screen gains focus if user is not Pro
   useFocusEffect(
     useCallback(() => {
@@ -156,8 +167,8 @@ export default function ProScreen() {
     );
   }, []);
 
-  // If the user is already Pro, show a success message instead of redirecting or showing the paywall button
-  if (isProUser) {
+  // If the user is already Pro, show a success message or handle redirection
+  if (!isLoading && isProUser) {
     return (
       <SafeAreaView style={[styles.container, { padding: 16 }]}>
         <LinearGradient
@@ -211,6 +222,15 @@ export default function ProScreen() {
           </TouchableOpacity>
         </View>
       </SafeAreaView>
+    );
+  }
+
+  // While checking status, show a loader to prevent flicker
+  if (isLoading) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color="#3b82f6" />
+      </View>
     );
   }
 

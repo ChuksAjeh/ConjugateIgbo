@@ -8,7 +8,7 @@ import {
 import { usePurchases } from '@/hooks/usePurchases';
 
 export default function TabLayout() {
-  const { isProUser } = usePurchases();
+  const { isProUser, isLoading } = usePurchases();
 
   return (
     <Tabs
@@ -38,7 +38,7 @@ export default function TabLayout() {
         }}
       />
       {/* Conditionally render the Pro tab: hide it completely for Pro users */}
-      {!isProUser && (
+      {!isLoading && !isProUser && (
         <Tabs.Screen
           name="pro"
           options={{

@@ -71,14 +71,17 @@ export default function PracticeScreen() {
 
   const availableTenses: Tense[] = useMemo(() => {
     let list = [...tenses];
-    if (!isProUser) {
+    // During initial load, assume Pro to prevent UI shift if they are Pro.
+    // However, for filtering we should probably wait for load if possible,
+    // but here we just use isProUser which is false initially.
+    if (!isLoading && !isProUser) {
       list = list.filter((t) => t === 'present' || t === 'past');
     }
     list = list.filter((t) => {
       return settings.enabledTenses[t];
     });
     if (list.length === 0) {
-      const defaults: Tense[] = !isProUser
+      const defaults: Tense[] = (!isLoading && !isProUser)
         ? ['present', 'past']
         : ['present', 'past', 'future'];
       const fallback = defaults.filter((t) => settings.enabledTenses[t]);
@@ -86,7 +89,7 @@ export default function PracticeScreen() {
       return defaults;
     }
     return list;
-  }, [isProUser, settings.enabledTenses]);
+  }, [isProUser, isLoading, settings.enabledTenses]);
 
   // Extract the common logic into a reusable function
   const loadNewVerb = useCallback(async () => {

@@ -508,17 +508,18 @@ export default function VerbsScreen() {
 // Separate component for verb detail content
 const VerbDetailContent = ({ verb, theme }: { verb: IgboVerb; theme: any }) => {
   const { settings } = useSettings();
-  const { isProUser } = usePurchases();
+  const { isProUser, isLoading } = usePurchases();
 
   // Compute available tenses similar to Practice screen
   const availableTenses: Tense[] = useMemo(() => {
     // On the Verbs page, Settings (enabled tenses) should NOT affect which tenses appear.
     // Only Pro status controls visibility: free users see Present and Past; Pro users see all tenses.
-    if (!isProUser) {
+    // During initial load, assume Pro to prevent UI shift if they are Pro.
+    if (!isLoading && !isProUser) {
       return ['present', 'past'];
     }
     return [...(tenseList as Tense[])];
-  }, [isProUser]);
+  }, [isProUser, isLoading]);
 
   const titleCase = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
