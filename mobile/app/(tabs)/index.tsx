@@ -206,8 +206,7 @@ export default function PracticeScreen() {
 
   const handlePlayAudio = () => {
     // Audio playback would be implemented here
-    Sentry.captureMessage(`[PracticeScreen] Playing audio for: ${currentVerb?.igbo}`, {
-      level: 'debug',
+    Sentry.logger.info(`[PracticeScreen] Playing audio for: ${currentVerb?.igbo}`, {
       tags: { feature: 'practice - play card audio', screen: 'PracticeScreen' },
     });
   };

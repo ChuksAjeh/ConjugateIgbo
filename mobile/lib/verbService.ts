@@ -65,10 +65,9 @@ class VerbService {
     });
 
     if (migratedCount > 0) {
-      Sentry.captureMessage(
+      Sentry.logger.info(
         `[verbService] Migrated ${migratedCount} legacy verbs to V2 for ${dialect}`,
         {
-          level: 'info',
           tags: { feature: 'verb-service' },
         },
       );
@@ -91,10 +90,9 @@ class VerbService {
           if (Array.isArray(parsed) && parsed.length > 0) {
             const mapped = this.migrateV1ToV2(parsed, dialect);
             this.cacheByDialect[dialect] = mapped;
-            Sentry.captureMessage(
+            Sentry.logger.info(
               `[verbService] Verb service loaded ${mapped.length} ${dialect} verbs from cache`,
               {
-                level: 'info',
                 tags: { feature: 'verb-service' },
               },
             );
@@ -111,19 +109,17 @@ class VerbService {
     // 2) Try to fetch from API for this dialect
     if (!this.cacheByDialect[dialect]) {
       if (!BASE) {
-        Sentry.captureMessage(
+        Sentry.logger.warn(
           `[verbService] BASE_URL missing, skipping API fetch for ${dialect}`,
           {
-            level: 'warning',
             tags: { feature: 'verb-service' },
           },
         );
       } else {
         const endpoint = `${BASE}/${DIALECT_SLUG[dialect]}/verbs/all`;
-        Sentry.captureMessage(
+        Sentry.logger.info(
           `[verbService] Fetching verbs from endpoint: ${endpoint}`,
           {
-            level: 'info',
             tags: { feature: 'verb-service' },
           },
         );
@@ -142,18 +138,16 @@ class VerbService {
                 extra: { context: `Failed to save ${dialect} verbs to cache` },
               });
             }
-            Sentry.captureMessage(
+            Sentry.logger.info(
               `[verbService] Verb service initialized from endpoint with ${mapped.length} ${dialect} verbs (cached)`,
               {
-                level: 'info',
                 tags: { feature: 'verb-service' },
               },
             );
           } else {
-            Sentry.captureMessage(
+            Sentry.logger.warn(
               `[verbService] API returned empty or invalid data for ${dialect}`,
               {
-                level: 'warning',
                 tags: { feature: 'verb-service' },
                 extra: { data },
               },
@@ -177,10 +171,9 @@ class VerbService {
       this.cacheByDialect[dialect]!.length === 0
     ) {
       if (dialect !== 'delta') {
-        Sentry.captureMessage(
+        Sentry.logger.info(
           `[verbService] No verbs for ${dialect}, attempting fallback to delta`,
           {
-            level: 'info',
             tags: { feature: 'verb-service' },
           },
         );
@@ -209,12 +202,11 @@ class VerbService {
             extra: { context: 'Failed to save offline seed to cache' },
           });
         }
-        Sentry.captureMessage(
+        Sentry.logger.info(
           `[verbService] Verb service initialized delta with offline seed (${
             this.cacheByDialect['delta']!.length
           } verbs)`,
           {
-            level: 'info',
             tags: { feature: 'verb-service' },
           },
         );

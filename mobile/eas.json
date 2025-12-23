@@ -9,6 +9,9 @@
       "distribution": "internal"
     },
     "preview": {
+      "env": {
+        "SENTRY_AUTH_TOKEN": "@SENTRY_AUTH_TOKEN"
+      },
       "distribution": "internal",
       "android": {
         "buildType": "app-bundle",
@@ -16,6 +19,9 @@
       }
     },
     "production": {
+      "env": {
+        "SENTRY_AUTH_TOKEN": "@SENTRY_AUTH_TOKEN"
+      },
       "autoIncrement": true
     }
   },

@@ -39,8 +39,7 @@ export const useNotifications = () => {
 
     responseSubscription =
       Notifications.addNotificationResponseReceivedListener((_response) => {
-        Sentry.captureMessage('Notification response', {
-          level: 'info',
+        Sentry.logger.info('Notification response', {
           extra: { response: _response },
           tags: { feature: 'notifications' },
         });
@@ -58,8 +57,7 @@ export const useNotifications = () => {
       await Notifications.cancelAllScheduledNotificationsAsync();
 
       if (Platform.OS === 'web') {
-        Sentry.captureMessage('[useNotifications] Push notifications not supported on web', {
-          level: 'warning',
+        Sentry.logger.warn('[useNotifications] Push notifications not supported on web', {
           tags: { feature: 'notifications' },
         });
         return;
@@ -82,8 +80,7 @@ export const useNotifications = () => {
         } as Notifications.CalendarTriggerInput,
       });
 
-      Sentry.captureMessage(`[useNotifications] Daily reminder scheduled for ${time}`, {
-        level: 'info',
+      Sentry.logger.info(`[useNotifications] Daily reminder scheduled for ${time}`, {
         tags: { feature: 'notifications', hook:'useNotifications' },
       });
     } catch(error: any) {
@@ -102,8 +99,7 @@ export const useNotifications = () => {
   const cancelDailyReminder = async () => {
     try {
       await Notifications.cancelAllScheduledNotificationsAsync();
-      Sentry.captureMessage('[useNotifications] Daily reminders cancelled', {
-        level: 'info',
+      Sentry.logger.info('[useNotifications] Daily reminders cancelled', {
         tags: {
           feature: 'notifications',
           hook: 'useNotifications'
@@ -147,8 +143,7 @@ async function registerForPushNotificationsAsync() {
   }
 
   if (finalStatus !== 'granted') {
-    Sentry.captureMessage('[useNotifications] Failed to get push token for push notification!', {
-      level: 'warning',
+    Sentry.logger.warn('[useNotifications] Failed to get push token for push notification!', {
       tags: { feature: 'notifications' },
     });
     return null;
