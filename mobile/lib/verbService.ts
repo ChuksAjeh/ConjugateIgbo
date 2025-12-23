@@ -217,6 +217,24 @@ class VerbService {
     return { dialectUsed: dialect };
   }
 
+  /**
+   * Preload verbs for a dialect at app startup.
+   * This warms cache + storage so screens don’t render empty.
+   */
+  async preload(dialect: Dialect): Promise<void> {
+    try {
+      await this.ensureLoaded(dialect);
+      Sentry.logger.info(`[verbService] Preloaded verbs for ${dialect}`, {
+        tags: { feature: 'verb-service' },
+      });
+    } catch (error) {
+      Sentry.captureException(error, {
+        tags: { feature: 'verb-service', phase: 'preload' },
+        extra: { dialect },
+      });
+    }
+  }
+
   async getAllVerbsForDialect(
     dialect: Dialect,
   ): Promise<{ verbs: IgboVerb[]; fellBackToDelta: boolean }> {

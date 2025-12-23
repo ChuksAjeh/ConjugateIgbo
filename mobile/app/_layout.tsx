@@ -12,6 +12,7 @@ import { useFrameworkReady } from '@/hooks/useFrameworkReady';
 import CustomSplashScreen from '@/components/SplashScreen';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import { configureRevenueCat } from '@/lib/revenuecat';
+import { verbService } from '@/lib/verbService';
 import * as Sentry from '@sentry/react-native';
 
 Sentry.init({
@@ -56,6 +57,25 @@ export default Sentry.wrap(function RootLayout() {
   // Initialize RevenueCat once on app start
   useEffect(() => {
     configureRevenueCat();
+  }, []);
+
+  // Preload verbs on app start so all screens have data available
+  useEffect(() => {
+    (async () => {
+      try {
+        await Promise.all([
+          verbService.preload('delta'),
+        ]);
+        Sentry.logger.info('[AppInit] Verbs preloaded');
+      } catch (error) {
+        Sentry.captureException(error, {
+          tags: {
+            feature: 'app-init',
+            service: 'verb-preload',
+          },
+        });
+      }
+    })();
   }, []);
 
   if (!fontsLoaded) {
