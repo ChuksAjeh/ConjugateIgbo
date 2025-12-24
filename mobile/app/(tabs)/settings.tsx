@@ -10,6 +10,8 @@ import {
   Modal,
   ActivityIndicator,
   TextInput,
+  Linking,
+  Platform
 } from 'react-native';
 import {
   Moon,
@@ -99,11 +101,29 @@ export default function SettingsScreen() {
     }
   };
 
-  const handleContactUs = () => {
-    Alert.alert(
-      'Contact Us',
-      'This would open a contact form or email client.',
-    );
+
+  const handleContactUs = async () => {
+    const email = 'ajehworks@gmail.com'; // or Gmail for now
+    const subject = 'ConjugateIgbo Support';
+    const body =
+      `Hi ConjugateIgbo team,\n\n` +
+      `I need help with:\n\n` +
+      `---\n` +
+      `App version: 1.0.0\n` +
+      `Platform: ${Platform.OS}\n`;
+
+    const mailto = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+    const canOpen = await Linking.canOpenURL(mailto);
+    if (!canOpen) {
+      Alert.alert(
+        'Unable to open email',
+        'Please email us directly at ajehworks@gmail.com',
+      );
+      return;
+    }
+
+    await Linking.openURL(mailto);
   };
 
   const handleSaveGoal = () => {
