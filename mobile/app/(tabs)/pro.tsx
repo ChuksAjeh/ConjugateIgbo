@@ -10,7 +10,7 @@ import {
   Image,
   Dimensions,
 } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { usePurchases } from '@/hooks/usePurchases';
@@ -24,6 +24,22 @@ export default function ProScreen() {
     usePurchases();
   const styles = createStyles(theme, isDark);
   const router = useRouter();
+  const navigation = useNavigation();
+
+  // Disable swipe-back gestures while on the Pro screen
+  useFocusEffect(
+    useCallback(() => {
+      navigation.setOptions({
+        gestureEnabled: false,
+      });
+
+      return () => {
+        navigation.setOptions({
+          gestureEnabled: true,
+        });
+      };
+    }, [navigation])
+  );
 
   /**
    * Displays an alert with the given title and message.
