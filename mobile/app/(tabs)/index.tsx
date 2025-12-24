@@ -47,7 +47,7 @@ export default function PracticeScreen() {
 
   const { settings } = useSettings();
   const { statistics, updateProgress } = useProgress();
-  const { isProUser } = usePurchases();
+  const { isProUser, isLoading } = usePurchases();
   const { theme } = useTheme();
 
   // Determine what to show on the card based on Settings > Display Mode

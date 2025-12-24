@@ -41,7 +41,13 @@ export default {
       'expo-router',
       'expo-font',
       'expo-web-browser',
-      'expo-notifications',
+      [
+        'expo-notifications',
+        {
+          icon: './assets/images/notification-icon.png',
+          color: '#000000',
+        },
+      ],
       [
         '@sentry/react-native/expo',
         {
@@ -51,11 +57,6 @@ export default {
         },
       ],
     ],
-
-    notification: {
-      icon: './assets/images/notification-icon.png',
-      color: '#000000',
-    },
 
     extra: {
       EXPO_PUBLIC_API_URL: process.env.EXPO_PUBLIC_API_URL,

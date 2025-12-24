@@ -116,10 +116,7 @@ export default function ProScreen() {
     useCallback(() => {
       if (isProUser || isLoading) return;
 
-      const t = setTimeout(() => {
-        handlePurchase();
-      }, 500);
-      return () => clearTimeout(t);
+      handlePurchase();
     }, [handlePurchase, isProUser, isLoading]),
   );
 
@@ -249,6 +246,7 @@ export default function ProScreen() {
 
       {/* Foreground content */}
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color="white" style={{ marginBottom: 20 }} />
         <Text
           accessibilityRole="header"
           style={{
@@ -259,7 +257,7 @@ export default function ProScreen() {
             marginBottom: 8,
           }}
         >
-          Oops, you weren’t supposed to see this!
+          Loading Pro Experience...
         </Text>
         <Text
           style={{
@@ -272,7 +270,7 @@ export default function ProScreen() {
             paddingHorizontal: 12,
           }}
         >
-          Please click the button below to access the paywall.
+          The paywall should appear momentarily. If it doesn't, please click the button below.
         </Text>
 
         <TouchableOpacity
