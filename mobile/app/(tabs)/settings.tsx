@@ -30,7 +30,7 @@ import { useSettings } from '@/hooks/useSettings';
 import { usePurchases } from '@/hooks/usePurchases';
 import { useTheme } from '@/components/ThemeProvider';
 import { createStyles } from '@/styles/settingsStyles';
-import { presentCustomerCenter } from '@/lib/revenuecatUI';
+import { showCustomerCenter } from '@/lib/revenuecatUI';
 
 export default function SettingsScreen() {
   const { settings, updateSettings } = useSettings();
@@ -78,7 +78,7 @@ export default function SettingsScreen() {
 
   const handleOpenCustomerCenter = async () => {
     try {
-      await presentCustomerCenter({});
+      await showCustomerCenter({});
     } catch {
       Alert.alert('Unable to open Customer Center', 'Please try again later.', [
         { text: 'OK', style: 'default' },
