@@ -33,6 +33,8 @@ import { usePurchases } from '@/hooks/usePurchases';
 import { useTheme } from '@/components/ThemeProvider';
 import { createStyles } from '@/styles/settingsStyles';
 import { showCustomerCenter } from '@/lib/revenuecatUI';
+import * as Sentry from '@sentry/react-native';
+
 
 export default function SettingsScreen() {
   const { settings, updateSettings } = useSettings();
@@ -125,7 +127,8 @@ export default function SettingsScreen() {
           [{ text: 'OK' }]
         );
       }
-    } catch (error) {
+    } catch (error :any) {
+      Sentry.logger.error(error);
       Alert.alert('Error', 'An unexpected error occurred while trying to open the mail app.');
     }
   };
