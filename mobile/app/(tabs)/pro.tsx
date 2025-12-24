@@ -26,19 +26,17 @@ export default function ProScreen() {
   const router = useRouter();
   const navigation = useNavigation();
 
-  // Disable swipe-back gestures while on the Pro screen
   useFocusEffect(
     useCallback(() => {
-      navigation.setOptions({
-        gestureEnabled: false,
+      const unsubscribe = navigation.addListener('beforeRemove', (e) => {
+        if (isProUser) return;
+
+        e.preventDefault();
+        router.replace('/(tabs)');
       });
 
-      return () => {
-        navigation.setOptions({
-          gestureEnabled: true,
-        });
-      };
-    }, [navigation])
+      return unsubscribe;
+    }, [navigation, router, isProUser])
   );
 
   /**
