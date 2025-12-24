@@ -15,6 +15,8 @@ export default {
     userInterfaceStyle: 'automatic',
 
     icon: './assets/images/icon.png',
+    backgroundColor: '#AD1102',
+
 
     splash: {
       image: './assets/images/icon.png',
@@ -33,7 +35,7 @@ export default {
       permissions: ['POST_NOTIFICATIONS'],
       adaptiveIcon: {
         foregroundImage: './assets/images/icon.png',
-        backgroundColor: '#ffffff',
+        backgroundColor: '#AD1102',
       },
     },
 

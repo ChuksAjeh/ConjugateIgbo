@@ -69,7 +69,7 @@ export const useNotifications = () => {
       // Schedule daily notification
       await Notifications.scheduleNotificationAsync({
         content: {
-          title: 'Time to practice Igbo! 🦁',
+          title: 'Time to practice Igbo!',
           body: "Keep your streak going with today's verb practice",
           data: { type: 'daily_reminder' },
         },

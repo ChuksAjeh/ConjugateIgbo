@@ -37,18 +37,16 @@ export default function TabLayout() {
           tabBarIcon: ({ size, color }) => <Book size={size} color={color} />,
         }}
       />
-      {/* Conditionally render the Pro tab: hide it completely for Pro users */}
-      {!isLoading && !isProUser && (
-        <Tabs.Screen
-          name="pro"
-          options={{
-            title: 'Get Pro',
-            tabBarIcon: ({ size, color }) => (
-              <Crown size={size} color={color} />
-            ),
-          }}
-        />
-      )}
+      <Tabs.Screen
+        name="pro"
+        options={{
+          title: 'Get Pro',
+          href: !isLoading && isProUser ? null : '/pro',
+          tabBarIcon: ({ size, color }) => (
+            <Crown size={size} color={color} />
+          ),
+        }}
+      />
       <Tabs.Screen
         name="settings"
         options={{

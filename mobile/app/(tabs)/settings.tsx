@@ -103,7 +103,7 @@ export default function SettingsScreen() {
 
 
   const handleContactUs = async () => {
-    const email = 'ajehworks@gmail.com'; // or Gmail for now
+    const email = 'ajehworks@gmail.com';
     const subject = 'ConjugateIgbo Support';
     const body =
       `Hi ConjugateIgbo team,\n\n` +
@@ -114,16 +114,20 @@ export default function SettingsScreen() {
 
     const mailto = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 
-    const canOpen = await Linking.canOpenURL(mailto);
-    if (!canOpen) {
-      Alert.alert(
-        'Unable to open email',
-        'Please email us directly at ajehworks@gmail.com',
-      );
-      return;
+    try {
+      const supported = await Linking.canOpenURL(mailto);
+      if (supported) {
+        await Linking.openURL(mailto);
+      } else {
+        Alert.alert(
+          'No Mail App Found',
+          `Please send an email to ${email} for support.`,
+          [{ text: 'OK' }]
+        );
+      }
+    } catch (error) {
+      Alert.alert('Error', 'An unexpected error occurred while trying to open the mail app.');
     }
-
-    await Linking.openURL(mailto);
   };
 
   const handleSaveGoal = () => {
