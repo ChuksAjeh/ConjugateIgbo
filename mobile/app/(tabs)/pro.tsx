@@ -270,7 +270,7 @@ export default function ProScreen() {
             paddingHorizontal: 12,
           }}
         >
-          The paywall should appear momentarily. If it doesn't, please click the button below.
+          The paywall should appear momentarily. If it doesn&#39;t, please click the button below.
         </Text>
 
         <TouchableOpacity
