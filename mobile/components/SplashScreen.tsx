@@ -6,15 +6,76 @@ import {
   Animated,
   Dimensions,
 } from 'react-native';
-import Svg, { Path, Polygon } from 'react-native-svg';
+import Svg, { Path, Polygon, G } from 'react-native-svg';
+import { useFonts, AmaticSC_700Bold } from '@expo-google-fonts/amatic-sc';
 
 const { width, height } = Dimensions.get('window');
+
+const ZigzagPattern = ({ side }: { side: 'left' | 'right' }) => {
+  const zigzagPath = [];
+  const zigzagWidth = 10;
+  const zigzagHeight = 20;
+  const numZigzags = Math.ceil(height / zigzagHeight);
+
+  for (let i = 0; i <= numZigzags; i++) {
+    if (i === 0) {
+      zigzagPath.push(`M ${side === 'left' ? 0 : 20} ${i * zigzagHeight}`);
+    }
+    zigzagPath.push(`L ${side === 'left' ? zigzagWidth : 20 - zigzagWidth} ${i * zigzagHeight + zigzagHeight / 2}`);
+    zigzagPath.push(`L ${side === 'left' ? 0 : 20} ${(i + 1) * zigzagHeight}`);
+  }
+
+  return (
+    <Svg height={height} width={20} style={styles.patternSvg}>
+      <Path
+        d={zigzagPath.join(' ')}
+        fill="none"
+        stroke="#8B0000"
+        strokeWidth="2"
+        opacity="0.5"
+      />
+    </Svg>
+  );
+};
+
+const HexagonLogo = () => {
+  return (
+    <Svg width="140" height="180" viewBox="0 0 140 180">
+      <Polygon
+        points="70,15 125,47 125,112 70,145 15,112 15,47"
+        fill="#1ABC9C"
+      />
+
+      <G transform="translate(70, 80)">
+        <Path
+          d="M -22 -20 Q -22 -28, -15 -28 L 15 -28 Q 22 -28, 22 -20 L 22 10 Q 22 18, 15 18 L -15 18 Q -22 18, -22 10 Z"
+          fill="#AD1102"
+        />
+
+        <Path
+          d="M -8 -10 L -4 -13 L -4 -3 L -8 0 Z"
+          fill="#6B0000"
+        />
+        <Path
+          d="M 4 -10 L 8 -13 L 8 -3 L 4 0 Z"
+          fill="#6B0000"
+        />
+      </G>
+    </Svg>
+  );
+};
 
 export default function SplashScreen({ onFinish }: { onFinish: () => void }) {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
 
+  const [fontsLoaded] = useFonts({
+    AmaticSC_700Bold,
+  });
+
   useEffect(() => {
+    if (!fontsLoaded) return;
+
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
@@ -40,63 +101,20 @@ export default function SplashScreen({ onFinish }: { onFinish: () => void }) {
     }, 2500);
 
     return () => clearTimeout(timer);
-  }, [fadeAnim, scaleAnim, onFinish]);
+  }, [fadeAnim, scaleAnim, onFinish, fontsLoaded]);
 
-  const WavePattern = ({ side }: { side: 'left' | 'right' }) => {
-    const waves = [];
-    const waveHeight = 30;
-    const numWaves = Math.ceil(height / waveHeight);
-
-    for (let i = 0; i < numWaves; i++) {
-      const y = i * waveHeight;
-      waves.push(
-        <Path
-          key={`wave-${i}`}
-          d={side === 'left'
-            ? `M 0 ${y} L 10 ${y + 10} L 0 ${y + 20}`
-            : `M 20 ${y} L 10 ${y + 10} L 20 ${y + 20}`}
-          fill="none"
-          stroke="#8B0000"
-          strokeWidth="2.5"
-          opacity="0.4"
-        />
-      );
-    }
-
-    return (
-      <Svg height={height} width="20" style={StyleSheet.absoluteFill}>
-        {waves}
-      </Svg>
-    );
-  };
-
-  const HexagonLogo = () => {
-    return (
-      <Svg width="140" height="160" viewBox="0 0 140 160">
-        <Polygon
-          points="70,10 130,45 130,115 70,150 10,115 10,45"
-          fill="#1ABC9C"
-        />
-        <Path
-          d="M 45 55 Q 45 48, 52 48 L 88 48 Q 95 48, 95 55 L 95 85 Q 95 95, 88 95 L 52 95 Q 45 95, 45 85 Z"
-          fill="#AD1102"
-        />
-        <Path
-          d="M 58 63 L 62 60 L 62 70 L 58 73 Z M 70 63 L 74 60 L 74 70 L 70 73 Z"
-          fill="#6B0000"
-        />
-      </Svg>
-    );
-  };
+  if (!fontsLoaded) {
+    return null;
+  }
 
   return (
     <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
       <View style={styles.waveLeft}>
-        <WavePattern side="left" />
+        <ZigzagPattern side="left" />
       </View>
 
       <View style={styles.waveRight}>
-        <WavePattern side="right" />
+        <ZigzagPattern side="right" />
       </View>
 
       <Animated.View
@@ -127,6 +145,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#AD1102',
     position: 'relative',
   },
+  patternSvg: {
+    position: 'absolute',
+  },
   waveLeft: {
     position: 'absolute',
     left: 0,
@@ -147,26 +168,24 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   logoContainer: {
-    marginBottom: 10,
+    marginBottom: 5,
   },
   textContainer: {
     alignItems: 'center',
   },
   title: {
-    fontSize: 46,
+    fontSize: 48,
     fontWeight: '700',
     color: '#FFFFFF',
-    letterSpacing: -0.5,
     textAlign: 'center',
-    fontFamily: 'Inter-Bold',
+    fontFamily: 'AmaticSC_700Bold',
   },
   subtitle: {
-    fontSize: 46,
+    fontSize: 48,
     fontWeight: '700',
     color: '#FFFFFF',
-    letterSpacing: -0.5,
     textAlign: 'center',
-    fontFamily: 'Inter-Bold',
-    marginTop: -5,
+    fontFamily: 'AmaticSC_700Bold',
+    marginTop: -10,
   },
 });
