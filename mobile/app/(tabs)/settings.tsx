@@ -20,7 +20,6 @@ import {
   Sun,
   ChevronLeft,
   ChevronRight,
-  X,
   Smartphone,
 } from 'lucide-react-native';
 import { useSettings } from '@/hooks/useSettings';
@@ -341,7 +340,7 @@ export default function SettingsScreen() {
 
         {/* App Info */}
         <View style={styles.appInfo}>
-          <Text style={styles.appInfoTitle}>Igbo Verb Conjugation</Text>
+          <Text style={styles.appInfoTitle}>ConjugateIgbo</Text>
           <Text style={styles.appInfoVersion}>Version 1.0.0</Text>
           <Text style={styles.appInfoDescription}>
             Learn Igbo verb conjugations with interactive practice exercises.
@@ -353,14 +352,24 @@ export default function SettingsScreen() {
       <Modal
         visible={showReminderModal}
         animationType="slide"
-        presentationStyle="pageSheet"
+        presentationStyle="fullScreen"
       >
         <SafeAreaView style={styles.modalContainer}>
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Daily Reminders</Text>
-            <TouchableOpacity onPress={() => setShowReminderModal(false)}>
-              <X size={24} color="#374151" />
+          <View style={styles.modalWaveLeft}>
+            <WavePattern side="left" />
+          </View>
+          <View style={styles.modalWaveRight}>
+            <WavePattern side="right" />
+          </View>
+          <View style={[styles.modalOrangeHeader, { paddingTop: Math.max(insets.top, 20) }]}>
+            <TouchableOpacity
+              style={styles.modalHeaderBackButton}
+              onPress={() => setShowReminderModal(false)}
+            >
+              <ChevronLeft size={24} color="#FFFFFF" />
+              <Text style={styles.backButtonText}>Back</Text>
             </TouchableOpacity>
+            <Text style={styles.modalHeaderTitle}>Daily Reminders</Text>
           </View>
           <View style={styles.modalContent}>
             <View style={styles.reminderToggleContainer}>
@@ -436,14 +445,24 @@ export default function SettingsScreen() {
       <Modal
         visible={showGoalModal}
         animationType="slide"
-        presentationStyle="pageSheet"
+        presentationStyle="fullScreen"
       >
         <SafeAreaView style={styles.modalContainer}>
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Daily Goal</Text>
-            <TouchableOpacity onPress={() => setShowGoalModal(false)}>
-              <X size={24} color="#374151" />
+          <View style={styles.modalWaveLeft}>
+            <WavePattern side="left" />
+          </View>
+          <View style={styles.modalWaveRight}>
+            <WavePattern side="right" />
+          </View>
+          <View style={[styles.modalOrangeHeader, { paddingTop: Math.max(insets.top, 20) }]}>
+            <TouchableOpacity
+              style={styles.modalHeaderBackButton}
+              onPress={() => setShowGoalModal(false)}
+            >
+              <ChevronLeft size={24} color="#FFFFFF" />
+              <Text style={styles.backButtonText}>Back</Text>
             </TouchableOpacity>
+            <Text style={styles.modalHeaderTitle}>Daily Goal</Text>
           </View>
           <View style={styles.modalContent}>
             <Text style={styles.goalDescription}>
@@ -474,14 +493,24 @@ export default function SettingsScreen() {
       <Modal
         visible={showAppearanceModal}
         animationType="slide"
-        presentationStyle="pageSheet"
+        presentationStyle="fullScreen"
       >
         <SafeAreaView style={styles.modalContainer}>
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Appearance</Text>
-            <TouchableOpacity onPress={() => setShowAppearanceModal(false)}>
-              <X size={24} color="#374151" />
+          <View style={styles.modalWaveLeft}>
+            <WavePattern side="left" />
+          </View>
+          <View style={styles.modalWaveRight}>
+            <WavePattern side="right" />
+          </View>
+          <View style={[styles.modalOrangeHeader, { paddingTop: Math.max(insets.top, 20) }]}>
+            <TouchableOpacity
+              style={styles.modalHeaderBackButton}
+              onPress={() => setShowAppearanceModal(false)}
+            >
+              <ChevronLeft size={24} color="#FFFFFF" />
+              <Text style={styles.backButtonText}>Back</Text>
             </TouchableOpacity>
+            <Text style={styles.modalHeaderTitle}>Appearance</Text>
           </View>
           <View style={styles.modalContent}>
             {[
@@ -545,14 +574,24 @@ export default function SettingsScreen() {
       <Modal
         visible={showDisplayModal}
         animationType="slide"
-        presentationStyle="pageSheet"
+        presentationStyle="fullScreen"
       >
         <SafeAreaView style={styles.modalContainer}>
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Display Mode</Text>
-            <TouchableOpacity onPress={() => setShowDisplayModal(false)}>
-              <X size={24} color="#374151" />
+          <View style={styles.modalWaveLeft}>
+            <WavePattern side="left" />
+          </View>
+          <View style={styles.modalWaveRight}>
+            <WavePattern side="right" />
+          </View>
+          <View style={[styles.modalOrangeHeader, { paddingTop: Math.max(insets.top, 20) }]}>
+            <TouchableOpacity
+              style={styles.modalHeaderBackButton}
+              onPress={() => setShowDisplayModal(false)}
+            >
+              <ChevronLeft size={24} color="#FFFFFF" />
+              <Text style={styles.backButtonText}>Back</Text>
             </TouchableOpacity>
+            <Text style={styles.modalHeaderTitle}>Display Mode</Text>
           </View>
           <View style={styles.modalContent}>
             {(
@@ -681,14 +720,24 @@ export default function SettingsScreen() {
       <Modal
         visible={showTensesModal}
         animationType="slide"
-        presentationStyle="pageSheet"
+        presentationStyle="fullScreen"
       >
         <SafeAreaView style={styles.modalContainer}>
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Tenses</Text>
-            <TouchableOpacity onPress={() => setShowTensesModal(false)}>
-              <X size={24} color="#374151" />
+          <View style={styles.modalWaveLeft}>
+            <WavePattern side="left" />
+          </View>
+          <View style={styles.modalWaveRight}>
+            <WavePattern side="right" />
+          </View>
+          <View style={[styles.modalOrangeHeader, { paddingTop: Math.max(insets.top, 20) }]}>
+            <TouchableOpacity
+              style={styles.modalHeaderBackButton}
+              onPress={() => setShowTensesModal(false)}
+            >
+              <ChevronLeft size={24} color="#FFFFFF" />
+              <Text style={styles.backButtonText}>Back</Text>
             </TouchableOpacity>
+            <Text style={styles.modalHeaderTitle}>Tenses</Text>
           </View>
           <ScrollView style={styles.modalContent}>
             <Text style={styles.subSectionTitle}>Indicative Tenses</Text>
@@ -782,14 +831,24 @@ export default function SettingsScreen() {
       <Modal
         visible={showAnswersModal}
         animationType="slide"
-        presentationStyle="pageSheet"
+        presentationStyle="fullScreen"
       >
         <SafeAreaView style={styles.modalContainer}>
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Answers</Text>
-            <TouchableOpacity onPress={() => setShowAnswersModal(false)}>
-              <X size={24} color="#374151" />
+          <View style={styles.modalWaveLeft}>
+            <WavePattern side="left" />
+          </View>
+          <View style={styles.modalWaveRight}>
+            <WavePattern side="right" />
+          </View>
+          <View style={[styles.modalOrangeHeader, { paddingTop: Math.max(insets.top, 20) }]}>
+            <TouchableOpacity
+              style={styles.modalHeaderBackButton}
+              onPress={() => setShowAnswersModal(false)}
+            >
+              <ChevronLeft size={24} color="#FFFFFF" />
+              <Text style={styles.backButtonText}>Back</Text>
             </TouchableOpacity>
+            <Text style={styles.modalHeaderTitle}>Answers</Text>
           </View>
           <View style={styles.modalContent}>
             <ToggleItem
