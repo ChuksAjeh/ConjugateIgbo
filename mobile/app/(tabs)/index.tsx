@@ -3,7 +3,6 @@ import React, {
   useEffect,
   useMemo,
   useCallback,
-  useRef,
 } from 'react';
 import {
   View,
@@ -13,7 +12,6 @@ import {
   SafeAreaView,
   ScrollView,
   Modal,
-  Platform,
   StyleSheet,
   Dimensions,
 } from 'react-native';
@@ -34,14 +32,13 @@ import { getConjugatedForm } from '@/lib/conjugateVerbs';
 import { useSettings } from '@/hooks/useSettings';
 import { useProgress } from '@/hooks/useProgress';
 import { usePurchases } from '@/hooks/usePurchases';
-import { useTheme } from '@/components/ThemeProvider';
 import { useFavorites } from '@/hooks/useFavorites';
 import { WavePattern } from '@/components/SplashScreen';
 import { pronounLabels, pronouns, tenses } from '@/models/interfaces';
 
 import * as Sentry from '@sentry/react-native';
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 export default function PracticeScreen() {
   const [currentVerb, setCurrentVerb] = useState<IgboVerb | null>(null);
@@ -58,7 +55,6 @@ export default function PracticeScreen() {
   const { settings } = useSettings();
   const { statistics, updateProgress } = useProgress();
   const { isProUser, isLoading } = usePurchases();
-  const { theme } = useTheme();
   const { isFavorite, toggleFavorite } = useFavorites();
 
   const availableTenses: Tense[] = useMemo(() => {
@@ -118,7 +114,7 @@ export default function PracticeScreen() {
       ] as Tense;
       setSelectedTense(newTense);
     }
-  }, [availableTenses]);
+  }, [availableTenses, selectedTense]);
 
   useFocusEffect(
     React.useCallback(() => {

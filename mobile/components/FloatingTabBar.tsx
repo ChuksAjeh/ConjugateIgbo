@@ -4,14 +4,11 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  Dimensions,
-  Platform,
 } from 'react-native';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { Mic, List, Settings, Crown, Bookmark } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-const { width } = Dimensions.get('window');
 
 export function FloatingTabBar({
   state,

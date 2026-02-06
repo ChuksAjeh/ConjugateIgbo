@@ -7,12 +7,10 @@ import {
   Image,
   ScrollView,
   SafeAreaView,
-  Dimensions,
 } from 'react-native';
 import { LOGO_IMAGE, WavePattern, SlantedBox } from './SplashScreen';
 import { useTheme } from './ThemeProvider';
 
-const { width } = Dimensions.get('window');
 
 export default function IntroScreen({ onFinish }: { onFinish: () => void }) {
   const { theme, isDark } = useTheme();

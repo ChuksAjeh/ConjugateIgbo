@@ -25,7 +25,7 @@ import {
   ChevronRight,
   Play,
 } from 'lucide-react-native';
-import { IgboVerb, Tense, Pronoun } from '@/models/verb';
+import { IgboVerb, Tense } from '@/models/verb';
 import { verbService } from '@/lib/verbService';
 import { useTheme } from '@/components/ThemeProvider';
 import { getConjugatedForm } from '@/lib/conjugateVerbs';
@@ -34,7 +34,6 @@ import { usePurchases } from '@/hooks/usePurchases';
 import {
   pronounLabels,
   pronouns,
-  tenses as tenseList,
 } from '@/models/interfaces';
 import { WavePattern } from '@/components/SplashScreen';
 
@@ -487,6 +486,12 @@ export default function VerbsScreen() {
 }
 
 // Separate component for verb detail content
+const tensesByTab = {
+  Indicative: ['present', 'past', 'future', 'imperfect'] as Tense[],
+  Subjunctive: ['subjunctive'] as Tense[],
+  Others: ['imperative', 'conditional'] as Tense[],
+};
+
 const VerbDetailContent = ({
   verb,
   theme,
@@ -496,7 +501,7 @@ const VerbDetailContent = ({
   theme: any;
   onClose: () => void;
 }) => {
-  const { settings, updateSettings } = useSettings();
+  const { settings } = useSettings();
   const { isProUser, isLoading } = usePurchases();
   const [activeTab, setActiveTab] = useState<
     'Indicative' | 'Subjunctive' | 'Others'
@@ -509,12 +514,6 @@ const VerbDetailContent = ({
   const [expandedConjugation, setExpandedConjugation] = useState<string | null>(
     null,
   );
-
-  const tensesByTab = {
-    Indicative: ['present', 'past', 'future', 'imperfect'] as Tense[],
-    Subjunctive: ['subjunctive'] as Tense[],
-    Others: ['imperative', 'conditional'] as Tense[],
-  };
 
   const availableTensesInTab = useMemo(() => {
     let list = tensesByTab[activeTab];

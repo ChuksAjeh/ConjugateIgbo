@@ -17,17 +17,9 @@ import { useRouter } from 'expo-router';
 import {
   Moon,
   Sun,
-  Bell,
-  Target,
-  Volume2,
-  Eye,
-  MessageCircle,
   ChevronLeft,
   ChevronRight,
   X,
-  Lock,
-  Globe,
-  ShoppingBag,
   Smartphone,
 } from 'lucide-react-native';
 import { useSettings } from '@/hooks/useSettings';
@@ -95,18 +87,6 @@ export default function SettingsScreen() {
     }
   };
 
-  const getAppearanceLabel = () => {
-    switch (settings.appearance) {
-      case 'light':
-        return 'Light';
-      case 'dark':
-        return 'Dark';
-      case 'system':
-        return 'System';
-      default:
-        return 'Light';
-    }
-  };
 
   const handleContactUs = async () => {
     const email = 'ajehworks@gmail.com';

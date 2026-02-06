@@ -10,7 +10,6 @@ import {
   Modal,
   ScrollView,
 } from 'react-native';
-import { router } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { Volume2, X, Bookmark } from 'lucide-react-native';
 import { IgboVerb, Tense, Pronoun } from '@/models/verb';
@@ -40,7 +39,7 @@ export default function FavoritesScreen() {
   useFocusEffect(
     React.useCallback(() => {
       refreshFavorites();
-    }, []),
+    }, [refreshFavorites]),
   );
 
   useEffect(() => {

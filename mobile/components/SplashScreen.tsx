@@ -10,7 +10,7 @@ import {
 import Svg, { Path, Circle } from 'react-native-svg';
 import { useTheme } from './ThemeProvider';
 
-const { width, height } = Dimensions.get('window');
+const { height } = Dimensions.get('window');
 export const ICON_IMAGE = require('../assets/images/icon.png');
 export const LOGO_IMAGE = require('../assets/images/logo.png');
 

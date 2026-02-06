@@ -1,13 +1,4 @@
 import { Tabs } from 'expo-router';
-import {
-  Book,
-  Settings,
-  Crown,
-  Zap,
-  Bookmark,
-  Mic,
-  List,
-} from 'lucide-react-native';
 import { usePurchases } from '@/hooks/usePurchases';
 import { FloatingTabBar } from '@/components/FloatingTabBar';
 

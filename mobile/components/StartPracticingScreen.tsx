@@ -7,12 +7,10 @@ import {
   Image,
   ScrollView,
   SafeAreaView,
-  Dimensions,
 } from 'react-native';
 import { ICON_IMAGE, WavePattern, SlantedBox } from './SplashScreen';
 import { useTheme } from './ThemeProvider';
 
-const { width } = Dimensions.get('window');
 
 export default function StartPracticingScreen({
   onFinish,
@@ -41,7 +39,7 @@ export default function StartPracticingScreen({
         >
           <View style={styles.titleContainer}>
             <SlantedBox type="conjugate">
-              <Text style={styles.titleText}>LET'S LEARN IGBO</Text>
+              <Text style={styles.titleText}>LET&apos;S LEARN IGBO</Text>
             </SlantedBox>
           </View>
 
@@ -54,7 +52,7 @@ export default function StartPracticingScreen({
               <View style={styles.tipItem}>
                 <Text style={styles.tipBullet}>•</Text>
                 <Text style={styles.tipText}>
-                  If you're having trouble with a verb, save and come back
+                  If you&apos;re having trouble with a verb, save and come back
                   later.
                 </Text>
               </View>
