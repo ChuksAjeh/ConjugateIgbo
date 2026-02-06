@@ -14,7 +14,6 @@ export const createStyles = (theme: Theme, isDark: boolean) =>
       top: 0,
       bottom: 0,
       width: 40,
-      zIndex: -1,
       opacity: isDark ? 0.15 : 0.2,
     },
     bgWaveRight: {
@@ -23,7 +22,6 @@ export const createStyles = (theme: Theme, isDark: boolean) =>
       top: 0,
       bottom: 0,
       width: 40,
-      zIndex: -1,
       opacity: isDark ? 0.15 : 0.2,
     },
     header: {
@@ -178,7 +176,6 @@ export const createStyles = (theme: Theme, isDark: boolean) =>
       top: 0,
       bottom: 0,
       width: 40,
-      zIndex: 1,
       opacity: isDark ? 0.15 : 0.2,
     },
     modalWaveRight: {
@@ -187,7 +184,6 @@ export const createStyles = (theme: Theme, isDark: boolean) =>
       top: 0,
       bottom: 0,
       width: 40,
-      zIndex: 1,
       opacity: isDark ? 0.15 : 0.2,
     },
     modalOrangeHeader: {
