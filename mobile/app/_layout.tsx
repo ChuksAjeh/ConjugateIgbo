@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import {
@@ -128,23 +129,25 @@ export default Sentry.wrap(function RootLayout() {
   }
 
   return (
-    <ThemeProvider>
-      {showCustomSplash ? (
-        <CustomSplashScreen onFinish={() => setShowCustomSplash(false)} />
-      ) : showIntro ? (
-        <IntroScreen onFinish={handleIntroNext} />
-      ) : showStartPracticing ? (
-        <StartPracticingScreen onFinish={handleStartPracticingFinish} />
-      ) : (
-        <>
-          <Stack screenOptions={{ headerShown: false, gestureEnabled: true }}>
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-            <Stack.Screen name="not-found" options={{ title: 'Not Found' }} />
-          </Stack>
-          <StatusBar style="auto" />
-        </>
-      )}
-    </ThemeProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <ThemeProvider>
+        {showCustomSplash ? (
+          <CustomSplashScreen onFinish={() => setShowCustomSplash(false)} />
+        ) : showIntro ? (
+          <IntroScreen onFinish={handleIntroNext} />
+        ) : showStartPracticing ? (
+          <StartPracticingScreen onFinish={handleStartPracticingFinish} />
+        ) : (
+          <>
+            <Stack screenOptions={{ headerShown: false, gestureEnabled: true }}>
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+              <Stack.Screen name="not-found" options={{ title: 'Not Found' }} />
+            </Stack>
+            <StatusBar style="auto" />
+          </>
+        )}
+      </ThemeProvider>
+    </GestureHandlerRootView>
   );
 });

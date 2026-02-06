@@ -33,7 +33,7 @@ export default {
       package: 'com.chuksajeh.conjugateigbo',
       permissions: ['POST_NOTIFICATIONS'],
       adaptiveIcon: {
-        foregroundImage: './assets/images/icon.png',
+        foregroundImage: './assets/images/icon-adaptive-foreground.png',
         backgroundColor: '#AD1102',
       },
     },
@@ -45,8 +45,8 @@ export default {
       [
         'expo-notifications',
         {
-          icon: './assets/images/notification-icon.png',
-          color: '#000000',
+          icon: './assets/images/icon.png',
+          color: '#AD1102',
         },
       ],
       [

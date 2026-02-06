@@ -503,6 +503,7 @@ const VerbDetailContent = ({
   theme: any;
   onClose: () => void;
 }) => {
+  const insets = useSafeAreaInsets();
   const { settings } = useSettings();
   const { isProUser, isLoading } = usePurchases();
   const [activeTab, setActiveTab] = useState<
@@ -567,7 +568,7 @@ const VerbDetailContent = ({
   return (
     <View style={styles.verbDetailContainer}>
       {/* Custom Header for Modal */}
-      <View style={styles.detailHeader}>
+      <View style={[styles.detailHeader, { paddingTop: Math.max(insets.top, 20) }]}>
         <TouchableOpacity onPress={onClose} style={styles.backButton}>
           <ChevronLeft size={28} color="#FFFFFF" />
           <Text style={styles.backButtonText}>Back</Text>
