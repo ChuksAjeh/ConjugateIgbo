@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Sentry from '@sentry/react-native';
 
@@ -7,14 +7,14 @@ const FAVORITES_KEY = 'favorites_verbs';
 export function useFavorites() {
   const [favorites, setFavorites] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const hasInitiallyLoadedRef = useRef(false);
 
-  useEffect(() => {
-    loadFavorites();
-  }, []);
-
-  const loadFavorites = async () => {
+  const loadFavorites = useCallback(async (isInitial = false) => {
     try {
-      setIsLoading(true);
+      // Only show loading state on initial load to prevent flickering
+      if (isInitial && !hasInitiallyLoadedRef.current) {
+        setIsLoading(true);
+      }
       const stored = await AsyncStorage.getItem(FAVORITES_KEY);
       if (stored) {
         setFavorites(JSON.parse(stored));
@@ -24,9 +24,16 @@ export function useFavorites() {
         tags: { feature: 'favorites' },
       });
     } finally {
-      setIsLoading(false);
+      if (isInitial && !hasInitiallyLoadedRef.current) {
+        setIsLoading(false);
+        hasInitiallyLoadedRef.current = true;
+      }
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadFavorites(true);
+  }, [loadFavorites]);
 
   const isFavorite = useCallback(
     (verbId: string) => {

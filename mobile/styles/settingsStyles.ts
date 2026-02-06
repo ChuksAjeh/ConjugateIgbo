@@ -1,11 +1,11 @@
-import { StyleSheet, Platform } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { Theme } from '@/components/ThemeProvider';
 
 export const createStyles = (theme: Theme, isDark: boolean) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: '#FFFFFF',
+      backgroundColor: isDark ? theme.colors.background : '#FFFFFF',
       position: 'relative',
     },
     bgWaveLeft: {
@@ -15,7 +15,7 @@ export const createStyles = (theme: Theme, isDark: boolean) =>
       bottom: 0,
       width: 40,
       zIndex: -1,
-      opacity: 0.2,
+      opacity: isDark ? 0.05 : 0.2,
     },
     bgWaveRight: {
       position: 'absolute',
@@ -24,14 +24,13 @@ export const createStyles = (theme: Theme, isDark: boolean) =>
       bottom: 0,
       width: 40,
       zIndex: -1,
-      opacity: 0.2,
+      opacity: isDark ? 0.05 : 0.2,
     },
     header: {
       backgroundColor: '#F3703E',
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
-      paddingTop: Platform.OS === 'ios' ? 0 : 10,
       paddingBottom: 20,
       paddingHorizontal: 15,
       position: 'relative',
@@ -83,7 +82,7 @@ export const createStyles = (theme: Theme, isDark: boolean) =>
       letterSpacing: 1,
     },
     sectionContent: {
-      backgroundColor: '#FFFFFF',
+      backgroundColor: 'transparent',
     },
     settingsItem: {
       flexDirection: 'row',
@@ -118,7 +117,7 @@ export const createStyles = (theme: Theme, isDark: boolean) =>
     },
     settingsItemTitle: {
       fontSize: 16,
-      color: '#333',
+      color: isDark ? theme.colors.text : '#333',
       fontFamily: 'Manjari-Regular',
     },
     lockedText: {

@@ -13,6 +13,7 @@ import {
   Linking,
   Platform,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import {
   Moon,
@@ -32,6 +33,7 @@ import * as Sentry from '@sentry/react-native';
 
 export default function SettingsScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { settings, updateSettings } = useSettings();
   const { isProUser, restorePurchases, isLoading } = usePurchases();
 
@@ -243,7 +245,7 @@ export default function SettingsScreen() {
         <WavePattern side="right" />
       </View>
 
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: Math.max(insets.top, 20) }]}>
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => router.back()}

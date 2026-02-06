@@ -38,18 +38,18 @@ const lightTheme: Theme = {
 
 const darkTheme: Theme = {
   colors: {
-    background: '#111827',
-    surface: '#1f2937',
-    primary: '#60a5fa',
-    secondary: '#9ca3af',
-    text: '#f9fafb',
-    textSecondary: '#d1d5db',
-    border: '#374151',
-    success: '#10b981',
+    background: '#0f172a', // slate-900
+    surface: '#1e293b', // slate-800
+    primary: '#FF8C5A', // brighter orange accent
+    secondary: '#94a3b8', // slate-400
+    text: '#f8fafc', // slate-50
+    textSecondary: '#cbd5e1', // slate-300
+    border: '#334155', // slate-700
+    success: '#22c55e',
     warning: '#f59e0b',
     error: '#ef4444',
-    card: '#1f2937',
-    headerBackground: '#1f2937',
+    card: '#1e293b', // slate-800
+    headerBackground: '#1e293b', // slate-800
   },
 };
 

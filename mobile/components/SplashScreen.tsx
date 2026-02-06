@@ -8,7 +8,6 @@ import {
   Image,
 } from 'react-native';
 import Svg, { Path, Circle } from 'react-native-svg';
-import { useTheme } from './ThemeProvider';
 
 const { height } = Dimensions.get('window');
 export const ICON_IMAGE = require('../assets/images/icon.png');
@@ -17,17 +16,15 @@ export const LOGO_IMAGE = require('../assets/images/logo.png');
 export const SlantedBox = ({
   children,
   type,
-  backgroundColor,
+  backgroundColor = '#CE3B3B',
 }: {
   children: React.ReactNode;
   type: 'conjugate' | 'igbo';
   backgroundColor?: string;
 }) => {
   const [contentWidth, setContentWidth] = React.useState(0);
-  const { theme, isDark } = useTheme();
 
-  const actualBackgroundColor =
-    backgroundColor || (isDark ? theme.colors.surface : '#CE3B3B');
+  const actualBackgroundColor = backgroundColor;
 
   // Dimensions for the trapezoidal shapes based on the description
   // Conjugate: left top 10, right top 5 (slanted down to the right)

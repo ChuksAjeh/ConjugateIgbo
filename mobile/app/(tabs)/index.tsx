@@ -9,12 +9,12 @@ import {
   Text,
   TouchableOpacity,
   Animated,
-  SafeAreaView,
   ScrollView,
   Modal,
   StyleSheet,
   Dimensions,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { PanGestureHandler, State } from 'react-native-gesture-handler';
 import {
@@ -33,6 +33,7 @@ import { useSettings } from '@/hooks/useSettings';
 import { useProgress } from '@/hooks/useProgress';
 import { usePurchases } from '@/hooks/usePurchases';
 import { useFavorites } from '@/hooks/useFavorites';
+import { useTheme } from '@/components/ThemeProvider';
 import { WavePattern } from '@/components/SplashScreen';
 import { pronounLabels, pronouns, tenses } from '@/models/interfaces';
 
@@ -52,10 +53,18 @@ export default function PracticeScreen() {
   const [translateX] = useState(new Animated.Value(0));
   const [fallbackModalVisible, setFallbackModalVisible] = useState(false);
 
+  // History for "Back" functionality
+  const [history, setHistory] = useState<
+    { verb: IgboVerb; tense: Tense; pronoun: Pronoun }[]
+  >([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
+
   const { settings } = useSettings();
   const { statistics, updateProgress } = useProgress();
   const { isProUser, isLoading } = usePurchases();
   const { isFavorite, toggleFavorite } = useFavorites();
+  const { theme, isDark } = useTheme();
+  const insets = useSafeAreaInsets();
 
   const availableTenses: Tense[] = useMemo(() => {
     let list = [...tenses];
@@ -77,35 +86,86 @@ export default function PracticeScreen() {
     return list;
   }, [isProUser, isLoading, settings.enabledTenses]);
 
-  const loadNewVerb = useCallback(async () => {
-    try {
-      setFallbackModalVisible(false);
+  const loadNewVerb = useCallback(
+    async (isBack = false, isForward = false) => {
+      try {
+        setFallbackModalVisible(false);
 
-      const { verb, fellBackToDelta } =
-        await verbService.getRandomVerbForDialect(settings.dialect as any);
-      setCurrentVerb(verb);
-      if (fellBackToDelta) {
-        setFallbackModalVisible(true);
+        let verb: IgboVerb;
+        let newTense: Tense;
+        let newPronoun: Pronoun;
+
+        // Handle back navigation with wrap-around
+        if (isBack && history.length > 1) {
+          let newIndex: number;
+          if (historyIndex <= 0) {
+            // Wrap around to the end
+            newIndex = history.length - 1;
+          } else {
+            newIndex = historyIndex - 1;
+          }
+          const prev = history[newIndex];
+          verb = prev.verb;
+          newTense = prev.tense;
+          newPronoun = prev.pronoun;
+          setHistoryIndex(newIndex);
+        } 
+        // Handle forward navigation with wrap-around
+        else if (isForward && history.length > 0) {
+          if (historyIndex < history.length - 1) {
+            // Navigate forward in history
+            const next = history[historyIndex + 1];
+            verb = next.verb;
+            newTense = next.tense;
+            newPronoun = next.pronoun;
+            setHistoryIndex(historyIndex + 1);
+          } else {
+            // At the end - wrap around to the beginning
+            const first = history[0];
+            verb = first.verb;
+            newTense = first.tense;
+            newPronoun = first.pronoun;
+            setHistoryIndex(0);
+          }
+        } 
+        else {
+          // Get a brand new verb (initial load or no history)
+          const { verb: nextVerb, fellBackToDelta } =
+            await verbService.getRandomVerbForDialect(settings.dialect as any);
+          verb = nextVerb;
+          if (fellBackToDelta) {
+            setFallbackModalVisible(true);
+          }
+
+          newTense = availableTenses[
+            Math.floor(Math.random() * availableTenses.length)
+          ] as Tense;
+
+          newPronoun = pronouns[
+            Math.floor(Math.random() * pronouns.length)
+          ] as Pronoun;
+
+          // Add to history
+          setHistory((prev) => {
+            const newHistory = prev.slice(0, historyIndex + 1);
+            return [...newHistory, { verb, tense: newTense, pronoun: newPronoun }];
+          });
+          setHistoryIndex((prev) => prev + 1);
+        }
+
+        setCurrentVerb(verb);
+        setSelectedTense(newTense);
+        setSelectedPronoun(newPronoun);
+        setShowAnswer(false);
+        fadeAnim.setValue(0);
+
+        return verb;
+      } catch {
+        // throw error;
       }
-
-      const newTense = availableTenses[
-        Math.floor(Math.random() * availableTenses.length)
-      ] as Tense;
-      setSelectedTense(newTense);
-
-      const newPronoun = pronouns[
-        Math.floor(Math.random() * pronouns.length)
-      ] as Pronoun;
-      setSelectedPronoun(newPronoun);
-
-      setShowAnswer(false);
-      fadeAnim.setValue(0);
-
-      return verb;
-    } catch {
-      // throw error;
-    }
-  }, [availableTenses, fadeAnim, settings.dialect]);
+    },
+    [availableTenses, fadeAnim, settings.dialect, history, historyIndex],
+  );
 
   useEffect(() => {
     if (!availableTenses.includes(selectedTense)) {
@@ -189,10 +249,45 @@ export default function PracticeScreen() {
     ]).start();
 
     try {
-      await loadNewVerb();
+      await loadNewVerb(false, true);
     } catch (error: any) {
       Sentry.captureException(error, {
         tags: { feature: 'practice - load a verb', screen: 'PracticeScreen' },
+      });
+    }
+  };
+
+  const handleBackVerb = async () => {
+    // Allow wrap-around if we have more than one verb in history
+    if (history.length <= 1) return;
+
+    // Reset card position if it was swiped
+    translateX.setValue(0);
+
+    // Slide animation for transition
+    Animated.sequence([
+      Animated.timing(translateX, {
+        toValue: width,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+      Animated.timing(translateX, {
+        toValue: -width,
+        duration: 0,
+        useNativeDriver: true,
+      }),
+      Animated.timing(translateX, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+    ]).start();
+
+    try {
+      await loadNewVerb(true);
+    } catch (error: any) {
+      Sentry.captureException(error, {
+        tags: { feature: 'practice - back verb', screen: 'PracticeScreen' },
       });
     }
   };
@@ -212,7 +307,11 @@ export default function PracticeScreen() {
           duration: 200,
           useNativeDriver: true,
         }).start(() => {
-          handleNextVerb();
+          if (translationX > 0) {
+            handleBackVerb();
+          } else {
+            handleNextVerb();
+          }
         });
       } else {
         // Not far enough, spring back
@@ -255,18 +354,23 @@ export default function PracticeScreen() {
   }
 
   return (
-    <View style={localStyles.container}>
-      <StatusBar style="light" />
+    <View style={[localStyles.container, { backgroundColor: theme.colors.background }]}>
+      <StatusBar style={isDark ? "light" : "dark"} />
 
       {/* Daily Goal Top Bar */}
-      <SafeAreaView style={localStyles.topBarContainer}>
+      <View
+        style={[
+          localStyles.topBarContainer,
+          { paddingTop: Math.max(insets.top, 20), backgroundColor: '#F3703E' },
+        ]}
+      >
         <View style={localStyles.topBar}>
           <Text style={localStyles.goalLabel}>Daily goal</Text>
           <Text style={localStyles.goalProgress}>
             {statistics.dailyGoalProgress}/{settings.dailyGoal}
           </Text>
         </View>
-      </SafeAreaView>
+      </View>
 
       <View style={localStyles.mainContent}>
         {/* Background Waves */}
@@ -292,12 +396,12 @@ export default function PracticeScreen() {
             <PanGestureHandler
               onGestureEvent={onGestureEvent}
               onHandlerStateChange={onHandlerStateChange}
-              activeOffsetX={[-20, 20]}
+              activeOffsetX={[-50, 50]}
             >
               <TouchableOpacity
                 activeOpacity={1}
                 onPress={showAnswer ? handleNextVerb : handleRevealAnswer}
-                style={localStyles.card}
+                style={[localStyles.card, { backgroundColor: theme.colors.surface }]}
               >
                 {/* Card Decorative Waves */}
                 <View style={localStyles.cardWaveLeft}>
@@ -305,8 +409,8 @@ export default function PracticeScreen() {
                     side="left"
                     customHeight={400}
                     variant="zigzag"
-                    color="#555"
-                    opacity={0.8}
+                    color={isDark ? '#FFFFFF' : '#555'}
+                    opacity={isDark ? 0.3 : 0.8}
                   />
                 </View>
                 <View style={localStyles.cardWaveRight}>
@@ -314,16 +418,16 @@ export default function PracticeScreen() {
                     side="right"
                     customHeight={400}
                     variant="zigzag"
-                    color="#555"
-                    opacity={0.8}
+                    color={isDark ? '#FFFFFF' : '#555'}
+                    opacity={isDark ? 0.3 : 0.8}
                   />
                 </View>
 
                 <View style={localStyles.cardContent}>
-                  <Text style={localStyles.englishText}>
+                  <Text style={[localStyles.englishText, { color: isDark ? theme.colors.textSecondary : '#666' }]}>
                     {currentVerb.english}
                   </Text>
-                  <Text style={localStyles.igboText}>{currentVerb.igbo}</Text>
+                  <Text style={[localStyles.igboText, { color: theme.colors.text }]}>{currentVerb.igbo}</Text>
 
                   <View style={localStyles.tenseBadge}>
                     <Text style={localStyles.tenseText}>
@@ -332,7 +436,7 @@ export default function PracticeScreen() {
                     </Text>
                   </View>
 
-                  <Text style={localStyles.pronounText}>
+                  <Text style={[localStyles.pronounText, { color: isDark ? theme.colors.textSecondary : '#666' }]}>
                     {pronounLabels[selectedPronoun]}
                   </Text>
 
@@ -340,7 +444,7 @@ export default function PracticeScreen() {
                     <Animated.View
                       style={{ opacity: fadeAnim, alignItems: 'center' }}
                     >
-                      <Text style={localStyles.conjugatedText}>
+                      <Text style={[localStyles.conjugatedText, { color: theme.colors.text }]}>
                         {correctAnswer}
                       </Text>
                       <Text style={localStyles.tapToContinue}>
@@ -363,21 +467,25 @@ export default function PracticeScreen() {
           {/* Action Buttons */}
           <View style={localStyles.actionRow}>
             <TouchableOpacity
-              style={localStyles.actionButton}
-              onPress={handleNextVerb}
+              style={[
+                localStyles.actionButton,
+                history.length <= 1 && { opacity: 0.3 },
+              ]}
+              onPress={handleBackVerb}
+              disabled={history.length <= 1}
             >
-              <View style={localStyles.actionIconBox}>
-                <RotateCcw size={28} color="#666" />
+              <View style={[localStyles.actionIconBox, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
+                <RotateCcw size={28} color={isDark ? theme.colors.textSecondary : "#666"} />
               </View>
-              <Text style={localStyles.actionLabel}>Replay</Text>
+              <Text style={localStyles.actionLabel}>Back</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               style={localStyles.actionButton}
               onPress={handlePlayAudio}
             >
-              <View style={localStyles.actionIconBox}>
-                <Volume2 size={28} color="#666" />
+              <View style={[localStyles.actionIconBox, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
+                <Volume2 size={28} color={isDark ? theme.colors.textSecondary : "#666"} />
               </View>
               <Text style={localStyles.actionLabel}>Audio</Text>
             </TouchableOpacity>
@@ -386,8 +494,8 @@ export default function PracticeScreen() {
               style={localStyles.actionButton}
               onPress={handleShowVerbsList}
             >
-              <View style={localStyles.actionIconBox}>
-                <Book size={28} color="#666" />
+              <View style={[localStyles.actionIconBox, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
+                <Book size={28} color={isDark ? theme.colors.textSecondary : "#666"} />
               </View>
               <Text style={localStyles.actionLabel}>Library</Text>
             </TouchableOpacity>
@@ -396,11 +504,11 @@ export default function PracticeScreen() {
               style={localStyles.actionButton}
               onPress={toggleSave}
             >
-              <View style={localStyles.actionIconBox}>
+              <View style={[localStyles.actionIconBox, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
                 {isFavorite(currentVerb.id) ? (
                   <BookmarkCheck size={28} color="#CE3B3B" />
                 ) : (
-                  <Bookmark size={28} color="#666" />
+                  <Bookmark size={28} color={isDark ? theme.colors.textSecondary : "#666"} />
                 )}
               </View>
               <Text style={localStyles.actionLabel}>Save</Text>

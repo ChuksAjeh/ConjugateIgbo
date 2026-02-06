@@ -8,6 +8,7 @@ import {
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { Mic, List, Settings, Crown, Bookmark } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTheme } from './ThemeProvider';
 
 
 export function FloatingTabBar({
@@ -16,10 +17,29 @@ export function FloatingTabBar({
   navigation,
 }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
+  const { theme, isDark } = useTheme();
+
+  // Count visible routes to shrink the bar
+  const visibleRoutesCount = state.routes.filter((route) => {
+    const { options } = descriptors[route.key] as any;
+    return options.href !== null;
+  }).length;
+
+  const barWidth = visibleRoutesCount <= 4 ? 260 : 320;
 
   return (
     <View style={[styles.container, { bottom: insets.bottom + 10 }]}>
-      <View style={styles.tabBar}>
+      <View
+        style={[
+          styles.tabBar,
+          {
+            backgroundColor: isDark ? theme.colors.surface : '#FFFFFF',
+            width: barWidth,
+            borderColor: '#F3703E',
+            shadowColor: isDark ? '#000000' : '#F3703E',
+          },
+        ]}
+      >
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key] as any;
           const label =
@@ -91,7 +111,7 @@ export function FloatingTabBar({
               <Text
                 style={[
                   styles.label,
-                  { color: isFocused ? '#333' : '#9ca3af' },
+                  { color: isFocused ? (isDark ? '#F3703E' : '#333') : '#9ca3af' },
                 ]}
               >
                 {labelToRender}
@@ -115,13 +135,10 @@ const styles = StyleSheet.create({
   },
   tabBar: {
     flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
     borderRadius: 25,
     height: 65,
     paddingHorizontal: 10,
-    width: 320,
     // Shadow for iOS
-    shadowColor: '#F3703E',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.2,
     shadowRadius: 12,
@@ -130,7 +147,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-around',
     borderWidth: 2,
-    borderColor: '#F3703E',
   },
   tabItem: {
     flex: 1,
