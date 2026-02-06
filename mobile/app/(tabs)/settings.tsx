@@ -305,15 +305,6 @@ export default function SettingsScreen() {
             }
           />
 
-          <SettingsItem
-            title="Rhymes"
-            onPress={() =>
-              Alert.alert(
-                'Coming Soon',
-                'Rhymes practice will be available soon.',
-              )
-            }
-          />
         </SettingsSection>
 
         {/* Feedback */}
@@ -352,7 +343,7 @@ export default function SettingsScreen() {
       <Modal
         visible={showReminderModal}
         animationType="slide"
-        presentationStyle="fullScreen"
+        presentationStyle="pageSheet"
       >
         <SafeAreaView style={styles.modalContainer}>
           <View style={styles.modalWaveLeft}>
@@ -445,7 +436,7 @@ export default function SettingsScreen() {
       <Modal
         visible={showGoalModal}
         animationType="slide"
-        presentationStyle="fullScreen"
+        presentationStyle="pageSheet"
       >
         <SafeAreaView style={styles.modalContainer}>
           <View style={styles.modalWaveLeft}>
@@ -493,7 +484,7 @@ export default function SettingsScreen() {
       <Modal
         visible={showAppearanceModal}
         animationType="slide"
-        presentationStyle="fullScreen"
+        presentationStyle="pageSheet"
       >
         <SafeAreaView style={styles.modalContainer}>
           <View style={styles.modalWaveLeft}>
@@ -574,7 +565,7 @@ export default function SettingsScreen() {
       <Modal
         visible={showDisplayModal}
         animationType="slide"
-        presentationStyle="fullScreen"
+        presentationStyle="pageSheet"
       >
         <SafeAreaView style={styles.modalContainer}>
           <View style={styles.modalWaveLeft}>
@@ -626,25 +617,25 @@ export default function SettingsScreen() {
       <Modal
         visible={showDialectModal}
         animationType="slide"
-        presentationStyle="fullScreen"
+        presentationStyle="pageSheet"
       >
         <SafeAreaView style={styles.modalContainer}>
-          <View style={styles.bgWaveLeft}>
+          <View style={styles.modalWaveLeft}>
             <WavePattern side="left" />
           </View>
-          <View style={styles.bgWaveRight}>
+          <View style={styles.modalWaveRight}>
             <WavePattern side="right" />
           </View>
 
-          <View style={styles.header}>
+          <View style={[styles.modalOrangeHeader, { paddingTop: Math.max(insets.top, 20) }]}>
             <TouchableOpacity
-              style={styles.backButton}
+              style={styles.modalHeaderBackButton}
               onPress={() => setShowDialectModal(false)}
             >
               <ChevronLeft size={24} color="#FFFFFF" />
               <Text style={styles.backButtonText}>Back</Text>
             </TouchableOpacity>
-            <Text style={styles.headerTitle}>Select dialect</Text>
+            <Text style={styles.modalHeaderTitle}>Select dialect</Text>
           </View>
 
           <ScrollView
@@ -720,7 +711,7 @@ export default function SettingsScreen() {
       <Modal
         visible={showTensesModal}
         animationType="slide"
-        presentationStyle="fullScreen"
+        presentationStyle="pageSheet"
       >
         <SafeAreaView style={styles.modalContainer}>
           <View style={styles.modalWaveLeft}>
@@ -831,7 +822,7 @@ export default function SettingsScreen() {
       <Modal
         visible={showAnswersModal}
         animationType="slide"
-        presentationStyle="fullScreen"
+        presentationStyle="pageSheet"
       >
         <SafeAreaView style={styles.modalContainer}>
           <View style={styles.modalWaveLeft}>
