@@ -6,7 +6,7 @@ const STATISTICS_STORAGE_KEY = 'igbo_verb_statistics';
 
 /**
  * Returns the default statistics object for a new user or new day.
- * 
+ *
  * @returns {ProgressStatistics} The default statistics.
  */
 const getDefaultStatistics = (): ProgressStatistics => ({
@@ -36,7 +36,7 @@ export const useProgress = () => {
   /**
    * Loads statistics from storage and handles daily reset.
    * If the last visit was on a different day, the daily goal progress is reset to 0.
-   * 
+   *
    * @returns {Promise<void>}
    */
   const loadProgress = async () => {
@@ -46,7 +46,7 @@ export const useProgress = () => {
 
       if (savedStatistics) {
         const stats = JSON.parse(savedStatistics) as ProgressStatistics;
-        
+
         if (stats.lastVisitDate !== today) {
           // New day, reset daily progress
           const resetStats: ProgressStatistics = {
@@ -73,7 +73,7 @@ export const useProgress = () => {
 
   /**
    * Increments the daily goal progress counter and persists the change.
-   * 
+   *
    * @returns {Promise<void>}
    */
   const updateProgress = async () => {
@@ -84,10 +84,7 @@ export const useProgress = () => {
       };
 
       setStatistics(updatedStatistics);
-      await setItem(
-        STATISTICS_STORAGE_KEY,
-        JSON.stringify(updatedStatistics),
-      );
+      await setItem(STATISTICS_STORAGE_KEY, JSON.stringify(updatedStatistics));
     } catch {
       // Fail gracefully
     }

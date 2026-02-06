@@ -1,12 +1,23 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Dimensions, Platform } from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Dimensions,
+  Platform,
+} from 'react-native';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { Mic, List, Settings, Crown, Bookmark } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const { width } = Dimensions.get('window');
 
-export function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
+export function FloatingTabBar({
+  state,
+  descriptors,
+  navigation,
+}: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
 
   return (
@@ -18,14 +29,20 @@ export function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarP
             options.tabBarLabel !== undefined
               ? options.tabBarLabel
               : options.title !== undefined
-              ? options.title
-              : route.name;
+                ? options.title
+                : route.name;
 
           const isFocused = state.index === index;
 
-          const labelToRender = typeof label === 'function' 
-            ? label({ focused: isFocused, color: isFocused ? '#CE3B3B' : '#9ca3af', position: 'below-icon', children: route.name })
-            : label;
+          const labelToRender =
+            typeof label === 'function'
+              ? label({
+                  focused: isFocused,
+                  color: isFocused ? '#CE3B3B' : '#9ca3af',
+                  position: 'below-icon',
+                  children: route.name,
+                })
+              : label;
 
           const onPress = () => {
             const event = navigation.emit({
@@ -74,10 +91,12 @@ export function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarP
                 color={isFocused ? '#CE3B3B' : '#9ca3af'}
                 strokeWidth={isFocused ? 2.5 : 2}
               />
-              <Text style={[
-                styles.label,
-                { color: isFocused ? '#333' : '#9ca3af' }
-              ]}>
+              <Text
+                style={[
+                  styles.label,
+                  { color: isFocused ? '#333' : '#9ca3af' },
+                ]}
+              >
                 {labelToRender}
               </Text>
               {isFocused && <View style={styles.indicator} />}
@@ -134,5 +153,5 @@ const styles = StyleSheet.create({
     height: 3,
     backgroundColor: '#CE3B3B',
     borderRadius: 2,
-  }
+  },
 });

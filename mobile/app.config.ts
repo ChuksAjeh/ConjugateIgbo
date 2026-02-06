@@ -17,7 +17,6 @@ export default {
     icon: './assets/images/icon.png',
     backgroundColor: '#AD1102',
 
-
     splash: {
       image: './assets/images/icon.png',
       resizeMode: 'contain',

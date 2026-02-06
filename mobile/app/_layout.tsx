@@ -7,7 +7,10 @@ import {
   Inter_600SemiBold,
   Inter_700Bold,
 } from '@expo-google-fonts/inter';
-import { AmaticSC_400Regular, AmaticSC_700Bold } from '@expo-google-fonts/amatic-sc';
+import {
+  AmaticSC_400Regular,
+  AmaticSC_700Bold,
+} from '@expo-google-fonts/amatic-sc';
 import {
   Manjari_400Regular,
   Manjari_700Bold,
@@ -36,7 +39,10 @@ Sentry.init({
   // Configure Session Replay
   replaysSessionSampleRate: 0.1,
   replaysOnErrorSampleRate: 1,
-  integrations: [Sentry.mobileReplayIntegration(), Sentry.feedbackIntegration()],
+  integrations: [
+    Sentry.mobileReplayIntegration(),
+    Sentry.feedbackIntegration(),
+  ],
 
   // uncomment the line below to enable Spotlight (https://spotlightjs.com)
   // spotlight: __DEV__,
@@ -104,9 +110,7 @@ export default Sentry.wrap(function RootLayout() {
   useEffect(() => {
     (async () => {
       try {
-        await Promise.all([
-          verbService.preload('delta'),
-        ]);
+        await Promise.all([verbService.preload('delta')]);
         Sentry.logger.info('[AppInit] Verbs preloaded');
       } catch (error) {
         Sentry.captureException(error, {

@@ -19,7 +19,13 @@ import {
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { PanGestureHandler, State } from 'react-native-gesture-handler';
-import { RotateCcw, Volume2, Book, Bookmark, BookmarkCheck } from 'lucide-react-native';
+import {
+  RotateCcw,
+  Volume2,
+  Book,
+  Bookmark,
+  BookmarkCheck,
+} from 'lucide-react-native';
 import { router } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { IgboVerb, Tense, Pronoun } from '@/models/verb';
@@ -31,11 +37,7 @@ import { usePurchases } from '@/hooks/usePurchases';
 import { useTheme } from '@/components/ThemeProvider';
 import { useFavorites } from '@/hooks/useFavorites';
 import { WavePattern } from '@/components/SplashScreen';
-import {
-  pronounLabels,
-  pronouns,
-  tenses,
-} from '@/models/interfaces';
+import { pronounLabels, pronouns, tenses } from '@/models/interfaces';
 
 import * as Sentry from '@sentry/react-native';
 
@@ -68,9 +70,10 @@ export default function PracticeScreen() {
       return settings.enabledTenses[t];
     });
     if (list.length === 0) {
-      const defaults: Tense[] = (!isLoading && !isProUser)
-        ? ['present', 'past']
-        : ['present', 'past', 'future'];
+      const defaults: Tense[] =
+        !isLoading && !isProUser
+          ? ['present', 'past']
+          : ['present', 'past', 'future'];
       const fallback = defaults.filter((t) => settings.enabledTenses[t]);
       if (fallback.length > 0) return fallback;
       return defaults;
@@ -127,9 +130,12 @@ export default function PracticeScreen() {
           if (!currentVerb) {
             await loadNewVerb();
           }
-        } catch(error: any) {
+        } catch (error: any) {
           Sentry.captureException(error, {
-            tags: { feature: 'practice - card focus', screen: 'PracticeScreen' },
+            tags: {
+              feature: 'practice - card focus',
+              screen: 'PracticeScreen',
+            },
           });
         }
       };
@@ -169,14 +175,26 @@ export default function PracticeScreen() {
 
     // Small bounce animation for transition
     Animated.sequence([
-      Animated.timing(cardScale, { toValue: 0.95, duration: 100, useNativeDriver: true }),
-      Animated.timing(cardScale, { toValue: 1.05, duration: 150, useNativeDriver: true }),
-      Animated.timing(cardScale, { toValue: 1, duration: 100, useNativeDriver: true }),
+      Animated.timing(cardScale, {
+        toValue: 0.95,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.timing(cardScale, {
+        toValue: 1.05,
+        duration: 150,
+        useNativeDriver: true,
+      }),
+      Animated.timing(cardScale, {
+        toValue: 1,
+        duration: 100,
+        useNativeDriver: true,
+      }),
     ]).start();
 
     try {
       await loadNewVerb();
-    } catch(error: any) {
+    } catch (error: any) {
       Sentry.captureException(error, {
         tags: { feature: 'practice - load a verb', screen: 'PracticeScreen' },
       });
@@ -185,7 +203,7 @@ export default function PracticeScreen() {
 
   const onGestureEvent = Animated.event(
     [{ nativeEvent: { translateX: translateX } }],
-    { useNativeDriver: true }
+    { useNativeDriver: true },
   );
 
   const onHandlerStateChange = (event: any) => {
@@ -211,9 +229,15 @@ export default function PracticeScreen() {
   };
 
   const handlePlayAudio = () => {
-    Sentry.logger.info(`[PracticeScreen] Playing audio for: ${currentVerb?.igbo}`, {
-      tags: { feature: 'practice - play card audio', screen: 'PracticeScreen' },
-    });
+    Sentry.logger.info(
+      `[PracticeScreen] Playing audio for: ${currentVerb?.igbo}`,
+      {
+        tags: {
+          feature: 'practice - play card audio',
+          screen: 'PracticeScreen',
+        },
+      },
+    );
   };
 
   const handleShowVerbsList = () => {
@@ -237,7 +261,7 @@ export default function PracticeScreen() {
   return (
     <View style={localStyles.container}>
       <StatusBar style="light" />
-      
+
       {/* Daily Goal Top Bar */}
       <SafeAreaView style={localStyles.topBarContainer}>
         <View style={localStyles.topBar}>
@@ -257,44 +281,58 @@ export default function PracticeScreen() {
           <WavePattern side="right" />
         </View>
 
-        <ScrollView 
+        <ScrollView
           contentContainerStyle={localStyles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          <Animated.View style={[
-            localStyles.cardWrapper, 
-            { 
-              transform: [
-                { scale: cardScale },
-                { translateX: translateX }
-              ] 
-            }
-          ]}>
+          <Animated.View
+            style={[
+              localStyles.cardWrapper,
+              {
+                transform: [{ scale: cardScale }, { translateX: translateX }],
+              },
+            ]}
+          >
             <PanGestureHandler
               onGestureEvent={onGestureEvent}
               onHandlerStateChange={onHandlerStateChange}
               activeOffsetX={[-20, 20]}
             >
-              <TouchableOpacity 
-                activeOpacity={1} 
+              <TouchableOpacity
+                activeOpacity={1}
                 onPress={showAnswer ? handleNextVerb : handleRevealAnswer}
                 style={localStyles.card}
               >
                 {/* Card Decorative Waves */}
                 <View style={localStyles.cardWaveLeft}>
-                  <WavePattern side="left" customHeight={400} variant="zigzag" color="#555" opacity={0.8} />
+                  <WavePattern
+                    side="left"
+                    customHeight={400}
+                    variant="zigzag"
+                    color="#555"
+                    opacity={0.8}
+                  />
                 </View>
                 <View style={localStyles.cardWaveRight}>
-                  <WavePattern side="right" customHeight={400} variant="zigzag" color="#555" opacity={0.8} />
+                  <WavePattern
+                    side="right"
+                    customHeight={400}
+                    variant="zigzag"
+                    color="#555"
+                    opacity={0.8}
+                  />
                 </View>
 
                 <View style={localStyles.cardContent}>
-                  <Text style={localStyles.englishText}>{currentVerb.english}</Text>
+                  <Text style={localStyles.englishText}>
+                    {currentVerb.english}
+                  </Text>
                   <Text style={localStyles.igboText}>{currentVerb.igbo}</Text>
-                  
+
                   <View style={localStyles.tenseBadge}>
                     <Text style={localStyles.tenseText}>
-                      {selectedTense.charAt(0).toUpperCase() + selectedTense.slice(1)}
+                      {selectedTense.charAt(0).toUpperCase() +
+                        selectedTense.slice(1)}
                     </Text>
                   </View>
 
@@ -303,14 +341,22 @@ export default function PracticeScreen() {
                   </Text>
 
                   {showAnswer ? (
-                    <Animated.View style={{ opacity: fadeAnim, alignItems: 'center' }}>
-                      <Text style={localStyles.conjugatedText}>{correctAnswer}</Text>
-                      <Text style={localStyles.tapToContinue}>Tap to continue</Text>
+                    <Animated.View
+                      style={{ opacity: fadeAnim, alignItems: 'center' }}
+                    >
+                      <Text style={localStyles.conjugatedText}>
+                        {correctAnswer}
+                      </Text>
+                      <Text style={localStyles.tapToContinue}>
+                        Tap to continue
+                      </Text>
                     </Animated.View>
                   ) : (
                     <View style={localStyles.tapToShow}>
                       <View style={localStyles.line} />
-                      <Text style={localStyles.tapToShowText}>Tap to show answer</Text>
+                      <Text style={localStyles.tapToShowText}>
+                        Tap to show answer
+                      </Text>
                     </View>
                   )}
                 </View>
@@ -320,28 +366,40 @@ export default function PracticeScreen() {
 
           {/* Action Buttons */}
           <View style={localStyles.actionRow}>
-            <TouchableOpacity style={localStyles.actionButton} onPress={handleNextVerb}>
+            <TouchableOpacity
+              style={localStyles.actionButton}
+              onPress={handleNextVerb}
+            >
               <View style={localStyles.actionIconBox}>
                 <RotateCcw size={28} color="#666" />
               </View>
               <Text style={localStyles.actionLabel}>Replay</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={localStyles.actionButton} onPress={handlePlayAudio}>
+            <TouchableOpacity
+              style={localStyles.actionButton}
+              onPress={handlePlayAudio}
+            >
               <View style={localStyles.actionIconBox}>
                 <Volume2 size={28} color="#666" />
               </View>
               <Text style={localStyles.actionLabel}>Audio</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={localStyles.actionButton} onPress={handleShowVerbsList}>
+            <TouchableOpacity
+              style={localStyles.actionButton}
+              onPress={handleShowVerbsList}
+            >
               <View style={localStyles.actionIconBox}>
                 <Book size={28} color="#666" />
               </View>
               <Text style={localStyles.actionLabel}>Library</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={localStyles.actionButton} onPress={toggleSave}>
+            <TouchableOpacity
+              style={localStyles.actionButton}
+              onPress={toggleSave}
+            >
               <View style={localStyles.actionIconBox}>
                 {isFavorite(currentVerb.id) ? (
                   <BookmarkCheck size={28} color="#CE3B3B" />
@@ -356,16 +414,13 @@ export default function PracticeScreen() {
       </View>
 
       {/* Fallback Modal */}
-      <Modal
-        visible={fallbackModalVisible}
-        transparent
-        animationType="fade"
-      >
+      <Modal visible={fallbackModalVisible} transparent animationType="fade">
         <View style={localStyles.modalOverlay}>
           <View style={localStyles.modalBox}>
             <Text style={localStyles.modalTitle}>Network or data issue</Text>
             <Text style={localStyles.modalText}>
-              Failed to get verbs for {settings.dialect}. Defaulting to Delta Igbo.
+              Failed to get verbs for {settings.dialect}. Defaulting to Delta
+              Igbo.
             </Text>
             <TouchableOpacity
               onPress={() => setFallbackModalVisible(false)}

@@ -17,10 +17,13 @@ export function configureRevenueCat() {
   }
 
   if (!REVENUECAT_API_KEY) {
-    Sentry.captureMessage('[RevenueCat] API key missing. Check your environment variables.', {
-      level: 'error',
-      tags: { feature: 'revenuecat' },
-    });
+    Sentry.captureMessage(
+      '[RevenueCat] API key missing. Check your environment variables.',
+      {
+        level: 'error',
+        tags: { feature: 'revenuecat' },
+      },
+    );
     return;
   }
 

@@ -57,9 +57,12 @@ export const useNotifications = () => {
       await Notifications.cancelAllScheduledNotificationsAsync();
 
       if (Platform.OS === 'web') {
-        Sentry.logger.warn('[useNotifications] Push notifications not supported on web', {
-          tags: { feature: 'notifications' },
-        });
+        Sentry.logger.warn(
+          '[useNotifications] Push notifications not supported on web',
+          {
+            tags: { feature: 'notifications' },
+          },
+        );
         return;
       }
 
@@ -80,10 +83,13 @@ export const useNotifications = () => {
         } as Notifications.CalendarTriggerInput,
       });
 
-      Sentry.logger.info(`[useNotifications] Daily reminder scheduled for ${time}`, {
-        tags: { feature: 'notifications', hook:'useNotifications' },
-      });
-    } catch(error: any) {
+      Sentry.logger.info(
+        `[useNotifications] Daily reminder scheduled for ${time}`,
+        {
+          tags: { feature: 'notifications', hook: 'useNotifications' },
+        },
+      );
+    } catch (error: any) {
       Sentry.captureException(error, {
         tags: {
           feature: 'notifications',
@@ -102,10 +108,10 @@ export const useNotifications = () => {
       Sentry.logger.info('[useNotifications] Daily reminders cancelled', {
         tags: {
           feature: 'notifications',
-          hook: 'useNotifications'
+          hook: 'useNotifications',
         },
       });
-    } catch(error: any) {
+    } catch (error: any) {
       Sentry.captureException(error, {
         tags: {
           feature: 'notifications',
@@ -143,9 +149,12 @@ async function registerForPushNotificationsAsync() {
   }
 
   if (finalStatus !== 'granted') {
-    Sentry.logger.warn('[useNotifications] Failed to get push token for push notification!', {
-      tags: { feature: 'notifications' },
-    });
+    Sentry.logger.warn(
+      '[useNotifications] Failed to get push token for push notification!',
+      {
+        tags: { feature: 'notifications' },
+      },
+    );
     return null;
   }
 
@@ -153,7 +162,7 @@ async function registerForPushNotificationsAsync() {
     token = await Notifications.getExpoPushTokenAsync({
       projectId: Constants.expoConfig?.extra?.eas?.projectId,
     });
-  } catch(error: any) {
+  } catch (error: any) {
     Sentry.captureException(error, {
       tags: {
         feature: 'notifications',

@@ -79,7 +79,7 @@ export default function VerbsScreen() {
             }
           }
         }
-      } catch(error: any) {
+      } catch (error: any) {
         Sentry.captureException(error, {
           tags: { feature: 'verbs', screen: 'VerbsScreen' },
           extra: { context: 'Loading verbs' },
@@ -257,9 +257,7 @@ export default function VerbsScreen() {
   };
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: '#FFFFFF' }]}
-    >
+    <SafeAreaView style={[styles.container, { backgroundColor: '#FFFFFF' }]}>
       <View style={styles.bgWaveLeft}>
         <WavePattern side="left" opacity={0.1} />
       </View>
@@ -473,13 +471,14 @@ export default function VerbsScreen() {
         presentationStyle="fullScreen"
       >
         <SafeAreaView
-          style={[
-            styles.modalContainer,
-            { backgroundColor: '#FFFFFF' },
-          ]}
+          style={[styles.modalContainer, { backgroundColor: '#FFFFFF' }]}
         >
           {selectedVerb && (
-            <VerbDetailContent verb={selectedVerb} theme={theme} onClose={() => setSelectedVerb(null)} />
+            <VerbDetailContent
+              verb={selectedVerb}
+              theme={theme}
+              onClose={() => setSelectedVerb(null)}
+            />
           )}
         </SafeAreaView>
       </Modal>
@@ -488,14 +487,28 @@ export default function VerbsScreen() {
 }
 
 // Separate component for verb detail content
-const VerbDetailContent = ({ verb, theme, onClose }: { verb: IgboVerb; theme: any; onClose: () => void }) => {
+const VerbDetailContent = ({
+  verb,
+  theme,
+  onClose,
+}: {
+  verb: IgboVerb;
+  theme: any;
+  onClose: () => void;
+}) => {
   const { settings, updateSettings } = useSettings();
   const { isProUser, isLoading } = usePurchases();
-  const [activeTab, setActiveTab] = useState<'Indicative' | 'Subjunctive' | 'Others'>('Indicative');
-  const [expandedTenses, setExpandedTenses] = useState<Record<string, boolean>>({
-    PRESENT: true,
-  });
-  const [expandedConjugation, setExpandedConjugation] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<
+    'Indicative' | 'Subjunctive' | 'Others'
+  >('Indicative');
+  const [expandedTenses, setExpandedTenses] = useState<Record<string, boolean>>(
+    {
+      PRESENT: true,
+    },
+  );
+  const [expandedConjugation, setExpandedConjugation] = useState<string | null>(
+    null,
+  );
 
   const tensesByTab = {
     Indicative: ['present', 'past', 'future', 'imperfect'] as Tense[],
@@ -517,33 +530,33 @@ const VerbDetailContent = ({ verb, theme, onClose }: { verb: IgboVerb; theme: an
   }, [activeTab, isProUser, isLoading]);
 
   const toggleTense = (tense: string) => {
-    setExpandedTenses(prev => ({ ...prev, [tense]: !prev[tense] }));
+    setExpandedTenses((prev) => ({ ...prev, [tense]: !prev[tense] }));
   };
 
   const toggleConjugation = (id: string) => {
-    setExpandedConjugation(prev => (prev === id ? null : id));
+    setExpandedConjugation((prev) => (prev === id ? null : id));
   };
 
   const getRuleData = (tense: Tense) => {
     // These are simplified rules for display purposes
     const stem = verb.igbo.split(' ')[0];
     const prefix = stem.substring(0, 1);
-    
+
     switch (tense) {
       case 'present':
         return {
-          text: "The infinitive drops its prefix and adds a harmony prefix.",
-          formula: [stem, stem, prefix]
+          text: 'The infinitive drops its prefix and adds a harmony prefix.',
+          formula: [stem, stem, prefix],
         };
       case 'past':
         return {
-          text: "The infinitive drops its prefix to form the past stem.",
-          formula: [stem, prefix, ""]
+          text: 'The infinitive drops its prefix to form the past stem.',
+          formula: [stem, prefix, ''],
         };
       default:
         return {
-          text: "Follows the standard conjugation rule for this tense.",
-          formula: [stem, "-", "+"]
+          text: 'Follows the standard conjugation rule for this tense.',
+          formula: [stem, '-', '+'],
         };
     }
   };
@@ -567,16 +580,28 @@ const VerbDetailContent = ({ verb, theme, onClose }: { verb: IgboVerb; theme: an
         <View style={{ width: 60 }} /> {/* Spacer to balance Back button */}
       </View>
 
-      <ScrollView style={styles.detailScroll} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
+      <ScrollView
+        style={styles.detailScroll}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 120 }}
+      >
         {/* Tab Bar */}
         <View style={styles.detailTabBar}>
           {(['Indicative', 'Subjunctive', 'Others'] as const).map((tab) => (
             <TouchableOpacity
               key={tab}
               onPress={() => setActiveTab(tab)}
-              style={[styles.detailTabItem, activeTab === tab && styles.detailTabItemActive]}
+              style={[
+                styles.detailTabItem,
+                activeTab === tab && styles.detailTabItemActive,
+              ]}
             >
-              <Text style={[styles.detailTabText, activeTab === tab && styles.detailTabTextActive]}>
+              <Text
+                style={[
+                  styles.detailTabText,
+                  activeTab === tab && styles.detailTabTextActive,
+                ]}
+              >
                 {tab}
               </Text>
             </TouchableOpacity>
@@ -586,8 +611,8 @@ const VerbDetailContent = ({ verb, theme, onClose }: { verb: IgboVerb; theme: an
         {/* English Meaning Section */}
         <View style={styles.meaningSection}>
           <View style={styles.meaningRow}>
-             <Text style={styles.flagEmoji}>🇬🇧</Text>
-             <Text style={styles.englishMeaningLabel}>To {verb.english}</Text>
+            <Text style={styles.flagEmoji}>🇬🇧</Text>
+            <Text style={styles.englishMeaningLabel}>To {verb.english}</Text>
           </View>
           <View style={styles.enabledRow}>
             <Text style={styles.enabledLabel}>Enabled for practise</Text>
@@ -598,7 +623,10 @@ const VerbDetailContent = ({ verb, theme, onClose }: { verb: IgboVerb; theme: an
               thumbColor="#FFFFFF"
             />
           </View>
-          <Text style={styles.toggleHint}>Toggle on or off to practise conjugation. swipe to move on to new verb.</Text>
+          <Text style={styles.toggleHint}>
+            Toggle on or off to practise conjugation. swipe to move on to new
+            verb.
+          </Text>
         </View>
 
         {/* Tense Sections */}
@@ -617,14 +645,21 @@ const VerbDetailContent = ({ verb, theme, onClose }: { verb: IgboVerb; theme: an
                 <ChevronDown
                   size={20}
                   color="#9ca3af"
-                  style={{ transform: [{ rotate: isExpanded ? '0deg' : '-90deg' }] }}
+                  style={{
+                    transform: [{ rotate: isExpanded ? '0deg' : '-90deg' }],
+                  }}
                 />
               </TouchableOpacity>
 
               {isExpanded && (
                 <View style={styles.tenseContent}>
                   {pronouns.map((p) => {
-                    const conjugated = getConjugatedForm(verb, tense, p, settings.dialect as any);
+                    const conjugated = getConjugatedForm(
+                      verb,
+                      tense,
+                      p,
+                      settings.dialect as any,
+                    );
                     const rowId = `${tense}-${p}`;
                     const isRowExpanded = expandedConjugation === rowId;
 
@@ -635,10 +670,22 @@ const VerbDetailContent = ({ verb, theme, onClose }: { verb: IgboVerb; theme: an
                           onPress={() => toggleConjugation(rowId)}
                         >
                           <View style={styles.conjugationRowLeft}>
-                            <ChevronRight size={18} color="#9ca3af" style={{ transform: [{ rotate: isRowExpanded ? '90deg' : '0deg' }] }} />
-                            <Text style={styles.pronounLabelDesign}>{pronounLabels[p]}</Text>
+                            <ChevronRight
+                              size={18}
+                              color="#9ca3af"
+                              style={{
+                                transform: [
+                                  { rotate: isRowExpanded ? '90deg' : '0deg' },
+                                ],
+                              }}
+                            />
+                            <Text style={styles.pronounLabelDesign}>
+                              {pronounLabels[p]}
+                            </Text>
                           </View>
-                          <Text style={styles.conjugatedValueDesign}>{String(conjugated)}</Text>
+                          <Text style={styles.conjugatedValueDesign}>
+                            {String(conjugated)}
+                          </Text>
                         </TouchableOpacity>
 
                         {isRowExpanded && (
@@ -648,19 +695,42 @@ const VerbDetailContent = ({ verb, theme, onClose }: { verb: IgboVerb; theme: an
                                 <Text style={styles.easyBadgeText}>Easy</Text>
                               </View>
                               <TouchableOpacity style={styles.rulePlayButton}>
-                                <Play size={16} color="#F3703E" fill="#F3703E" />
+                                <Play
+                                  size={16}
+                                  color="#F3703E"
+                                  fill="#F3703E"
+                                />
                               </TouchableOpacity>
                             </View>
 
                             <View style={styles.formulaRow}>
-                              <View style={styles.formulaBox}><Text style={styles.formulaText}>{ruleData.formula[0]}</Text></View>
+                              <View style={styles.formulaBox}>
+                                <Text style={styles.formulaText}>
+                                  {ruleData.formula[0]}
+                                </Text>
+                              </View>
                               <Text style={styles.formulaOperator}>-</Text>
-                              <View style={[styles.formulaBox, styles.formulaBoxOutline]}><Text style={styles.formulaText}>{ruleData.formula[1]}</Text></View>
+                              <View
+                                style={[
+                                  styles.formulaBox,
+                                  styles.formulaBoxOutline,
+                                ]}
+                              >
+                                <Text style={styles.formulaText}>
+                                  {ruleData.formula[1]}
+                                </Text>
+                              </View>
                               <Text style={styles.formulaOperator}>+</Text>
-                              <View style={styles.formulaBox}><Text style={styles.formulaText}>{ruleData.formula[2]}</Text></View>
+                              <View style={styles.formulaBox}>
+                                <Text style={styles.formulaText}>
+                                  {ruleData.formula[2]}
+                                </Text>
+                              </View>
                             </View>
 
-                            <Text style={styles.ruleDescription}>{ruleData.text}</Text>
+                            <Text style={styles.ruleDescription}>
+                              {ruleData.text}
+                            </Text>
                           </View>
                         )}
                       </View>
@@ -673,9 +743,17 @@ const VerbDetailContent = ({ verb, theme, onClose }: { verb: IgboVerb; theme: an
         })}
 
         {availableTensesInTab.length === 0 && !isLoading && !isProUser && (
-           <TouchableOpacity style={styles.proUpgradeBanner} onPress={() => { onClose(); router.push('/pro'); }}>
-              <Text style={styles.proUpgradeText}>Get Pro to unlock all tenses</Text>
-           </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.proUpgradeBanner}
+            onPress={() => {
+              onClose();
+              router.push('/pro');
+            }}
+          >
+            <Text style={styles.proUpgradeText}>
+              Get Pro to unlock all tenses
+            </Text>
+          </TouchableOpacity>
         )}
       </ScrollView>
     </View>

@@ -28,7 +28,11 @@ import {
 
 export default function FavoritesScreen() {
   const { theme } = useTheme();
-  const { favorites, isLoading: favoritesLoading, refresh: refreshFavorites } = useFavorites();
+  const {
+    favorites,
+    isLoading: favoritesLoading,
+    refresh: refreshFavorites,
+  } = useFavorites();
   const [verbs, setVerbs] = useState<IgboVerb[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedVerb, setSelectedVerb] = useState<IgboVerb | null>(null);
@@ -36,7 +40,7 @@ export default function FavoritesScreen() {
   useFocusEffect(
     React.useCallback(() => {
       refreshFavorites();
-    }, [])
+    }, []),
   );
 
   useEffect(() => {
@@ -45,7 +49,7 @@ export default function FavoritesScreen() {
         setIsLoading(true);
         const allVerbs = await verbService.getAllVerbs();
         // Filter verbs that are in favorites
-        const favoriteVerbs = allVerbs.filter(v => favorites.includes(v.id));
+        const favoriteVerbs = allVerbs.filter((v) => favorites.includes(v.id));
         setVerbs(favoriteVerbs);
       } catch (error: any) {
         Sentry.captureException(error, {
@@ -117,7 +121,9 @@ export default function FavoritesScreen() {
       ) : verbs.length === 0 ? (
         <View style={styles.emptyContainer}>
           <Bookmark size={48} color="#9ca3af" />
-          <Text style={[styles.emptyText, { color: theme.colors.textSecondary }]}>
+          <Text
+            style={[styles.emptyText, { color: theme.colors.textSecondary }]}
+          >
             No favorites yet. Save some verbs while practicing!
           </Text>
         </View>

@@ -28,15 +28,18 @@ export function useFavorites() {
     }
   };
 
-  const isFavorite = useCallback((verbId: string) => {
-    return favorites.includes(verbId);
-  }, [favorites]);
+  const isFavorite = useCallback(
+    (verbId: string) => {
+      return favorites.includes(verbId);
+    },
+    [favorites],
+  );
 
   const toggleFavorite = async (verbId: string) => {
     try {
       let newFavorites: string[];
       if (favorites.includes(verbId)) {
-        newFavorites = favorites.filter(id => id !== verbId);
+        newFavorites = favorites.filter((id) => id !== verbId);
       } else {
         newFavorites = [...favorites, verbId];
       }
@@ -54,6 +57,6 @@ export function useFavorites() {
     isFavorite,
     toggleFavorite,
     isLoading,
-    refresh: loadFavorites
+    refresh: loadFavorites,
   };
 }

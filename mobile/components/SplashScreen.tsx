@@ -14,11 +14,20 @@ const { width, height } = Dimensions.get('window');
 export const ICON_IMAGE = require('../assets/images/icon.png');
 export const LOGO_IMAGE = require('../assets/images/logo.png');
 
-export const SlantedBox = ({ children, type, backgroundColor }: { children: React.ReactNode; type: 'conjugate' | 'igbo'; backgroundColor?: string }) => {
+export const SlantedBox = ({
+  children,
+  type,
+  backgroundColor,
+}: {
+  children: React.ReactNode;
+  type: 'conjugate' | 'igbo';
+  backgroundColor?: string;
+}) => {
   const [contentWidth, setContentWidth] = React.useState(0);
   const { theme, isDark } = useTheme();
 
-  const actualBackgroundColor = backgroundColor || (isDark ? theme.colors.surface : "#CE3B3B");
+  const actualBackgroundColor =
+    backgroundColor || (isDark ? theme.colors.surface : '#CE3B3B');
 
   // Dimensions for the trapezoidal shapes based on the description
   // Conjugate: left top 10, right top 5 (slanted down to the right)
@@ -27,7 +36,7 @@ export const SlantedBox = ({ children, type, backgroundColor }: { children: Reac
   const boxWidth = contentWidth + 20; // Slightly bigger than the word width
   const boxHeight = 70;
 
-  let pathData = "";
+  let pathData = '';
   if (type === 'conjugate') {
     // Left side: top 0, bottom 70 (total 70)
     // Right side: top 17.5, bottom 52.5 (total 35) -> 70:35 is 10:5
@@ -41,11 +50,13 @@ export const SlantedBox = ({ children, type, backgroundColor }: { children: Reac
   return (
     <View style={styles.slantedBoxContainer}>
       {contentWidth > 0 && (
-        <Svg width={boxWidth} height={boxHeight} viewBox={`0 0 ${boxWidth} ${boxHeight}`} style={styles.slantedBoxSvg}>
-          <Path
-            d={pathData}
-            fill={actualBackgroundColor}
-          />
+        <Svg
+          width={boxWidth}
+          height={boxHeight}
+          viewBox={`0 0 ${boxWidth} ${boxHeight}`}
+          style={styles.slantedBoxSvg}
+        >
+          <Path d={pathData} fill={actualBackgroundColor} />
         </Svg>
       )}
       <View style={[styles.slantedBoxContent, { width: boxWidth || 'auto' }]}>
@@ -61,14 +72,14 @@ export const WavePattern = ({
   side,
   customHeight,
   variant = 'polygon',
-  color = "#D47C3C",
-  opacity = 0.6
+  color = '#D47C3C',
+  opacity = 0.6,
 }: {
-  side: 'left' | 'right',
-  customHeight?: number,
-  variant?: 'polygon' | 'zigzag',
-  color?: string,
-  opacity?: number
+  side: 'left' | 'right';
+  customHeight?: number;
+  variant?: 'polygon' | 'zigzag';
+  color?: string;
+  opacity?: number;
 }) => {
   const waves = [];
   const waveHeight = variant === 'zigzag' ? 40 : 60;
@@ -100,7 +111,7 @@ export const WavePattern = ({
             fill={color}
             opacity={opacity}
           />
-        </React.Fragment>
+        </React.Fragment>,
       );
     } else {
       // Zigzag variant
@@ -120,7 +131,7 @@ export const WavePattern = ({
             fill={color}
             opacity={opacity}
           />
-        </React.Fragment>
+        </React.Fragment>,
       );
     }
   }
@@ -188,11 +199,7 @@ export default function SplashScreen({ onFinish }: { onFinish: () => void }) {
         ]}
       >
         <View style={styles.logoContainer}>
-          <Image
-            source={ICON_IMAGE}
-            style={styles.logo}
-            resizeMode="contain"
-          />
+          <Image source={ICON_IMAGE} style={styles.logo} resizeMode="contain" />
         </View>
 
         <View style={styles.textContainer}>

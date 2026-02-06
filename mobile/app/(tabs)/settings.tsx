@@ -11,7 +11,7 @@ import {
   ActivityIndicator,
   TextInput,
   Linking,
-  Platform
+  Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import {
@@ -37,7 +37,6 @@ import { createStyles } from '@/styles/settingsStyles';
 import { showCustomerCenter } from '@/lib/revenuecatUI';
 import { WavePattern } from '@/components/SplashScreen';
 import * as Sentry from '@sentry/react-native';
-
 
 export default function SettingsScreen() {
   const router = useRouter();
@@ -109,7 +108,6 @@ export default function SettingsScreen() {
     }
   };
 
-
   const handleContactUs = async () => {
     const email = 'ajehworks@gmail.com';
     const subject = 'ConjugateIgbo Support';
@@ -130,12 +128,15 @@ export default function SettingsScreen() {
         Alert.alert(
           'No Mail App Found',
           `Please send an email to ${email} for support.`,
-          [{ text: 'OK' }]
+          [{ text: 'OK' }],
         );
       }
-    } catch (error :any) {
+    } catch (error: any) {
       Sentry.logger.error(error);
-      Alert.alert('Error', 'An unexpected error occurred while trying to open the mail app.');
+      Alert.alert(
+        'Error',
+        'An unexpected error occurred while trying to open the mail app.',
+      );
     }
   };
 
@@ -263,15 +264,18 @@ export default function SettingsScreen() {
       </View>
 
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => router.back()}
+        >
           <ChevronLeft size={24} color="#FFFFFF" />
           <Text style={styles.backButtonText}>Back</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Settings</Text>
       </View>
 
-      <ScrollView 
-        style={styles.content} 
+      <ScrollView
+        style={styles.content}
         contentContainerStyle={{ paddingBottom: 100 }}
         showsVerticalScrollIndicator={false}
       >
@@ -312,21 +316,28 @@ export default function SettingsScreen() {
 
           <SettingsItem
             title="Verb filters"
-            onPress={() => Alert.alert('Coming Soon', 'Verb filtering will be available soon.')}
+            onPress={() =>
+              Alert.alert(
+                'Coming Soon',
+                'Verb filtering will be available soon.',
+              )
+            }
           />
 
           <SettingsItem
             title="Rhymes"
-            onPress={() => Alert.alert('Coming Soon', 'Rhymes practice will be available soon.')}
+            onPress={() =>
+              Alert.alert(
+                'Coming Soon',
+                'Rhymes practice will be available soon.',
+              )
+            }
           />
         </SettingsSection>
 
         {/* Feedback */}
         <SettingsSection title="Feedback">
-          <SettingsItem
-            title="Contact us"
-            onPress={handleContactUs}
-          />
+          <SettingsItem title="Contact us" onPress={handleContactUs} />
         </SettingsSection>
 
         {/* Purchases - Keep for functionality but style consistent with new design */}
@@ -605,14 +616,20 @@ export default function SettingsScreen() {
           </View>
 
           <View style={styles.header}>
-            <TouchableOpacity style={styles.backButton} onPress={() => setShowDialectModal(false)}>
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={() => setShowDialectModal(false)}
+            >
               <ChevronLeft size={24} color="#FFFFFF" />
               <Text style={styles.backButtonText}>Back</Text>
             </TouchableOpacity>
             <Text style={styles.headerTitle}>Select dialect</Text>
           </View>
 
-          <ScrollView style={styles.modalContent} showsVerticalScrollIndicator={false}>
+          <ScrollView
+            style={styles.modalContent}
+            showsVerticalScrollIndicator={false}
+          >
             {[
               {
                 key: 'central',
@@ -662,10 +679,10 @@ export default function SettingsScreen() {
                     >
                       {dialect.label}
                     </Text>
-                    <Text 
+                    <Text
                       style={[
                         styles.dialectDescription,
-                        isSelected && styles.selectedDialectDescription
+                        isSelected && styles.selectedDialectDescription,
                       ]}
                     >
                       {dialect.description}
@@ -716,7 +733,10 @@ export default function SettingsScreen() {
               value={settings.enabledTenses.imperfect}
               onValueChange={(value) =>
                 updateSettings({
-                  enabledTenses: { ...settings.enabledTenses, imperfect: value },
+                  enabledTenses: {
+                    ...settings.enabledTenses,
+                    imperfect: value,
+                  },
                 })
               }
               isLocked={isLockedItem(!isProUser)}
@@ -726,7 +746,10 @@ export default function SettingsScreen() {
               value={settings.enabledTenses.conditional}
               onValueChange={(value) =>
                 updateSettings({
-                  enabledTenses: { ...settings.enabledTenses, conditional: value },
+                  enabledTenses: {
+                    ...settings.enabledTenses,
+                    conditional: value,
+                  },
                 })
               }
               isLocked={isLockedItem(!isProUser)}
@@ -748,7 +771,10 @@ export default function SettingsScreen() {
               value={settings.enabledTenses.subjunctive}
               onValueChange={(value) =>
                 updateSettings({
-                  enabledTenses: { ...settings.enabledTenses, subjunctive: value },
+                  enabledTenses: {
+                    ...settings.enabledTenses,
+                    subjunctive: value,
+                  },
                 })
               }
               isLocked={isLockedItem(!isProUser)}
@@ -758,7 +784,10 @@ export default function SettingsScreen() {
               value={settings.enabledTenses.imperative}
               onValueChange={(value) =>
                 updateSettings({
-                  enabledTenses: { ...settings.enabledTenses, imperative: value },
+                  enabledTenses: {
+                    ...settings.enabledTenses,
+                    imperative: value,
+                  },
                 })
               }
               isLocked={isLockedItem(!isProUser)}
@@ -785,7 +814,9 @@ export default function SettingsScreen() {
               title="Auto Pronounce Answers"
               subtitle="Play audio when answer is revealed"
               value={settings.autoPronounce}
-              onValueChange={(value) => updateSettings({ autoPronounce: value })}
+              onValueChange={(value) =>
+                updateSettings({ autoPronounce: value })
+              }
             />
             <SettingsItem
               title="Daily Goal"
@@ -794,7 +825,11 @@ export default function SettingsScreen() {
                   ? `${settings.dailyGoal} verbs per day`
                   : '100 verbs per day (Pro required to change)'
               }
-              onPress={!isLoading && isProUser ? () => setShowGoalModal(true) : undefined}
+              onPress={
+                !isLoading && isProUser
+                  ? () => setShowGoalModal(true)
+                  : undefined
+              }
               isLocked={isLockedItem(!isProUser)}
             />
           </View>

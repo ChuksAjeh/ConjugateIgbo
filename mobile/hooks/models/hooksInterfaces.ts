@@ -1,4 +1,3 @@
-
 export interface ProgressStatistics {
   dailyGoalProgress: number;
   lastVisitDate: string;
