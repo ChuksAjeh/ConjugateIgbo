@@ -9,6 +9,7 @@ import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { Mic, List, Settings, Crown, Bookmark } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from './ThemeProvider';
+import { usePurchases } from '@/hooks/usePurchases';
 
 
 export function FloatingTabBar({
@@ -18,11 +19,15 @@ export function FloatingTabBar({
 }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
   const { theme, isDark } = useTheme();
+  const { isProUser, isLoading: purchasesLoading } = usePurchases();
+
+  // Determine if pro tab should be hidden
+  const shouldHideProTab = !purchasesLoading && isProUser;
 
   // Count visible routes to shrink the bar
   const visibleRoutesCount = state.routes.filter((route) => {
-    const { options } = descriptors[route.key] as any;
-    return options.href !== null;
+    if (route.name === 'pro' && shouldHideProTab) return false;
+    return true;
   }).length;
 
   const barWidth = visibleRoutesCount <= 4 ? 260 : 320;
@@ -80,8 +85,8 @@ export function FloatingTabBar({
             });
           };
 
-          // Skip rendering if href is null (for Pro tab logic)
-          if (options.href === null) {
+          // Skip rendering Pro tab if user is a pro user
+          if (route.name === 'pro' && shouldHideProTab) {
             return null;
           }
 

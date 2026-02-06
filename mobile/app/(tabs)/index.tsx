@@ -110,24 +110,15 @@ export default function PracticeScreen() {
           newPronoun = prev.pronoun;
           setHistoryIndex(newIndex);
         } 
-        // Handle forward navigation with wrap-around
-        else if (isForward && history.length > 0) {
-          if (historyIndex < history.length - 1) {
-            // Navigate forward in history
-            const next = history[historyIndex + 1];
-            verb = next.verb;
-            newTense = next.tense;
-            newPronoun = next.pronoun;
-            setHistoryIndex(historyIndex + 1);
-          } else {
-            // At the end - wrap around to the beginning
-            const first = history[0];
-            verb = first.verb;
-            newTense = first.tense;
-            newPronoun = first.pronoun;
-            setHistoryIndex(0);
-          }
-        } 
+        // Handle forward navigation in history (only if there are verbs ahead)
+        else if (isForward && historyIndex < history.length - 1) {
+          // Navigate forward in history
+          const next = history[historyIndex + 1];
+          verb = next.verb;
+          newTense = next.tense;
+          newPronoun = next.pronoun;
+          setHistoryIndex(historyIndex + 1);
+        }
         else {
           // Get a brand new verb (initial load or no history)
           const { verb: nextVerb, fellBackToDelta } =
