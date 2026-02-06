@@ -260,10 +260,10 @@ export default function VerbsScreen() {
   return (
     <View style={[styles.container, { backgroundColor: isDark ? theme.colors.background : '#FFFFFF' }]}>
       <View style={styles.bgWaveLeft}>
-        <WavePattern side="left" opacity={isDark ? 0.05 : 0.1} />
+        <WavePattern side="left" opacity={isDark ? 0.15 : 0.2} />
       </View>
       <View style={styles.bgWaveRight}>
-        <WavePattern side="right" opacity={isDark ? 0.05 : 0.1} />
+        <WavePattern side="right" opacity={isDark ? 0.15 : 0.2} />
       </View>
 
       <View style={[styles.orangeHeader, { paddingTop: Math.max(insets.top, 20) }]}>
@@ -469,15 +469,16 @@ export default function VerbsScreen() {
       <Modal
         visible={selectedVerb !== null}
         animationType="slide"
-        presentationStyle="fullScreen"
+        presentationStyle="pageSheet"
       >
         <SafeAreaView
-          style={[styles.modalContainer, { backgroundColor: '#FFFFFF' }]}
+          style={[styles.modalContainer, { backgroundColor: isDark ? theme.colors.background : '#FFFFFF' }]}
         >
           {selectedVerb && (
             <VerbDetailContent
               verb={selectedVerb}
               theme={theme}
+              isDark={isDark}
               onClose={() => setSelectedVerb(null)}
             />
           )}
@@ -497,10 +498,12 @@ const tensesByTab = {
 const VerbDetailContent = ({
   verb,
   theme,
+  isDark,
   onClose,
 }: {
   verb: IgboVerb;
   theme: any;
+  isDark: boolean;
   onClose: () => void;
 }) => {
   const insets = useSafeAreaInsets();
@@ -566,7 +569,15 @@ const VerbDetailContent = ({
   const isVerbEnabled = true; // Placeholder for enabled state
 
   return (
-    <View style={styles.verbDetailContainer}>
+    <View style={[styles.verbDetailContainer, { backgroundColor: isDark ? theme.colors.background : '#FFFFFF' }]}>
+      {/* Background Wave Patterns */}
+      <View style={styles.detailWaveLeft}>
+        <WavePattern side="left" opacity={isDark ? 0.15 : 0.2} />
+      </View>
+      <View style={styles.detailWaveRight}>
+        <WavePattern side="right" opacity={isDark ? 0.15 : 0.2} />
+      </View>
+
       {/* Custom Header for Modal */}
       <View style={[styles.detailHeader, { paddingTop: Math.max(insets.top, 20) }]}>
         <TouchableOpacity onPress={onClose} style={styles.backButton}>
@@ -774,7 +785,6 @@ const styles = StyleSheet.create({
     top: 0,
     bottom: 0,
     width: 40,
-    zIndex: -1,
   },
   bgWaveRight: {
     position: 'absolute',
@@ -782,7 +792,6 @@ const styles = StyleSheet.create({
     top: 0,
     bottom: 0,
     width: 40,
-    zIndex: -1,
   },
   orangeHeader: {
     backgroundColor: '#F3703E',
@@ -969,6 +978,23 @@ const styles = StyleSheet.create({
   verbDetailContainer: {
     flex: 1,
     backgroundColor: '#FFFFFF',
+    position: 'relative',
+  },
+  detailWaveLeft: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 40,
+    zIndex: 0,
+  },
+  detailWaveRight: {
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    bottom: 0,
+    width: 40,
+    zIndex: 0,
   },
   detailHeader: {
     backgroundColor: '#F3703E',
