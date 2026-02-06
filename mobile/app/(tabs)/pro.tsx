@@ -20,8 +20,7 @@ import { showPaywall } from '@/lib/revenuecatUI';
 
 export default function ProScreen() {
   const { theme, isDark } = useTheme();
-  const { isProUser, isLoading, purchasePro, offerings } =
-    usePurchases();
+  const { isProUser, isLoading, purchasePro, offerings } = usePurchases();
   const styles = createStyles(theme, isDark);
   const router = useRouter();
   const navigation = useNavigation();
@@ -36,7 +35,7 @@ export default function ProScreen() {
       });
 
       return unsubscribe;
-    }, [navigation, router, isProUser])
+    }, [navigation, router, isProUser]),
   );
 
   /**
@@ -93,7 +92,7 @@ export default function ProScreen() {
         try {
           await purchasePro();
           return;
-        } catch(e: any) {
+        } catch (e: any) {
           Sentry.captureException(e, {
             tags: { feature: 'pro', screen: 'ProScreen' },
             extra: { context: 'Direct purchase fallback' },
@@ -115,14 +114,14 @@ export default function ProScreen() {
   }, [isProUser, offerings, purchasePro]);
 
   // If the user is already Pro, redirect them out of here
-  // We use useFocusEffect to handle this as soon as they land here, 
+  // We use useFocusEffect to handle this as soon as they land here,
   // or if they become Pro while on this screen.
   useFocusEffect(
     useCallback(() => {
       if (!isLoading && isProUser) {
         router.replace('/(tabs)');
       }
-    }, [isProUser, isLoading, router])
+    }, [isProUser, isLoading, router]),
   );
 
   // Auto-present the paywall when this tab/screen gains focus if user is not Pro
@@ -146,7 +145,7 @@ export default function ProScreen() {
       items.push(
         <Image
           key={`lion-${i}`}
-          source={require('@/assets/images/lion.png')}
+          source={require('@/assets/images/logo.png')}
           style={{
             width: 28,
             height: 28,
@@ -189,7 +188,9 @@ export default function ProScreen() {
           style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
         />
         {lionGrid}
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <View
+          style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
+        >
           <Text
             accessibilityRole="header"
             style={{
@@ -239,7 +240,12 @@ export default function ProScreen() {
   // While checking status, show a loader to prevent flicker
   if (isLoading) {
     return (
-      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+      <View
+        style={[
+          styles.container,
+          { justifyContent: 'center', alignItems: 'center' },
+        ]}
+      >
         <ActivityIndicator size="large" color="#3b82f6" />
       </View>
     );
@@ -260,7 +266,11 @@ export default function ProScreen() {
 
       {/* Foreground content */}
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" color="white" style={{ marginBottom: 20 }} />
+        <ActivityIndicator
+          size="large"
+          color="white"
+          style={{ marginBottom: 20 }}
+        />
         <Text
           accessibilityRole="header"
           style={{
@@ -284,7 +294,8 @@ export default function ProScreen() {
             paddingHorizontal: 12,
           }}
         >
-          The paywall should appear momentarily. If it doesn&#39;t, please click the button below.
+          The paywall should appear momentarily. If it doesn&#39;t, please click
+          the button below.
         </Text>
 
         <TouchableOpacity

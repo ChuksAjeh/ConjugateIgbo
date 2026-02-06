@@ -159,10 +159,13 @@ export function getConjugatedForm(
 
   // Check if the tense exists in the generated conjugations
   if (!conj[tense]) {
-    Sentry.logger.warn(`[conjugateVerbs] Tense "${tense}" not yet implemented for verb: ${verb.igbo}`, {
-      tags: { feature: 'conjugation' },
-      extra: { verbId: verb.id, igbo: verb.igbo, tense },
-    });
+    Sentry.logger.warn(
+      `[conjugateVerbs] Tense "${tense}" not yet implemented for verb: ${verb.igbo}`,
+      {
+        tags: { feature: 'conjugation' },
+        extra: { verbId: verb.id, igbo: verb.igbo, tense },
+      },
+    );
     return '';
   }
 

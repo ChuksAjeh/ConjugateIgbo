@@ -101,7 +101,7 @@ async function loadFromStorageOnce() {
         JSON.stringify(currentSettings),
       );
     }
-  } catch(e: any) {
+  } catch (e: any) {
     Sentry.captureException(e, {
       tags: { feature: 'settings', hook: 'useSettings' },
       extra: { context: 'Loading settings' },
@@ -154,7 +154,7 @@ export const useSettings = () => {
         SETTINGS_STORAGE_KEY,
         JSON.stringify(currentSettings),
       );
-    } catch(error: any) {
+    } catch (error: any) {
       Sentry.captureException(error, {
         tags: { feature: 'settings', hook: 'useSettings' },
         extra: { context: 'Error Saving settings' },
@@ -170,7 +170,7 @@ export const useSettings = () => {
         SETTINGS_STORAGE_KEY,
         JSON.stringify(currentSettings),
       );
-    } catch(error: any) {
+    } catch (error: any) {
       Sentry.captureException(error, {
         tags: { feature: 'settings', hook: 'useSettings' },
         extra: { context: 'Error Resetting settings' },

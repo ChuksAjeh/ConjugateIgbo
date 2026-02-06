@@ -10,11 +10,22 @@ import {
   SafeAreaView,
   Modal,
   ScrollView,
+  Switch,
+  Platform,
 } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
-import { Search, Filter, Volume2, X } from 'lucide-react-native';
-import { IgboVerb, Tense, Pronoun } from '@/models/verb';
+import {
+  Search,
+  Filter,
+  Volume2,
+  X,
+  ChevronLeft,
+  ChevronDown,
+  ChevronRight,
+  Play,
+} from 'lucide-react-native';
+import { IgboVerb, Tense } from '@/models/verb';
 import { verbService } from '@/lib/verbService';
 import { useTheme } from '@/components/ThemeProvider';
 import { getConjugatedForm } from '@/lib/conjugateVerbs';
@@ -23,8 +34,8 @@ import { usePurchases } from '@/hooks/usePurchases';
 import {
   pronounLabels,
   pronouns,
-  tenses as tenseList,
 } from '@/models/interfaces';
+import { WavePattern } from '@/components/SplashScreen';
 
 type FilterType = 'all' | 'common' | 'regular' | 'irregular';
 type SortType = 'alphabetical' | 'frequency' | 'difficulty';
@@ -67,7 +78,7 @@ export default function VerbsScreen() {
             }
           }
         }
-      } catch(error: any) {
+      } catch (error: any) {
         Sentry.captureException(error, {
           tags: { feature: 'verbs', screen: 'VerbsScreen' },
           extra: { context: 'Loading verbs' },
@@ -245,24 +256,19 @@ export default function VerbsScreen() {
   };
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: theme.colors.background }]}
-    >
-      <View
-        style={[
-          styles.header,
-          {
-            backgroundColor: theme.colors.background,
-            borderBottomColor: theme.colors.border,
-          },
-        ]}
-      >
-        <Text style={[styles.headerTitle, { color: theme.colors.text }]}>
-          Verbs
-        </Text>
-        <Text
-          style={[styles.headerSubtitle, { color: theme.colors.textSecondary }]}
-        >
+    <SafeAreaView style={[styles.container, { backgroundColor: '#FFFFFF' }]}>
+      <View style={styles.bgWaveLeft}>
+        <WavePattern side="left" opacity={0.1} />
+      </View>
+      <View style={styles.bgWaveRight}>
+        <WavePattern side="right" opacity={0.1} />
+      </View>
+
+      <View style={styles.orangeHeader}>
+        <View style={styles.headerTop}>
+          <Text style={styles.headerTitleText}>Verbs</Text>
+        </View>
+        <Text style={styles.headerSubtitleText}>
           {filteredAndSortedVerbs.length} verbs
         </Text>
       </View>
@@ -331,6 +337,7 @@ export default function VerbsScreen() {
           renderItem={renderVerbItem}
           keyExtractor={(item) => item.id}
           style={styles.verbsList}
+          contentContainerStyle={{ paddingBottom: 100 }}
           showsVerticalScrollIndicator={false}
         />
       )}
@@ -388,8 +395,8 @@ export default function VerbsScreen() {
                     { backgroundColor: theme.colors.surface },
                     selectedFilter === filter.key && {
                       ...styles.filterOptionActive,
-                      backgroundColor: isDark ? '#1e40af' : '#eff6ff',
-                      borderColor: theme.colors.primary,
+                      backgroundColor: isDark ? '#7c2d12' : '#fff7ed',
+                      borderColor: '#F3703E',
                     },
                   ]}
                   onPress={() => setSelectedFilter(filter.key as FilterType)}
@@ -399,7 +406,7 @@ export default function VerbsScreen() {
                       styles.filterOptionText,
                       { color: theme.colors.text },
                       selectedFilter === filter.key && {
-                        color: theme.colors.primary,
+                        color: '#F3703E',
                         fontWeight: '500',
                       },
                     ]}
@@ -432,8 +439,8 @@ export default function VerbsScreen() {
                     { backgroundColor: theme.colors.surface },
                     sortBy === sort.key && {
                       ...styles.filterOptionActive,
-                      backgroundColor: isDark ? '#1e40af' : '#eff6ff',
-                      borderColor: theme.colors.primary,
+                      backgroundColor: isDark ? '#7c2d12' : '#fff7ed',
+                      borderColor: '#F3703E',
                     },
                   ]}
                   onPress={() => setSortBy(sort.key as SortType)}
@@ -443,7 +450,7 @@ export default function VerbsScreen() {
                       styles.filterOptionText,
                       { color: theme.colors.text },
                       sortBy === sort.key && {
-                        color: theme.colors.primary,
+                        color: '#F3703E',
                         fontWeight: '500',
                       },
                     ]}
@@ -457,47 +464,20 @@ export default function VerbsScreen() {
         </SafeAreaView>
       </Modal>
 
-      {/* Verb Detail Modal */}
       <Modal
         visible={selectedVerb !== null}
         animationType="slide"
-        presentationStyle="pageSheet"
+        presentationStyle="fullScreen"
       >
         <SafeAreaView
-          style={[
-            styles.modalContainer,
-            { backgroundColor: theme.colors.background },
-          ]}
+          style={[styles.modalContainer, { backgroundColor: '#FFFFFF' }]}
         >
-          <View
-            style={[
-              styles.modalHeader,
-              {
-                backgroundColor: theme.colors.surface,
-                borderBottomColor: theme.colors.border,
-              },
-            ]}
-          >
-            <Text style={[styles.modalTitle, { color: theme.colors.text }]}>
-              Verb Details
-            </Text>
-            <TouchableOpacity
-              onPress={() => {
-                setSelectedVerb(null);
-                if (verbId) {
-                  // If we came from practice page, navigate back
-                  router.back();
-                }
-              }}
-            >
-              <X size={24} color={theme.colors.text} />
-            </TouchableOpacity>
-          </View>
-
           {selectedVerb && (
-            <ScrollView style={styles.modalContent}>
-              <VerbDetailContent verb={selectedVerb} theme={theme} />
-            </ScrollView>
+            <VerbDetailContent
+              verb={selectedVerb}
+              theme={theme}
+              onClose={() => setSelectedVerb(null)}
+            />
           )}
         </SafeAreaView>
       </Modal>
@@ -506,74 +486,275 @@ export default function VerbsScreen() {
 }
 
 // Separate component for verb detail content
-const VerbDetailContent = ({ verb, theme }: { verb: IgboVerb; theme: any }) => {
+const tensesByTab = {
+  Indicative: ['present', 'past', 'future', 'imperfect'] as Tense[],
+  Subjunctive: ['subjunctive'] as Tense[],
+  Others: ['imperative', 'conditional'] as Tense[],
+};
+
+const VerbDetailContent = ({
+  verb,
+  theme,
+  onClose,
+}: {
+  verb: IgboVerb;
+  theme: any;
+  onClose: () => void;
+}) => {
   const { settings } = useSettings();
   const { isProUser, isLoading } = usePurchases();
+  const [activeTab, setActiveTab] = useState<
+    'Indicative' | 'Subjunctive' | 'Others'
+  >('Indicative');
+  const [expandedTenses, setExpandedTenses] = useState<Record<string, boolean>>(
+    {
+      PRESENT: true,
+    },
+  );
+  const [expandedConjugation, setExpandedConjugation] = useState<string | null>(
+    null,
+  );
 
-  // Compute available tenses similar to Practice screen
-  const availableTenses: Tense[] = useMemo(() => {
-    // On the Verbs page, Settings (enabled tenses) should NOT affect which tenses appear.
-    // Only Pro status controls visibility: free users see Present and Past; Pro users see all tenses.
-    // During initial load, assume Pro to prevent UI shift if they are Pro.
+  const availableTensesInTab = useMemo(() => {
+    let list = tensesByTab[activeTab];
     if (!isLoading && !isProUser) {
-      return ['present', 'past'];
+      // Free users only see Present and Past in Indicative
+      if (activeTab === 'Indicative') {
+        list = list.filter((t) => t === 'present' || t === 'past');
+      } else {
+        list = [];
+      }
     }
-    return [...(tenseList as Tense[])];
-  }, [isProUser, isLoading]);
+    return list;
+  }, [activeTab, isProUser, isLoading]);
 
-  const titleCase = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+  const toggleTense = (tense: string) => {
+    setExpandedTenses((prev) => ({ ...prev, [tense]: !prev[tense] }));
+  };
+
+  const toggleConjugation = (id: string) => {
+    setExpandedConjugation((prev) => (prev === id ? null : id));
+  };
+
+  const getRuleData = (tense: Tense) => {
+    // These are simplified rules for display purposes
+    const stem = verb.igbo.split(' ')[0];
+    const prefix = stem.substring(0, 1);
+
+    switch (tense) {
+      case 'present':
+        return {
+          text: 'The infinitive drops its prefix and adds a harmony prefix.',
+          formula: [stem, stem, prefix],
+        };
+      case 'past':
+        return {
+          text: 'The infinitive drops its prefix to form the past stem.',
+          formula: [stem, prefix, ''],
+        };
+      default:
+        return {
+          text: 'Follows the standard conjugation rule for this tense.',
+          formula: [stem, '-', '+'],
+        };
+    }
+  };
+
+  const isVerbEnabled = true; // Placeholder for enabled state
 
   return (
     <View style={styles.verbDetailContainer}>
-      <Text style={[styles.verbTitle, { color: theme.colors.text }]}>
-        {verb.igbo}
-      </Text>
-      {verb.english ? (
-        <Text
-          style={[
-            styles.verbMeaning,
-            {
-              color: theme.colors.textSecondary,
-              textAlign: 'center',
-              marginBottom: 16,
-            },
-          ]}
-        >
-          “{verb.english}”
-        </Text>
-      ) : null}
-
-      {/* Render each available tense with pronouns and conjugations */}
-      {availableTenses.map((tense) => (
-        <View key={tense} style={styles.tenseGroup}>
-          <Text style={[styles.tenseGroupTitle, { color: theme.colors.text }]}>
-            {titleCase(tense)}
-          </Text>
-          {pronouns.map((p: Pronoun) => {
-            const value = getConjugatedForm(
-              verb,
-              tense,
-              p,
-              settings.dialect as any,
-            );
-            return (
-              <View key={`${tense}-${p}`} style={styles.conjugationRow}>
-                <Text
-                  style={[
-                    styles.pronounLabel,
-                    { color: theme.colors.textSecondary },
-                  ]}
-                >
-                  {pronounLabels[p]}
-                </Text>
-                <Text style={[styles.conjugationValue, { color: '#ef4444' }]}>
-                  {String(value)}
-                </Text>
-              </View>
-            );
-          })}
+      {/* Custom Header for Modal */}
+      <View style={styles.detailHeader}>
+        <TouchableOpacity onPress={onClose} style={styles.backButton}>
+          <ChevronLeft size={28} color="#FFFFFF" />
+          <Text style={styles.backButtonText}>Back</Text>
+        </TouchableOpacity>
+        <View style={styles.detailHeaderTitleContainer}>
+          <Text style={styles.detailHeaderTitle}>{verb.igbo}</Text>
+          <TouchableOpacity style={styles.detailAudioButton}>
+            <Volume2 size={20} color="#FFFFFF" />
+          </TouchableOpacity>
         </View>
-      ))}
+        <View style={{ width: 60 }} /> {/* Spacer to balance Back button */}
+      </View>
+
+      <ScrollView
+        style={styles.detailScroll}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 120 }}
+      >
+        {/* Tab Bar */}
+        <View style={styles.detailTabBar}>
+          {(['Indicative', 'Subjunctive', 'Others'] as const).map((tab) => (
+            <TouchableOpacity
+              key={tab}
+              onPress={() => setActiveTab(tab)}
+              style={[
+                styles.detailTabItem,
+                activeTab === tab && styles.detailTabItemActive,
+              ]}
+            >
+              <Text
+                style={[
+                  styles.detailTabText,
+                  activeTab === tab && styles.detailTabTextActive,
+                ]}
+              >
+                {tab}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {/* English Meaning Section */}
+        <View style={styles.meaningSection}>
+          <View style={styles.meaningRow}>
+            <Text style={styles.flagEmoji}>🇬🇧</Text>
+            <Text style={styles.englishMeaningLabel}>To {verb.english}</Text>
+          </View>
+          <View style={styles.enabledRow}>
+            <Text style={styles.enabledLabel}>Enabled for practise</Text>
+            <Switch
+              value={isVerbEnabled}
+              onValueChange={() => {}}
+              trackColor={{ false: '#f3f4f6', true: '#F3703E' }}
+              thumbColor="#FFFFFF"
+            />
+          </View>
+          <Text style={styles.toggleHint}>
+            Toggle on or off to practise conjugation. swipe to move on to new
+            verb.
+          </Text>
+        </View>
+
+        {/* Tense Sections */}
+        {availableTensesInTab.map((tense) => {
+          const tenseUpper = tense.toUpperCase();
+          const isExpanded = expandedTenses[tenseUpper];
+          const ruleData = getRuleData(tense);
+
+          return (
+            <View key={tense} style={styles.tenseAccordion}>
+              <TouchableOpacity
+                style={styles.tenseHeader}
+                onPress={() => toggleTense(tenseUpper)}
+              >
+                <Text style={styles.tenseHeaderText}>{tenseUpper}</Text>
+                <ChevronDown
+                  size={20}
+                  color="#9ca3af"
+                  style={{
+                    transform: [{ rotate: isExpanded ? '0deg' : '-90deg' }],
+                  }}
+                />
+              </TouchableOpacity>
+
+              {isExpanded && (
+                <View style={styles.tenseContent}>
+                  {pronouns.map((p) => {
+                    const conjugated = getConjugatedForm(
+                      verb,
+                      tense,
+                      p,
+                      settings.dialect as any,
+                    );
+                    const rowId = `${tense}-${p}`;
+                    const isRowExpanded = expandedConjugation === rowId;
+
+                    return (
+                      <View key={p} style={styles.conjugationRowContainer}>
+                        <TouchableOpacity
+                          style={styles.conjugationRowDesign}
+                          onPress={() => toggleConjugation(rowId)}
+                        >
+                          <View style={styles.conjugationRowLeft}>
+                            <ChevronRight
+                              size={18}
+                              color="#9ca3af"
+                              style={{
+                                transform: [
+                                  { rotate: isRowExpanded ? '90deg' : '0deg' },
+                                ],
+                              }}
+                            />
+                            <Text style={styles.pronounLabelDesign}>
+                              {pronounLabels[p]}
+                            </Text>
+                          </View>
+                          <Text style={styles.conjugatedValueDesign}>
+                            {String(conjugated)}
+                          </Text>
+                        </TouchableOpacity>
+
+                        {isRowExpanded && (
+                          <View style={styles.ruleSection}>
+                            <View style={styles.ruleHeaderRow}>
+                              <View style={styles.easyBadge}>
+                                <Text style={styles.easyBadgeText}>Easy</Text>
+                              </View>
+                              <TouchableOpacity style={styles.rulePlayButton}>
+                                <Play
+                                  size={16}
+                                  color="#F3703E"
+                                  fill="#F3703E"
+                                />
+                              </TouchableOpacity>
+                            </View>
+
+                            <View style={styles.formulaRow}>
+                              <View style={styles.formulaBox}>
+                                <Text style={styles.formulaText}>
+                                  {ruleData.formula[0]}
+                                </Text>
+                              </View>
+                              <Text style={styles.formulaOperator}>-</Text>
+                              <View
+                                style={[
+                                  styles.formulaBox,
+                                  styles.formulaBoxOutline,
+                                ]}
+                              >
+                                <Text style={styles.formulaText}>
+                                  {ruleData.formula[1]}
+                                </Text>
+                              </View>
+                              <Text style={styles.formulaOperator}>+</Text>
+                              <View style={styles.formulaBox}>
+                                <Text style={styles.formulaText}>
+                                  {ruleData.formula[2]}
+                                </Text>
+                              </View>
+                            </View>
+
+                            <Text style={styles.ruleDescription}>
+                              {ruleData.text}
+                            </Text>
+                          </View>
+                        )}
+                      </View>
+                    );
+                  })}
+                </View>
+              )}
+            </View>
+          );
+        })}
+
+        {availableTensesInTab.length === 0 && !isLoading && !isProUser && (
+          <TouchableOpacity
+            style={styles.proUpgradeBanner}
+            onPress={() => {
+              onClose();
+              router.push('/pro');
+            }}
+          >
+            <Text style={styles.proUpgradeText}>
+              Get Pro to unlock all tenses
+            </Text>
+          </TouchableOpacity>
+        )}
+      </ScrollView>
     </View>
   );
 };
@@ -581,58 +762,91 @@ const VerbDetailContent = ({ verb, theme }: { verb: IgboVerb; theme: any }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#FFFFFF',
+    position: 'relative',
   },
-  header: {
+  bgWaveLeft: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 40,
+    zIndex: -1,
+  },
+  bgWaveRight: {
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    bottom: 0,
+    width: 40,
+    zIndex: -1,
+  },
+  orangeHeader: {
+    backgroundColor: '#F3703E',
     paddingTop: 16,
-    paddingBottom: 16,
+    paddingBottom: 20,
     paddingHorizontal: 20,
-    borderBottomWidth: 1,
+    alignItems: 'center',
   },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    fontFamily: 'Inter-Bold',
+  headerTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
   },
-  headerSubtitle: {
-    fontSize: 12,
-    textAlign: 'center',
-    marginTop: 2,
-    fontFamily: 'Inter-Regular',
+  headerTitleText: {
+    fontSize: 24,
+    color: '#FFFFFF',
+    fontFamily: 'Manjari-Bold',
+  },
+  headerSubtitleText: {
+    fontSize: 14,
+    color: '#FFFFFF',
+    opacity: 0.9,
+    marginTop: 4,
+    fontFamily: 'Manjari-Regular',
   },
   searchContainer: {
     flexDirection: 'row',
     paddingHorizontal: 20,
     paddingVertical: 16,
     gap: 12,
+    marginTop: -20, // Pull up over the orange header overlap
   },
   searchInputContainer: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 12,
+    borderRadius: 15,
     paddingHorizontal: 16,
     paddingVertical: 12,
-    elevation: 2,
+    backgroundColor: '#FFFFFF',
+    // Shadow
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowRadius: 8,
+    elevation: 4,
   },
   searchInput: {
     flex: 1,
     marginLeft: 12,
     fontSize: 16,
-    color: '#374151',
+    color: '#333',
+    fontFamily: 'Manjari-Regular',
   },
   filterButton: {
-    borderRadius: 12,
+    borderRadius: 15,
     padding: 12,
-    elevation: 2,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    // Shadow
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowRadius: 8,
+    elevation: 4,
   },
   filterSummary: {
     flexDirection: 'row',
@@ -644,27 +858,34 @@ const styles = StyleSheet.create({
   filterSummaryText: {
     fontSize: 14,
     color: '#6b7280',
+    fontFamily: 'Manjari-Regular',
   },
   clearFilters: {
     fontSize: 14,
-    color: '#3b82f6',
+    color: '#F3703E',
     fontWeight: '500',
+    fontFamily: 'Manjari-Bold',
   },
   verbsList: {
     flex: 1,
     paddingHorizontal: 20,
   },
   verbItem: {
-    borderRadius: 12,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 15,
     marginBottom: 12,
-    elevation: 2,
+    padding: 16,
+    // Shadow
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 5,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: '#F0F0F0',
   },
   verbItemContent: {
-    padding: 16,
+    flex: 1,
   },
   verbItemHeader: {
     flexDirection: 'row',
@@ -674,8 +895,8 @@ const styles = StyleSheet.create({
   },
   verbInfinitive: {
     fontSize: 20,
-    fontWeight: 'bold',
-    color: '#1f2937',
+    color: '#333',
+    fontFamily: 'Manjari-Bold',
     flex: 1,
   },
   verbBadges: {
@@ -698,8 +919,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#fee2e2',
   },
   badgeText: {
-    fontSize: 12,
-    fontWeight: '500',
+    fontSize: 10,
+    fontFamily: 'Manjari-Bold',
   },
   badgeTextHigh: {
     color: '#16a34a',
@@ -717,8 +938,8 @@ const styles = StyleSheet.create({
   },
   verbMeaning: {
     fontSize: 16,
-    color: '#6b7280',
-    fontStyle: 'italic',
+    color: '#666',
+    fontFamily: 'Manjari-Regular',
     marginBottom: 8,
   },
   verbMeta: {
@@ -726,18 +947,250 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   verbType: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#9ca3af',
     textTransform: 'capitalize',
+    fontFamily: 'Manjari-Regular',
   },
   verbDifficulty: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#9ca3af',
     textTransform: 'capitalize',
+    fontFamily: 'Manjari-Regular',
   },
+  // Modal & Detail Styles
   modalContainer: {
     flex: 1,
+    backgroundColor: '#FFFFFF',
   },
+  verbDetailContainer: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+  },
+  detailHeader: {
+    backgroundColor: '#F3703E',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingTop: Platform.OS === 'ios' ? 0 : 10,
+    paddingBottom: 20,
+    paddingHorizontal: 15,
+  },
+  backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: 60,
+  },
+  backButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontFamily: 'Manjari-Regular',
+    marginLeft: -4,
+  },
+  detailHeaderTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  detailHeaderTitle: {
+    fontSize: 22,
+    color: '#FFFFFF',
+    fontFamily: 'Manjari-Bold',
+  },
+  detailAudioButton: {
+    padding: 4,
+  },
+  detailScroll: {
+    flex: 1,
+  },
+  detailTabBar: {
+    flexDirection: 'row',
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+    paddingHorizontal: 20,
+  },
+  detailTabItem: {
+    paddingVertical: 15,
+    marginRight: 25,
+    borderBottomWidth: 3,
+    borderBottomColor: 'transparent',
+  },
+  detailTabItemActive: {
+    borderBottomColor: '#F3703E',
+  },
+  detailTabText: {
+    fontSize: 16,
+    color: '#9ca3af',
+    fontFamily: 'Manjari-Regular',
+  },
+  detailTabTextActive: {
+    color: '#F3703E',
+    fontFamily: 'Manjari-Bold',
+  },
+  meaningSection: {
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+  },
+  meaningRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  flagEmoji: {
+    fontSize: 24,
+    marginRight: 10,
+  },
+  englishMeaningLabel: {
+    fontSize: 18,
+    color: '#666',
+    fontFamily: 'Manjari-Regular',
+  },
+  enabledRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  enabledLabel: {
+    fontSize: 16,
+    color: '#333',
+    fontFamily: 'Manjari-Regular',
+  },
+  toggleHint: {
+    fontSize: 12,
+    color: '#CCC',
+    fontFamily: 'Manjari-Regular',
+    lineHeight: 16,
+  },
+  tenseAccordion: {
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+  },
+  tenseHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+  },
+  tenseHeaderText: {
+    fontSize: 14,
+    color: '#9ca3af',
+    fontFamily: 'Manjari-Bold',
+    letterSpacing: 1,
+  },
+  tenseContent: {
+    paddingBottom: 10,
+  },
+  conjugationRowContainer: {
+    borderTopWidth: 1,
+    borderTopColor: '#F9F9F9',
+  },
+  conjugationRowDesign: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+  },
+  conjugationRowLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  pronounLabelDesign: {
+    fontSize: 16,
+    color: '#9ca3af',
+    fontFamily: 'Manjari-Regular',
+  },
+  conjugatedValueDesign: {
+    fontSize: 16,
+    color: '#22C55E', // Greenish color from the mockup for results
+    fontFamily: 'Manjari-Bold',
+  },
+  ruleSection: {
+    backgroundColor: '#F9FAFB',
+    padding: 20,
+    marginHorizontal: 20,
+    marginBottom: 15,
+    borderRadius: 15,
+  },
+  ruleHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  easyBadge: {
+    backgroundColor: '#3b82f6',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  easyBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontFamily: 'Manjari-Bold',
+  },
+  rulePlayButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#F3703E',
+  },
+  formulaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    marginBottom: 20,
+  },
+  formulaBox: {
+    borderWidth: 1,
+    borderColor: '#22C55E',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    minWidth: 40,
+    alignItems: 'center',
+  },
+  formulaBoxOutline: {
+    borderColor: '#9ca3af',
+  },
+  formulaText: {
+    fontSize: 16,
+    color: '#22C55E',
+    fontFamily: 'Manjari-Regular',
+  },
+  formulaOperator: {
+    fontSize: 20,
+    color: '#9ca3af',
+  },
+  ruleDescription: {
+    fontSize: 16,
+    color: '#9ca3af',
+    fontFamily: 'Manjari-Regular',
+    textAlign: 'center',
+    lineHeight: 22,
+  },
+  proUpgradeBanner: {
+    margin: 20,
+    padding: 20,
+    backgroundColor: '#FEF3C7',
+    borderRadius: 15,
+    alignItems: 'center',
+  },
+  proUpgradeText: {
+    color: '#D97706',
+    fontFamily: 'Manjari-Bold',
+    fontSize: 16,
+  },
+  // Legacy styles to keep for now
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -760,6 +1213,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     marginBottom: 16,
+    fontFamily: 'Manjari-Bold',
   },
   filterOption: {
     padding: 16,
@@ -773,215 +1227,7 @@ const styles = StyleSheet.create({
   },
   filterOptionText: {
     fontSize: 16,
-  },
-  filterOptionTextActive: {
-    fontWeight: '500',
-  },
-  verbDetailHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 16,
-  },
-  verbDetailInfinitive: {
-    fontSize: 32,
-    fontWeight: 'bold',
-  },
-  audioButtonLarge: {
-    padding: 12,
-    borderRadius: 12,
-    backgroundColor: '#f0fdf4',
-  },
-  verbDetailMeaning: {
-    fontSize: 20,
-    fontStyle: 'italic',
-    marginBottom: 24,
-  },
-  verbDetailMeta: {
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 24,
-  },
-  metaItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f3f4f6',
-  },
-  metaLabel: {
-    fontSize: 16,
-  },
-  metaValue: {
-    fontSize: 16,
-    fontWeight: '500',
-    textTransform: 'capitalize',
-  },
-  conjugationSection: {
-    marginBottom: 24,
-  },
-  conjugationTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 16,
-  },
-  tenseSection: {
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-  },
-  tenseTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 12,
-  },
-  conjugationTable: {
-    gap: 8,
-  },
-  conjugationRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: 4,
-  },
-  pronounText: {
-    fontSize: 14,
-    fontWeight: '500',
-    minWidth: 60,
-  },
-  conjugationText: {
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  examplesSection: {
-    marginBottom: 24,
-  },
-  examplesTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 16,
-  },
-  exampleItem: {
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-  },
-  exampleIgbo: {
-    fontSize: 16,
-    fontWeight: '500',
-    marginBottom: 4,
-  },
-  exampleEnglish: {
-    fontSize: 14,
-    fontStyle: 'italic',
-  },
-  // New verb detail styles
-  verbDetailContainer: {
-    flex: 1,
-  },
-  verbTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 24,
-    fontFamily: 'Inter-Bold',
-  },
-  tabContainer: {
-    flexDirection: 'row',
-    marginBottom: 32,
-    borderBottomWidth: 1,
-    borderBottomColor: '#374151',
-  },
-  tabButton: {
-    flex: 1,
-    paddingVertical: 16,
-    alignItems: 'center',
-    position: 'relative',
-  },
-  tabButtonText: {
-    fontSize: 16,
-    fontWeight: '500',
-    fontFamily: 'Inter-SemiBold',
-  },
-  tabButtonTextActive: {
-    color: '#f59e0b',
-  },
-  tabIndicator: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 2,
-    backgroundColor: '#f59e0b',
-  },
-  tabContent: {
-    flex: 1,
-  },
-  practiceToggle: {
-    marginBottom: 24,
-  },
-  flagContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  flagEmoji: {
-    fontSize: 20,
-    marginRight: 8,
-  },
-  verbMeaningLarge: {
-    fontSize: 18,
-    fontWeight: '500',
-    fontFamily: 'Inter-SemiBold',
-  },
-  toggleContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  toggleLabel: {
-    fontSize: 16,
-    fontWeight: '500',
-    fontFamily: 'Inter-SemiBold',
-  },
-  switch: {
-    width: 50,
-    height: 30,
-    borderRadius: 15,
-    padding: 2,
-    justifyContent: 'center',
-  },
-  switchThumb: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-    transform: [{ translateX: 0 }],
-  },
-  switchThumbActive: {
-    transform: [{ translateX: 20 }],
-  },
-  instructionText: {
-    fontSize: 14,
-    marginBottom: 32,
-    lineHeight: 20,
-    fontFamily: 'Inter-Regular',
-  },
-  tenseGroup: {
-    marginBottom: 32,
-  },
-  tenseGroupTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 16,
-    fontFamily: 'Inter-Bold',
-  },
-  pronounLabel: {
-    fontSize: 16,
-    fontFamily: 'Inter-Regular',
-  },
-  conjugationValue: {
-    fontSize: 16,
-    fontWeight: '500',
-    fontFamily: 'Inter-SemiBold',
+    fontFamily: 'Manjari-Regular',
   },
   loadingContainer: {
     flex: 1,
@@ -991,6 +1237,6 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 18,
-    fontFamily: 'Inter-Regular',
+    fontFamily: 'Manjari-Regular',
   },
 });

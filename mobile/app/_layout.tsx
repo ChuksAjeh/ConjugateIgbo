@@ -7,9 +7,20 @@ import {
   Inter_600SemiBold,
   Inter_700Bold,
 } from '@expo-google-fonts/inter';
+import {
+  AmaticSC_400Regular,
+  AmaticSC_700Bold,
+} from '@expo-google-fonts/amatic-sc';
+import {
+  Manjari_400Regular,
+  Manjari_700Bold,
+} from '@expo-google-fonts/manjari';
 import * as SplashScreen from 'expo-splash-screen';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFrameworkReady } from '@/hooks/useFrameworkReady';
 import CustomSplashScreen from '@/components/SplashScreen';
+import IntroScreen from '@/components/IntroScreen';
+import StartPracticingScreen from '@/components/StartPracticingScreen';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import { configureRevenueCat } from '@/lib/revenuecat';
 import { verbService } from '@/lib/verbService';
@@ -28,7 +39,10 @@ Sentry.init({
   // Configure Session Replay
   replaysSessionSampleRate: 0.1,
   replaysOnErrorSampleRate: 1,
-  integrations: [Sentry.mobileReplayIntegration(), Sentry.feedbackIntegration()],
+  integrations: [
+    Sentry.mobileReplayIntegration(),
+    Sentry.feedbackIntegration(),
+  ],
 
   // uncomment the line below to enable Spotlight (https://spotlightjs.com)
   // spotlight: __DEV__,
@@ -44,15 +58,48 @@ export default Sentry.wrap(function RootLayout() {
     'Inter-Regular': Inter_400Regular,
     'Inter-SemiBold': Inter_600SemiBold,
     'Inter-Bold': Inter_700Bold,
+    'AmaticSC-Regular': AmaticSC_400Regular,
+    'AmaticSC-Bold': AmaticSC_700Bold,
+    'Manjari-Regular': Manjari_400Regular,
+    'Manjari-Bold': Manjari_700Bold,
   });
 
   const [showCustomSplash, setShowCustomSplash] = useState(true);
+  const [showIntro, setShowIntro] = useState(false);
+  const [showStartPracticing, setShowStartPracticing] = useState(false);
 
   useEffect(() => {
     if (fontsLoaded) {
       SplashScreen.hideAsync();
+      checkIntro();
     }
   }, [fontsLoaded]);
+
+  const checkIntro = async () => {
+    try {
+      const hasSeenIntro = await AsyncStorage.getItem('has_seen_intro');
+      if (!hasSeenIntro) {
+        setShowIntro(true);
+      }
+    } catch (e) {
+      console.error('Failed to check intro status', e);
+    }
+  };
+
+  const handleIntroNext = () => {
+    setShowIntro(false);
+    setShowStartPracticing(true);
+  };
+
+  const handleStartPracticingFinish = async () => {
+    try {
+      await AsyncStorage.setItem('has_seen_intro', 'true');
+      setShowStartPracticing(false);
+    } catch (e) {
+      console.error('Failed to save intro status', e);
+      setShowStartPracticing(false);
+    }
+  };
 
   // Initialize RevenueCat once on app start
   useEffect(() => {
@@ -63,9 +110,7 @@ export default Sentry.wrap(function RootLayout() {
   useEffect(() => {
     (async () => {
       try {
-        await Promise.all([
-          verbService.preload('delta'),
-        ]);
+        await Promise.all([verbService.preload('delta')]);
         Sentry.logger.info('[AppInit] Verbs preloaded');
       } catch (error) {
         Sentry.captureException(error, {
@@ -86,10 +131,18 @@ export default Sentry.wrap(function RootLayout() {
     return <CustomSplashScreen onFinish={() => setShowCustomSplash(false)} />;
   }
 
+  if (showIntro) {
+    return <IntroScreen onFinish={handleIntroNext} />;
+  }
+
+  if (showStartPracticing) {
+    return <StartPracticingScreen onFinish={handleStartPracticingFinish} />;
+  }
+
   return (
     <ThemeProvider>
       <>
-        <Stack screenOptions={{ headerShown: false }}>
+        <Stack screenOptions={{ headerShown: false, gestureEnabled: true }}>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
           <Stack.Screen name="not-found" options={{ title: 'Not Found' }} />

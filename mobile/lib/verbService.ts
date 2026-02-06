@@ -1,9 +1,6 @@
 // Verb Service - Fetches verbs from backend, caches in-memory, seeds from offline list if needed
 import * as Sentry from '@sentry/react-native';
-import {
-  IgboVerb,
-  VerbDTO,
-} from '@/models/verb';
+import { IgboVerb, VerbDTO } from '@/models/verb';
 import type { Dialect } from '@/lib/conjugateVerbs';
 import { offlineVerbs } from '@/data/igboVerbs';
 import { getItem, setItem } from '@/lib/storage';
@@ -148,7 +145,6 @@ class VerbService {
    * @private
    */
   private async fetchFromAPI(dialect: Dialect): Promise<void> {
-
     if (!BASE) {
       Sentry.logger.warn(
         `[verbService] BASE_URL missing, skipping API fetch for ${dialect}`,
@@ -177,7 +173,7 @@ class VerbService {
         this.cacheByDialect[dialect] = mapped;
         Sentry.logger.info(
           `[verbService] Final verb count for ${dialect}: ${mapped.length}`,
-          { tags: { feature: 'verb-service' } }
+          { tags: { feature: 'verb-service' } },
         );
         try {
           await setItem(key, JSON.stringify(mapped));

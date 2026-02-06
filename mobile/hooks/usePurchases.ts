@@ -69,11 +69,14 @@ export const usePurchases = () => {
           setCustomerInfo(info);
           setOfferings(offs);
         }
-      } catch(e: any) {
-        Sentry.logger.warn(`[usePurchases] RevenueCat initialization failed: ${e?.message || e}`, {
-          tags: { feature: 'purchases', hook: 'usePurchases' },
-          extra: { error: e },
-        });
+      } catch (e: any) {
+        Sentry.logger.warn(
+          `[usePurchases] RevenueCat initialization failed: ${e?.message || e}`,
+          {
+            tags: { feature: 'purchases', hook: 'usePurchases' },
+            extra: { error: e },
+          },
+        );
       } finally {
         if (!didCancel) setIsLoading(false);
       }
@@ -136,7 +139,7 @@ export const usePurchases = () => {
         p.product.identifier === PRODUCT_ID ||
         p.packageType === 'LIFETIME' ||
         p.identifier === 'lifetime' ||
-        p.identifier === 'pro'
+        p.identifier === 'pro',
     );
 
     if (!proPackage) {
@@ -162,7 +165,7 @@ export const usePurchases = () => {
       const info = await Purchases.restorePurchases();
       setCustomerInfo(info);
       return !!info.entitlements?.active?.[ENTITLEMENT_ID];
-    } catch(e: any) {
+    } catch (e: any) {
       Sentry.captureException(e, {
         tags: { feature: 'purchases', hook: 'usePurchases' },
         extra: { context: 'Restore failed' },
