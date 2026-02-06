@@ -64,6 +64,24 @@ class VerbService {
   private hasPreloaded: Partial<Record<Dialect, boolean>> = {};
 
   /**
+   * Tracks whether a background API fetch is in progress for a dialect.
+   * @private
+   */
+  private isFetchingInBackground: Partial<Record<Dialect, boolean>> = {};
+
+  /**
+   * Constructor - immediately seeds delta with offline verbs for instant access.
+   */
+  constructor() {
+    // Immediately seed delta dialect with offline verbs for instant availability
+    this.cacheByDialect['delta'] = [...offlineVerbs];
+    Sentry.logger.info(
+      `[verbService] Initialized with ${offlineVerbs.length} offline verbs for delta`,
+      { tags: { feature: 'verb-service' } },
+    );
+  }
+
+  /**
    * Migrates legacy V1 verb data structure to V2.
    * @param {any[]} arr - Array of verbs (legacy or current).
    * @param {Dialect} dialect - The dialect for which migration is occurring.
@@ -270,7 +288,8 @@ class VerbService {
   }
 
   /**
-   * Orchestrates loading of verbs for a given dialect (cache -> API -> fallback).
+   * Orchestrates loading of verbs for a given dialect.
+   * Prioritizes immediate availability: offline -> cache -> API (background).
    * @param {Dialect} dialect - The dialect to ensure is loaded.
    * @returns {Promise<{ dialectUsed: Dialect }>} - Information on which dialect was loaded.
    * @private
@@ -278,14 +297,52 @@ class VerbService {
   private async ensureLoaded(
     dialect: Dialect,
   ): Promise<{ dialectUsed: Dialect }> {
-    // 1) Try cache
-    await this.loadFromCache(dialect);
+    // If we already have verbs for this dialect in memory, return immediately
+    if (this.cacheByDialect[dialect] && this.cacheByDialect[dialect]!.length > 0) {
+      // Trigger background API fetch to refresh data (non-blocking)
+      this.fetchInBackground(dialect);
+      return { dialectUsed: dialect };
+    }
 
-    // 2) Try API
+    // Try loading from persistent cache
+    await this.loadFromCache(dialect);
+    
+    // If cache loaded successfully, return immediately and fetch API in background
+    if (this.cacheByDialect[dialect] && this.cacheByDialect[dialect]!.length > 0) {
+      this.fetchInBackground(dialect);
+      return { dialectUsed: dialect };
+    }
+
+    // No cache available - try API (blocking since we have no data)
     await this.fetchFromAPI(dialect);
 
-    // 3) Fallbacks
+    // Handle fallbacks if still no data
     return this.handleFallbacks(dialect);
+  }
+
+  /**
+   * Fetches verbs from API in the background without blocking.
+   * Updates the cache when complete.
+   * @param {Dialect} dialect - The dialect to fetch.
+   * @private
+   */
+  private fetchInBackground(dialect: Dialect): void {
+    // Avoid duplicate background fetches
+    if (this.isFetchingInBackground[dialect]) return;
+    
+    this.isFetchingInBackground[dialect] = true;
+    
+    // Fire and forget - don't await
+    this.fetchFromAPI(dialect)
+      .catch((error) => {
+        Sentry.captureException(error, {
+          tags: { feature: 'verb-service', phase: 'background-fetch' },
+          extra: { dialect },
+        });
+      })
+      .finally(() => {
+        this.isFetchingInBackground[dialect] = false;
+      });
   }
 
   /**

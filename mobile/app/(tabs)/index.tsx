@@ -95,20 +95,41 @@ export default function PracticeScreen() {
         let newTense: Tense;
         let newPronoun: Pronoun;
 
-        if (isBack && historyIndex > 0) {
-          const prev = history[historyIndex - 1];
+        // Handle back navigation with wrap-around
+        if (isBack && history.length > 1) {
+          let newIndex: number;
+          if (historyIndex <= 0) {
+            // Wrap around to the end
+            newIndex = history.length - 1;
+          } else {
+            newIndex = historyIndex - 1;
+          }
+          const prev = history[newIndex];
           verb = prev.verb;
           newTense = prev.tense;
           newPronoun = prev.pronoun;
-          setHistoryIndex(historyIndex - 1);
-        } else if (isForward && historyIndex < history.length - 1) {
-          const next = history[historyIndex + 1];
-          verb = next.verb;
-          newTense = next.tense;
-          newPronoun = next.pronoun;
-          setHistoryIndex(historyIndex + 1);
-        } else {
-          // Get a brand new verb
+          setHistoryIndex(newIndex);
+        } 
+        // Handle forward navigation with wrap-around
+        else if (isForward && history.length > 0) {
+          if (historyIndex < history.length - 1) {
+            // Navigate forward in history
+            const next = history[historyIndex + 1];
+            verb = next.verb;
+            newTense = next.tense;
+            newPronoun = next.pronoun;
+            setHistoryIndex(historyIndex + 1);
+          } else {
+            // At the end - wrap around to the beginning
+            const first = history[0];
+            verb = first.verb;
+            newTense = first.tense;
+            newPronoun = first.pronoun;
+            setHistoryIndex(0);
+          }
+        } 
+        else {
+          // Get a brand new verb (initial load or no history)
           const { verb: nextVerb, fellBackToDelta } =
             await verbService.getRandomVerbForDialect(settings.dialect as any);
           verb = nextVerb;
@@ -124,9 +145,7 @@ export default function PracticeScreen() {
             Math.floor(Math.random() * pronouns.length)
           ] as Pronoun;
 
-          // If we were in the middle of history and got a new verb, 
-          // we should probably truncate the forward history, but let's just append for now.
-          // Or better: replace forward history.
+          // Add to history
           setHistory((prev) => {
             const newHistory = prev.slice(0, historyIndex + 1);
             return [...newHistory, { verb, tense: newTense, pronoun: newPronoun }];
@@ -239,7 +258,8 @@ export default function PracticeScreen() {
   };
 
   const handleBackVerb = async () => {
-    if (historyIndex <= 0) return;
+    // Allow wrap-around if we have more than one verb in history
+    if (history.length <= 1) return;
 
     // Reset card position if it was swiped
     translateX.setValue(0);
@@ -449,10 +469,10 @@ export default function PracticeScreen() {
             <TouchableOpacity
               style={[
                 localStyles.actionButton,
-                historyIndex <= 0 && { opacity: 0.3 },
+                history.length <= 1 && { opacity: 0.3 },
               ]}
               onPress={handleBackVerb}
-              disabled={historyIndex <= 0}
+              disabled={history.length <= 1}
             >
               <View style={[localStyles.actionIconBox, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
                 <RotateCcw size={28} color={isDark ? theme.colors.textSecondary : "#666"} />
