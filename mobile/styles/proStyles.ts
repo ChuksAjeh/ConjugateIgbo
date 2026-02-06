@@ -7,7 +7,7 @@ export const createStyles = (theme: Theme, isDark: boolean) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: theme.colors.background,
+      backgroundColor: isDark ? theme.colors.background : theme.colors.background,
     },
     content: {
       flex: 1,

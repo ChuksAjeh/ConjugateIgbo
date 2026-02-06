@@ -127,28 +127,24 @@ export default Sentry.wrap(function RootLayout() {
     return null;
   }
 
-  if (showCustomSplash) {
-    return <CustomSplashScreen onFinish={() => setShowCustomSplash(false)} />;
-  }
-
-  if (showIntro) {
-    return <IntroScreen onFinish={handleIntroNext} />;
-  }
-
-  if (showStartPracticing) {
-    return <StartPracticingScreen onFinish={handleStartPracticingFinish} />;
-  }
-
   return (
     <ThemeProvider>
-      <>
-        <Stack screenOptions={{ headerShown: false, gestureEnabled: true }}>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-          <Stack.Screen name="not-found" options={{ title: 'Not Found' }} />
-        </Stack>
-        <StatusBar style="auto" />
-      </>
+      {showCustomSplash ? (
+        <CustomSplashScreen onFinish={() => setShowCustomSplash(false)} />
+      ) : showIntro ? (
+        <IntroScreen onFinish={handleIntroNext} />
+      ) : showStartPracticing ? (
+        <StartPracticingScreen onFinish={handleStartPracticingFinish} />
+      ) : (
+        <>
+          <Stack screenOptions={{ headerShown: false, gestureEnabled: true }}>
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+            <Stack.Screen name="not-found" options={{ title: 'Not Found' }} />
+          </Stack>
+          <StatusBar style="auto" />
+        </>
+      )}
     </ThemeProvider>
   );
 });

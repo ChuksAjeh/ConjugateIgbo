@@ -9,23 +9,16 @@ import {
   SafeAreaView,
 } from 'react-native';
 import { LOGO_IMAGE, WavePattern, SlantedBox } from './SplashScreen';
-import { useTheme } from './ThemeProvider';
-
 
 export default function IntroScreen({ onFinish }: { onFinish: () => void }) {
-  const { theme, isDark } = useTheme();
-  const styles = React.useMemo(
-    () => createStyles(theme, isDark),
-    [theme, isDark],
-  );
 
   return (
     <View style={styles.container}>
       <View style={styles.waveLeft}>
-        <WavePattern side="left" opacity={isDark ? 0.1 : 0.6} />
+        <WavePattern side="left" opacity={0.6} />
       </View>
       <View style={styles.waveRight}>
-        <WavePattern side="right" opacity={isDark ? 0.1 : 0.6} />
+        <WavePattern side="right" opacity={0.6} />
       </View>
 
       <SafeAreaView style={styles.safeArea}>
@@ -51,7 +44,7 @@ export default function IntroScreen({ onFinish }: { onFinish: () => void }) {
                 <WavePattern
                   side="left"
                   variant="zigzag"
-                  color={isDark ? '#888' : '#555'}
+                  color="#555"
                   opacity={0.8}
                 />
               </View>
@@ -59,7 +52,7 @@ export default function IntroScreen({ onFinish }: { onFinish: () => void }) {
                 <WavePattern
                   side="right"
                   variant="zigzag"
-                  color={isDark ? '#888' : '#555'}
+                  color="#555"
                   opacity={0.8}
                 />
               </View>
@@ -121,190 +114,186 @@ export default function IntroScreen({ onFinish }: { onFinish: () => void }) {
   );
 }
 
-const createStyles = (theme: any, isDark: boolean) =>
-  StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: theme.colors.background,
-    },
-    waveLeft: {
-      position: 'absolute',
-      left: 0,
-      top: 0,
-      bottom: 0,
-      width: 40,
-      zIndex: 1,
-    },
-    waveRight: {
-      position: 'absolute',
-      right: 0,
-      top: 0,
-      bottom: 0,
-      width: 40,
-      zIndex: 1,
-    },
-    safeArea: {
-      flex: 1,
-    },
-    scrollContent: {
-      alignItems: 'center',
-      paddingVertical: 40,
-      paddingHorizontal: 30,
-    },
-    logo: {
-      width: 120,
-      height: 120,
-      marginBottom: 20,
-    },
-    titleContainer: {
-      marginBottom: 25,
-    },
-    titleText: {
-      fontFamily: 'Manjari-Bold',
-      fontSize: 24,
-      color: '#FFFFFF',
-      paddingHorizontal: 10,
-      textAlign: 'center',
-    },
-    tagline: {
-      color: theme.colors.text,
-      fontSize: 18,
-      fontFamily: 'Manjari-Regular',
-      marginBottom: 30,
-      textAlign: 'center',
-      opacity: 0.9,
-    },
-    cardContainer: {
-      width: '100%',
-      alignItems: 'center',
-      marginBottom: 30,
-    },
-    card: {
-      backgroundColor: theme.colors.surface,
-      width: 240,
-      height: 320,
-      borderRadius: 10,
-      padding: 20,
-      alignItems: 'center',
-      justifyContent: 'center',
-      position: 'relative',
-      overflow: 'hidden',
-      // Subtle shadow instead of harsh line
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: isDark ? 0.3 : 0.1,
-      shadowRadius: 4,
-      elevation: 3,
-      borderWidth: isDark ? 1 : 0,
-      borderColor: theme.colors.border,
-    },
-    cardWaveLeft: {
-      position: 'absolute',
-      left: 0,
-      top: 0,
-      bottom: 0,
-      width: 25,
-      opacity: isDark ? 0.1 : 0.2,
-    },
-    cardWaveRight: {
-      position: 'absolute',
-      right: 0,
-      top: 0,
-      bottom: 0,
-      width: 25,
-      opacity: isDark ? 0.1 : 0.2,
-    },
-    cardVerbLabel: {
-      color: theme.colors.textSecondary,
-      fontSize: 14,
-      marginBottom: 10,
-      fontFamily: 'Manjari-Regular',
-    },
-    cardVerbIgbo: {
-      color: theme.colors.text,
-      fontSize: 28,
-      marginBottom: 15,
-      textAlign: 'center',
-      fontFamily: 'Manjari-Bold',
-    },
-    pastBadge: {
-      backgroundColor: isDark ? '#333' : '#4A4A4A',
-      paddingHorizontal: 12,
-      paddingVertical: 4,
-      borderRadius: 12,
-      marginBottom: 20,
-    },
-    pastBadgeText: {
-      color: '#FFF',
-      fontSize: 10,
-      fontFamily: 'Manjari-Bold',
-    },
-    cardPronoun: {
-      color: theme.colors.textSecondary,
-      fontSize: 14,
-      marginBottom: 5,
-      fontFamily: 'Manjari-Regular',
-    },
-    cardVerbConjugated: {
-      color: theme.colors.text,
-      fontSize: 24,
-      marginBottom: 20,
-      textAlign: 'center',
-      fontFamily: 'Manjari-Bold',
-    },
-    cardFooter: {
-      color: theme.colors.textSecondary,
-      fontSize: 10,
-      position: 'absolute',
-      bottom: 15,
-      fontFamily: 'Manjari-Regular',
-      opacity: 0.5,
-    },
-    instructionsContainer: {
-      width: '100%',
-      paddingHorizontal: 10,
-      marginBottom: 40,
-      alignItems: 'center',
-    },
-    instructionsTitle: {
-      color: theme.colors.text,
-      fontSize: 20,
-      marginBottom: 20,
-      fontFamily: 'Manjari-Bold',
-      textAlign: 'center',
-    },
-    instructionsList: {
-      width: 280,
-    },
-    instructionItem: {
-      flexDirection: 'row',
-      marginBottom: 15,
-    },
-    instructionNumber: {
-      color: theme.colors.primary,
-      fontSize: 18,
-      width: 25,
-      fontFamily: 'Manjari-Bold',
-    },
-    instructionText: {
-      color: theme.colors.text,
-      fontSize: 16,
-      lineHeight: 22,
-      fontFamily: 'Manjari-Regular',
-      flex: 1,
-      opacity: 0.9,
-    },
-    continueButton: {
-      backgroundColor: theme.colors.primary,
-      width: 280,
-      paddingVertical: 15,
-      borderRadius: 10,
-      alignItems: 'center',
-      marginBottom: 40,
-    },
-    continueButtonText: {
-      color: '#FFFFFF',
-      fontSize: 20,
-      fontFamily: 'Manjari-Bold',
-    },
-  });
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#8B0000',
+  },
+  waveLeft: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 40,
+    zIndex: 1,
+  },
+  waveRight: {
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    bottom: 0,
+    width: 40,
+    zIndex: 1,
+  },
+  safeArea: {
+    flex: 1,
+  },
+  scrollContent: {
+    alignItems: 'center',
+    paddingVertical: 40,
+    paddingHorizontal: 30,
+  },
+  logo: {
+    width: 120,
+    height: 120,
+    marginBottom: 20,
+  },
+  titleContainer: {
+    marginBottom: 25,
+  },
+  titleText: {
+    fontFamily: 'Manjari-Bold',
+    fontSize: 24,
+    color: '#FFFFFF',
+    paddingHorizontal: 10,
+    textAlign: 'center',
+  },
+  tagline: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontFamily: 'Manjari-Regular',
+    marginBottom: 30,
+    textAlign: 'center',
+    opacity: 0.9,
+  },
+  cardContainer: {
+    width: '100%',
+    alignItems: 'center',
+    marginBottom: 30,
+  },
+  card: {
+    backgroundColor: '#FFFFFF',
+    width: 240,
+    height: 320,
+    borderRadius: 10,
+    padding: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  cardWaveLeft: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 25,
+    opacity: 0.2,
+  },
+  cardWaveRight: {
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    bottom: 0,
+    width: 25,
+    opacity: 0.2,
+  },
+  cardVerbLabel: {
+    color: '#6b7280',
+    fontSize: 14,
+    marginBottom: 10,
+    fontFamily: 'Manjari-Regular',
+  },
+  cardVerbIgbo: {
+    color: '#1f2937',
+    fontSize: 28,
+    marginBottom: 15,
+    textAlign: 'center',
+    fontFamily: 'Manjari-Bold',
+  },
+  pastBadge: {
+    backgroundColor: '#4A4A4A',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginBottom: 20,
+  },
+  pastBadgeText: {
+    color: '#FFF',
+    fontSize: 10,
+    fontFamily: 'Manjari-Bold',
+  },
+  cardPronoun: {
+    color: '#6b7280',
+    fontSize: 14,
+    marginBottom: 5,
+    fontFamily: 'Manjari-Regular',
+  },
+  cardVerbConjugated: {
+    color: '#1f2937',
+    fontSize: 24,
+    marginBottom: 20,
+    textAlign: 'center',
+    fontFamily: 'Manjari-Bold',
+  },
+  cardFooter: {
+    color: '#6b7280',
+    fontSize: 10,
+    position: 'absolute',
+    bottom: 15,
+    fontFamily: 'Manjari-Regular',
+    opacity: 0.5,
+  },
+  instructionsContainer: {
+    width: '100%',
+    paddingHorizontal: 10,
+    marginBottom: 40,
+    alignItems: 'center',
+  },
+  instructionsTitle: {
+    color: '#FFFFFF',
+    fontSize: 20,
+    marginBottom: 20,
+    fontFamily: 'Manjari-Bold',
+    textAlign: 'center',
+  },
+  instructionsList: {
+    width: 280,
+  },
+  instructionItem: {
+    flexDirection: 'row',
+    marginBottom: 15,
+  },
+  instructionNumber: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    width: 25,
+    fontFamily: 'Manjari-Bold',
+  },
+  instructionText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    lineHeight: 22,
+    fontFamily: 'Manjari-Regular',
+    flex: 1,
+    opacity: 0.9,
+  },
+  continueButton: {
+    backgroundColor: '#F3703E',
+    width: 280,
+    paddingVertical: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginBottom: 40,
+  },
+  continueButtonText: {
+    color: '#FFFFFF',
+    fontSize: 20,
+    fontFamily: 'Manjari-Bold',
+  },
+});

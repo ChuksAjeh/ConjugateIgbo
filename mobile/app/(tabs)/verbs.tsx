@@ -13,6 +13,7 @@ import {
   Switch,
   Platform,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, router } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import {
@@ -42,6 +43,7 @@ type SortType = 'alphabetical' | 'frequency' | 'difficulty';
 
 export default function VerbsScreen() {
   const { theme, isDark } = useTheme();
+  const insets = useSafeAreaInsets();
   const { verbId, openDetails } = useLocalSearchParams<{
     verbId?: string;
     openDetails?: string;
@@ -256,15 +258,15 @@ export default function VerbsScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: '#FFFFFF' }]}>
+    <View style={[styles.container, { backgroundColor: isDark ? theme.colors.background : '#FFFFFF' }]}>
       <View style={styles.bgWaveLeft}>
-        <WavePattern side="left" opacity={0.1} />
+        <WavePattern side="left" opacity={isDark ? 0.05 : 0.1} />
       </View>
       <View style={styles.bgWaveRight}>
-        <WavePattern side="right" opacity={0.1} />
+        <WavePattern side="right" opacity={isDark ? 0.05 : 0.1} />
       </View>
 
-      <View style={styles.orangeHeader}>
+      <View style={[styles.orangeHeader, { paddingTop: Math.max(insets.top, 20) }]}>
         <View style={styles.headerTop}>
           <Text style={styles.headerTitleText}>Verbs</Text>
         </View>
@@ -481,7 +483,7 @@ export default function VerbsScreen() {
           )}
         </SafeAreaView>
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 }
 

@@ -10,6 +10,7 @@ import {
   Modal,
   ScrollView,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { Volume2, X, Bookmark } from 'lucide-react-native';
 import { IgboVerb, Tense, Pronoun } from '@/models/verb';
@@ -27,6 +28,7 @@ import {
 
 export default function FavoritesScreen() {
   const { theme } = useTheme();
+  const insets = useSafeAreaInsets();
   const {
     favorites,
     isLoading: favoritesLoading,
@@ -35,6 +37,8 @@ export default function FavoritesScreen() {
   const [verbs, setVerbs] = useState<IgboVerb[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedVerb, setSelectedVerb] = useState<IgboVerb | null>(null);
+
+  const [hasInitiallyLoaded, setHasInitiallyLoaded] = useState(false);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -45,7 +49,10 @@ export default function FavoritesScreen() {
   useEffect(() => {
     const loadVerbs = async () => {
       try {
-        setIsLoading(true);
+        // Only show loading on initial load to prevent flickering
+        if (!hasInitiallyLoaded) {
+          setIsLoading(true);
+        }
         const allVerbs = await verbService.getAllVerbs();
         // Filter verbs that are in favorites
         const favoriteVerbs = allVerbs.filter((v) => favorites.includes(v.id));
@@ -55,14 +62,17 @@ export default function FavoritesScreen() {
           tags: { feature: 'favorites', screen: 'FavoritesScreen' },
         });
       } finally {
-        setIsLoading(false);
+        if (!hasInitiallyLoaded) {
+          setIsLoading(false);
+          setHasInitiallyLoaded(true);
+        }
       }
     };
 
     if (!favoritesLoading) {
       loadVerbs();
     }
-  }, [favorites, favoritesLoading]);
+  }, [favorites, favoritesLoading, hasInitiallyLoaded]);
 
   const renderVerbItem = ({ item }: { item: IgboVerb }) => (
     <TouchableOpacity
@@ -89,7 +99,7 @@ export default function FavoritesScreen() {
   );
 
   return (
-    <SafeAreaView
+    <View
       style={[styles.container, { backgroundColor: theme.colors.background }]}
     >
       <View
@@ -98,6 +108,7 @@ export default function FavoritesScreen() {
           {
             backgroundColor: theme.colors.background,
             borderBottomColor: theme.colors.border,
+            paddingTop: insets.top,
           },
         ]}
       >
@@ -173,7 +184,7 @@ export default function FavoritesScreen() {
           )}
         </SafeAreaView>
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 }
 
