@@ -146,7 +146,7 @@ export default function ProScreen() {
       items.push(
         <Image
           key={`lion-${i}`}
-          source={require('@/assets/images/lion.png')}
+          source={require('@/assets/images/logo.png')}
           style={{
             width: 28,
             height: 28,

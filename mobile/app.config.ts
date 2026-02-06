@@ -67,6 +67,10 @@ export default {
       },
     },
 
+    web: {
+      favicon: './assets/images/logo.png',
+      bundler: 'metro',
+    },
     experiments: {
       typedRoutes: true,
     },
