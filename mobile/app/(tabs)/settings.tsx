@@ -348,12 +348,7 @@ export default function SettingsScreen() {
 
           <SettingsItem
             title="Verb filters"
-            onPress={() =>
-              Alert.alert(
-                'Coming Soon',
-                'Verb filtering will be available soon.',
-              )
-            }
+            onPress={() => router.push('/verb-filters')}
           />
 
         </SettingsSection>

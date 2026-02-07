@@ -42,29 +42,17 @@ import * as Sentry from '@sentry/react-native';
 const { width } = Dimensions.get('window');
 
 export default function PracticeScreen() {
-  const [currentVerb, setCurrentVerb] = useState<IgboVerb | null>(null);
-  const [selectedTense, setSelectedTense] = useState<Tense>('present');
-  const [selectedPronoun, setSelectedPronoun] = useState<Pronoun>(
-    () => pronouns[Math.floor(Math.random() * pronouns.length)],
-  );
-  const [showAnswer, setShowAnswer] = useState(false);
-  const [fadeAnim] = useState(new Animated.Value(0));
-  const [cardScale] = useState(new Animated.Value(1));
-  const [translateX] = useState(new Animated.Value(0));
-  const [fallbackModalVisible, setFallbackModalVisible] = useState(false);
-
-  // History for "Back" functionality
-  const [history, setHistory] = useState<
-    { verb: IgboVerb; tense: Tense; pronoun: Pronoun }[]
-  >([]);
-  const [historyIndex, setHistoryIndex] = useState(-1);
-
   const { settings } = useSettings();
   const { statistics, updateProgress } = useProgress();
   const { isProUser, isLoading } = usePurchases();
   const { isFavorite, toggleFavorite } = useFavorites();
   const { theme, isDark } = useTheme();
   const insets = useSafeAreaInsets();
+
+  const availablePronouns: Pronoun[] = useMemo(() => {
+    const list = pronouns.filter((p) => settings.enabledPronouns[p]);
+    return list.length > 0 ? list : pronouns;
+  }, [settings.enabledPronouns]);
 
   const availableTenses: Tense[] = useMemo(() => {
     let list = [...tenses];
@@ -85,6 +73,24 @@ export default function PracticeScreen() {
     }
     return list;
   }, [isProUser, isLoading, settings.enabledTenses]);
+
+  const [currentVerb, setCurrentVerb] = useState<IgboVerb | null>(null);
+  const [selectedTense, setSelectedTense] = useState<Tense>('present');
+  const [selectedPronoun, setSelectedPronoun] = useState<Pronoun>(
+    () =>
+      availablePronouns[Math.floor(Math.random() * availablePronouns.length)],
+  );
+  const [showAnswer, setShowAnswer] = useState(false);
+  const [fadeAnim] = useState(new Animated.Value(0));
+  const [cardScale] = useState(new Animated.Value(1));
+  const [translateX] = useState(new Animated.Value(0));
+  const [fallbackModalVisible, setFallbackModalVisible] = useState(false);
+
+  // History for "Back" functionality
+  const [history, setHistory] = useState<
+    { verb: IgboVerb; tense: Tense; pronoun: Pronoun }[]
+  >([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
 
   const loadNewVerb = useCallback(
     async (isBack = false, isForward = false) => {
@@ -122,7 +128,10 @@ export default function PracticeScreen() {
         else {
           // Get a brand new verb (initial load or no history)
           const { verb: nextVerb, fellBackToDelta } =
-            await verbService.getRandomVerbForDialect(settings.dialect as any);
+            await verbService.getRandomVerbForDialect(
+              settings.dialect as any,
+              settings.verbLimit,
+            );
           verb = nextVerb;
           if (fellBackToDelta) {
             setFallbackModalVisible(true);
@@ -132,8 +141,8 @@ export default function PracticeScreen() {
             Math.floor(Math.random() * availableTenses.length)
           ] as Tense;
 
-          newPronoun = pronouns[
-            Math.floor(Math.random() * pronouns.length)
+          newPronoun = availablePronouns[
+            Math.floor(Math.random() * availablePronouns.length)
           ] as Pronoun;
 
           // Add to history
@@ -155,7 +164,15 @@ export default function PracticeScreen() {
         // throw error;
       }
     },
-    [availableTenses, fadeAnim, settings.dialect, history, historyIndex],
+    [
+      availableTenses,
+      availablePronouns,
+      fadeAnim,
+      settings.dialect,
+      settings.verbLimit,
+      history,
+      historyIndex,
+    ],
   );
 
   useEffect(() => {
