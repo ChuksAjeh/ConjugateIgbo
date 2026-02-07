@@ -23,6 +23,7 @@ import CustomSplashScreen from '@/components/SplashScreen';
 import IntroScreen from '@/components/IntroScreen';
 import StartPracticingScreen from '@/components/StartPracticingScreen';
 import { ThemeProvider } from '@/components/ThemeProvider';
+import { PurchasesProvider } from '@/components/PurchasesProvider';
 import { configureRevenueCat } from '@/lib/revenuecat';
 import { verbService } from '@/lib/verbService';
 import * as Sentry from '@sentry/react-native';
@@ -130,7 +131,8 @@ export default Sentry.wrap(function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <ThemeProvider>
+      <PurchasesProvider>
+        <ThemeProvider>
         {showCustomSplash ? (
           <CustomSplashScreen onFinish={() => setShowCustomSplash(false)} />
         ) : showIntro ? (
@@ -148,6 +150,7 @@ export default Sentry.wrap(function RootLayout() {
           </>
         )}
       </ThemeProvider>
+      </PurchasesProvider>
     </GestureHandlerRootView>
   );
 });

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import * as Sentry from '@sentry/react-native';
-import { Tense } from '@/models/verb';
+import { Tense, Pronoun } from '@/models/verb';
 
 // Type-safe enabledTenses that only includes actual Tense types
 type EnabledTenses = Record<Tense, boolean>;
@@ -14,6 +14,8 @@ export interface AppSettings {
   displayMode: 'Verb and translation' | 'Only translation' | 'Only verb';
   rateAnswers: boolean;
   enabledTenses: EnabledTenses;
+  verbLimit: 100 | 250 | 500 | 1000;
+  enabledPronouns: Record<Pronoun, boolean>;
   notifications: {
     daily: boolean;
     reminderTime: string;
@@ -36,6 +38,15 @@ const defaultSettings: AppSettings = {
     imperfect: false,
     conditional: false,
     subjunctive: false,
+  },
+  verbLimit: 100,
+  enabledPronouns: {
+    m: true,
+    i: true,
+    o: true,
+    anyi: true,
+    unu: true,
+    wa: true,
   },
   notifications: {
     daily: true,

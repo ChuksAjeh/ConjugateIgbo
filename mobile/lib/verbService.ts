@@ -381,10 +381,24 @@ class VerbService {
    */
   async getAllVerbsForDialect(
     dialect: Dialect,
+    limit?: number,
   ): Promise<{ verbs: IgboVerb[]; fellBackToDelta: boolean }> {
     const { dialectUsed } = await this.ensureLoaded(dialect);
     const used = dialectUsed === 'delta' && dialect !== 'delta';
-    const verbs = [...(this.cacheByDialect[dialectUsed] || [])];
+    let verbs = [...(this.cacheByDialect[dialectUsed] || [])];
+
+    if (limit) {
+      // Filter by freqRank if available, otherwise just slice
+      const filtered = verbs.filter(
+        (v) =>
+          v.freqRank !== undefined && v.freqRank !== null && v.freqRank <= limit,
+      );
+      if (filtered.length > 0) {
+        verbs = filtered;
+      } else {
+        verbs = verbs.slice(0, limit);
+      }
+    }
 
     if (verbs.length === 0) {
       Sentry.captureMessage(
@@ -406,9 +420,10 @@ class VerbService {
    */
   async getRandomVerbForDialect(
     dialect: Dialect,
+    limit?: number,
   ): Promise<{ verb: IgboVerb; fellBackToDelta: boolean }> {
     const { verbs, fellBackToDelta } =
-      await this.getAllVerbsForDialect(dialect);
+      await this.getAllVerbsForDialect(dialect, limit);
 
     if (verbs.length === 0) {
       Sentry.captureMessage(
