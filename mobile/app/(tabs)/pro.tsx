@@ -10,7 +10,7 @@ import {
   Image,
   Dimensions,
 } from 'react-native';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { usePurchases } from '@/hooks/usePurchases';
@@ -23,20 +23,6 @@ export default function ProScreen() {
   const { isProUser, isLoading, purchasePro, offerings } = usePurchases();
   const styles = createStyles(theme, isDark);
   const router = useRouter();
-  const navigation = useNavigation();
-
-  useFocusEffect(
-    useCallback(() => {
-      const unsubscribe = navigation.addListener('beforeRemove', (e) => {
-        if (isProUser) return;
-
-        e.preventDefault();
-        router.replace('/(tabs)');
-      });
-
-      return unsubscribe;
-    }, [navigation, router, isProUser]),
-  );
 
   /**
    * Displays an alert with the given title and message.

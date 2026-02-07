@@ -25,6 +25,7 @@ import {
 import { useSettings } from '@/hooks/useSettings';
 import { usePurchases } from '@/hooks/usePurchases';
 import { useTheme } from '@/components/ThemeProvider';
+import { useNotifications } from '@/hooks/useNotifications';
 import { createStyles } from '@/styles/settingsStyles';
 import { showCustomerCenter } from '@/lib/revenuecatUI';
 import { WavePattern } from '@/components/SplashScreen';
@@ -42,6 +43,7 @@ export default function SettingsScreen() {
   };
 
   const { theme, isDark } = useTheme();
+  const { scheduleDailyReminder, cancelDailyReminder } = useNotifications();
   const styles = createStyles(theme, isDark);
   const [showReminderModal, setShowReminderModal] = useState(false);
   const [showGoalModal, setShowGoalModal] = useState(false);
@@ -136,14 +138,59 @@ export default function SettingsScreen() {
     setTempTime(timeString);
   };
 
-  const handleSaveReminder = () => {
+  const handleHoursChange = (text: string) => {
+    // Allow empty string for typing, only validate on blur/save
+    if (text === '') {
+      setTempTime(`00:${tempTime.split(':')[1] || '00'}`);
+      return;
+    }
+    const hours = parseInt(text, 10);
+    if (!isNaN(hours) && hours >= 0 && hours <= 23) {
+      handleTimeChange(hours, parseInt(tempTime.split(':')[1], 10) || 0);
+    }
+  };
+
+  const handleMinutesChange = (text: string) => {
+    // Allow empty string for typing, only validate on blur/save
+    if (text === '') {
+      setTempTime(`${tempTime.split(':')[0] || '00'}:00`);
+      return;
+    }
+    const minutes = parseInt(text, 10);
+    if (!isNaN(minutes) && minutes >= 0 && minutes <= 59) {
+      handleTimeChange(parseInt(tempTime.split(':')[0], 10) || 0, minutes);
+    }
+  };
+
+  const handleSaveReminder = async () => {
+    // Update settings
     updateSettings({
       notifications: {
         ...settings.notifications,
         reminderTime: tempTime,
       },
     });
+
+    // Schedule the notification if reminders are enabled
+    if (settings.notifications.daily) {
+      await scheduleDailyReminder(tempTime);
+    }
+
     setShowReminderModal(false);
+  };
+
+  const handleToggleReminder = async (value: boolean) => {
+    updateSettings({
+      notifications: { ...settings.notifications, daily: value },
+    });
+
+    if (value) {
+      // Schedule notification when enabled
+      await scheduleDailyReminder(settings.notifications.reminderTime);
+    } else {
+      // Cancel when disabled
+      await cancelDailyReminder();
+    }
   };
 
   const SettingsSection = ({
@@ -369,12 +416,8 @@ export default function SettingsScreen() {
               </Text>
               <Switch
                 value={settings.notifications.daily}
-                onValueChange={(value) =>
-                  updateSettings({
-                    notifications: { ...settings.notifications, daily: value },
-                  })
-                }
-                trackColor={{ false: '#f3f4f6', true: '#3b82f6' }}
+                onValueChange={handleToggleReminder}
+                trackColor={{ false: '#f3f4f6', true: '#F3703E' }}
                 thumbColor="#ffffff"
               />
             </View>
@@ -387,39 +430,30 @@ export default function SettingsScreen() {
                     <TextInput
                       style={styles.timeInput}
                       value={tempTime.split(':')[0]}
-                      onChangeText={(text) => {
-                        const hours = parseInt(text) || 0;
-                        if (hours >= 0 && hours <= 23) {
-                          handleTimeChange(
-                            hours,
-                            parseInt(tempTime.split(':')[1]) || 0,
-                          );
-                        }
-                      }}
+                      onChangeText={handleHoursChange}
                       keyboardType="numeric"
                       maxLength={2}
                       placeholder="HH"
+                      placeholderTextColor="#9ca3af"
+                      selectTextOnFocus
                     />
                     <Text style={styles.timeSeparator}>:</Text>
                     <TextInput
                       style={styles.timeInput}
                       value={tempTime.split(':')[1]}
-                      onChangeText={(text) => {
-                        const minutes = parseInt(text) || 0;
-                        if (minutes >= 0 && minutes <= 59) {
-                          handleTimeChange(
-                            parseInt(tempTime.split(':')[0]) || 0,
-                            minutes,
-                          );
-                        }
-                      }}
+                      onChangeText={handleMinutesChange}
                       keyboardType="numeric"
                       maxLength={2}
                       placeholder="MM"
+                      placeholderTextColor="#9ca3af"
+                      selectTextOnFocus
                     />
                   </View>
                   <Text style={styles.timeFormat}>24-hour format</Text>
                 </View>
+                <Text style={styles.reminderHint}>
+                  You will receive a notification at {tempTime} daily to practice conjugating Igbo!
+                </Text>
                 <TouchableOpacity
                   style={styles.saveButton}
                   onPress={handleSaveReminder}
