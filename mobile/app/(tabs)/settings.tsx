@@ -13,6 +13,7 @@ import {
   Linking,
   Platform,
 } from 'react-native';
+import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import {
@@ -54,6 +55,7 @@ export default function SettingsScreen() {
   const [showAnswersModal, setShowAnswersModal] = useState(false);
   const [tempGoal, setTempGoal] = useState(settings.dailyGoal.toString());
   const [tempTime, setTempTime] = useState(settings.notifications.reminderTime);
+  const [showTimePicker, setShowTimePicker] = useState(false);
 
   const handleRestorePurchases = async () => {
     try {
@@ -133,33 +135,35 @@ export default function SettingsScreen() {
     }
   };
 
-  const handleTimeChange = (hours: number, minutes: number) => {
-    const timeString = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
-    setTempTime(timeString);
+  // Convert tempTime string ("HH:MM") to Date object for the picker
+  const getTimeAsDate = (): Date => {
+    const [hours, minutes] = tempTime.split(':').map(Number);
+    const date = new Date();
+    date.setHours(hours || 0, minutes || 0, 0, 0);
+    return date;
   };
 
-  const handleHoursChange = (text: string) => {
-    // Allow empty string for typing, only validate on blur/save
-    if (text === '') {
-      setTempTime(`00:${tempTime.split(':')[1] || '00'}`);
-      return;
+  // Handle time picker change
+  const handleTimePickerChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
+    // On Android, the picker is dismissed after selection
+    if (Platform.OS === 'android') {
+      setShowTimePicker(false);
     }
-    const hours = parseInt(text, 10);
-    if (!isNaN(hours) && hours >= 0 && hours <= 23) {
-      handleTimeChange(hours, parseInt(tempTime.split(':')[1], 10) || 0);
+    
+    if (event.type === 'set' && selectedDate) {
+      const hours = selectedDate.getHours();
+      const minutes = selectedDate.getMinutes();
+      const timeString = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+      setTempTime(timeString);
     }
   };
 
-  const handleMinutesChange = (text: string) => {
-    // Allow empty string for typing, only validate on blur/save
-    if (text === '') {
-      setTempTime(`${tempTime.split(':')[0] || '00'}:00`);
-      return;
-    }
-    const minutes = parseInt(text, 10);
-    if (!isNaN(minutes) && minutes >= 0 && minutes <= 59) {
-      handleTimeChange(parseInt(tempTime.split(':')[0], 10) || 0, minutes);
-    }
+  // Format time for display (e.g., "09:30" -> "9:30 AM")
+  const formatTimeForDisplay = (time: string): string => {
+    const [hours, minutes] = time.split(':').map(Number);
+    const period = hours >= 12 ? 'PM' : 'AM';
+    const displayHours = hours % 12 || 12;
+    return `${displayHours}:${minutes.toString().padStart(2, '0')} ${period}`;
   };
 
   const handleSaveReminder = async () => {
@@ -391,6 +395,7 @@ export default function SettingsScreen() {
         visible={showReminderModal}
         animationType="slide"
         presentationStyle="pageSheet"
+        onRequestClose={() => setShowReminderModal(false)}
       >
         <SafeAreaView style={styles.modalContainer}>
           <View style={styles.modalWaveLeft}>
@@ -425,40 +430,48 @@ export default function SettingsScreen() {
             {settings.notifications.daily && (
               <View style={styles.timePickerContainer}>
                 <Text style={styles.timePickerLabel}>Reminder Time</Text>
-                <View style={styles.timePicker}>
-                  <View style={styles.timeInputContainer}>
-                    <TextInput
-                      style={styles.timeInput}
-                      value={tempTime.split(':')[0]}
-                      onChangeText={handleHoursChange}
-                      keyboardType="numeric"
-                      maxLength={2}
-                      placeholder="HH"
-                      placeholderTextColor="#9ca3af"
-                      selectTextOnFocus
+                
+                {/* Time Display Button - Tap to open picker */}
+                <TouchableOpacity
+                  style={styles.timeDisplayButton}
+                  onPress={() => setShowTimePicker(true)}
+                >
+                  <Text style={styles.timeDisplayText}>
+                    {formatTimeForDisplay(tempTime)}
+                  </Text>
+                  <Text style={styles.timeDisplayHint}>Tap to change</Text>
+                </TouchableOpacity>
+
+                {/* Native Time Picker */}
+                {showTimePicker && (
+                  <View style={styles.dateTimePickerWrapper}>
+                    <DateTimePicker
+                      value={getTimeAsDate()}
+                      mode="time"
+                      is24Hour={false}
+                      display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                      onChange={handleTimePickerChange}
+                      themeVariant={isDark ? 'dark' : 'light'}
                     />
-                    <Text style={styles.timeSeparator}>:</Text>
-                    <TextInput
-                      style={styles.timeInput}
-                      value={tempTime.split(':')[1]}
-                      onChangeText={handleMinutesChange}
-                      keyboardType="numeric"
-                      maxLength={2}
-                      placeholder="MM"
-                      placeholderTextColor="#9ca3af"
-                      selectTextOnFocus
-                    />
+                    {Platform.OS === 'ios' && (
+                      <TouchableOpacity
+                        style={styles.doneButton}
+                        onPress={() => setShowTimePicker(false)}
+                      >
+                        <Text style={styles.doneButtonText}>Done</Text>
+                      </TouchableOpacity>
+                    )}
                   </View>
-                  <Text style={styles.timeFormat}>24-hour format</Text>
-                </View>
+                )}
+
                 <Text style={styles.reminderHint}>
-                  You will receive a notification at {tempTime} daily to practice conjugating Igbo!
+                  You will receive a daily notification at {formatTimeForDisplay(tempTime)} to practice conjugating Igbo!
                 </Text>
                 <TouchableOpacity
                   style={styles.saveButton}
                   onPress={handleSaveReminder}
                 >
-                  <Text style={styles.saveButtonText}>Save Time</Text>
+                  <Text style={styles.saveButtonText}>Save Reminder</Text>
                 </TouchableOpacity>
               </View>
             )}
@@ -471,6 +484,7 @@ export default function SettingsScreen() {
         visible={showGoalModal}
         animationType="slide"
         presentationStyle="pageSheet"
+        onRequestClose={() => setShowGoalModal(false)}
       >
         <SafeAreaView style={styles.modalContainer}>
           <View style={styles.modalWaveLeft}>
@@ -519,6 +533,7 @@ export default function SettingsScreen() {
         visible={showAppearanceModal}
         animationType="slide"
         presentationStyle="pageSheet"
+        onRequestClose={() => setShowAppearanceModal(false)}
       >
         <SafeAreaView style={styles.modalContainer}>
           <View style={styles.modalWaveLeft}>
@@ -600,6 +615,7 @@ export default function SettingsScreen() {
         visible={showDisplayModal}
         animationType="slide"
         presentationStyle="pageSheet"
+        onRequestClose={() => setShowDisplayModal(false)}
       >
         <SafeAreaView style={styles.modalContainer}>
           <View style={styles.modalWaveLeft}>
@@ -652,6 +668,7 @@ export default function SettingsScreen() {
         visible={showDialectModal}
         animationType="slide"
         presentationStyle="pageSheet"
+        onRequestClose={() => setShowDialectModal(false)}
       >
         <SafeAreaView style={styles.modalContainer}>
           <View style={styles.modalWaveLeft}>
@@ -746,6 +763,7 @@ export default function SettingsScreen() {
         visible={showTensesModal}
         animationType="slide"
         presentationStyle="pageSheet"
+        onRequestClose={() => setShowTensesModal(false)}
       >
         <SafeAreaView style={styles.modalContainer}>
           <View style={styles.modalWaveLeft}>
@@ -857,6 +875,7 @@ export default function SettingsScreen() {
         visible={showAnswersModal}
         animationType="slide"
         presentationStyle="pageSheet"
+        onRequestClose={() => setShowAnswersModal(false)}
       >
         <SafeAreaView style={styles.modalContainer}>
           <View style={styles.modalWaveLeft}>

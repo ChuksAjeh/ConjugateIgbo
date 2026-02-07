@@ -347,6 +347,48 @@ export const createStyles = (theme: Theme, isDark: boolean) =>
     timePicker: {
       alignItems: 'center',
     },
+    timeDisplayButton: {
+      backgroundColor: isDark ? '#374151' : '#f3f4f6',
+      borderRadius: 12,
+      paddingVertical: 20,
+      paddingHorizontal: 40,
+      alignItems: 'center',
+      marginBottom: 16,
+      borderWidth: 2,
+      borderColor: '#F3703E',
+    },
+    timeDisplayText: {
+      fontSize: 36,
+      fontWeight: 'bold',
+      color: theme.colors.text,
+      fontFamily: 'Manjari-Bold',
+    },
+    timeDisplayHint: {
+      fontSize: 12,
+      color: theme.colors.textSecondary,
+      marginTop: 4,
+      fontFamily: 'Manjari-Regular',
+    },
+    dateTimePickerWrapper: {
+      backgroundColor: isDark ? '#1e293b' : '#f8fafc',
+      borderRadius: 12,
+      padding: 16,
+      marginBottom: 16,
+      alignItems: 'center',
+    },
+    doneButton: {
+      backgroundColor: '#F3703E',
+      paddingHorizontal: 32,
+      paddingVertical: 10,
+      borderRadius: 8,
+      marginTop: 12,
+    },
+    doneButtonText: {
+      color: 'white',
+      fontSize: 16,
+      fontWeight: '600',
+      fontFamily: 'Manjari-Bold',
+    },
     timeInputContainer: {
       flexDirection: 'row',
       alignItems: 'center',
