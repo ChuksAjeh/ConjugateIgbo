@@ -543,20 +543,43 @@ const VerbDetailContent = ({
   };
 
   const getRuleData = (tense: Tense) => {
-    // These are simplified rules for display purposes
-    const stem = verb.igbo.split(' ')[0];
-    const prefix = stem.substring(0, 1);
+    // Actual conjugation rules matching lib/conjugateVerbs.ts
+    const stem = verb.igbo.startsWith('i') || verb.igbo.startsWith('ị')
+      ? verb.igbo.substring(1)
+      : verb.igbo;
+    // Vowel harmony: 'a' if stem contains a/ọ/ụ/ị, else 'e'
+    const vowelPrefix = /[aọụịỌỤỊ]/.test(stem) ? 'a' : 'e';
 
     switch (tense) {
       case 'present':
         return {
-          text: 'The infinitive drops its prefix and adds a harmony prefix.',
-          formula: [stem, stem, prefix],
+          text: `Remove 'i' prefix, add vowel harmony prefix '${vowelPrefix}'. Pronoun + na + ${vowelPrefix}${stem}.`,
+          formula: [verb.igbo, '→', `${vowelPrefix}${stem}`],
         };
       case 'past':
         return {
-          text: 'The infinitive drops its prefix to form the past stem.',
-          formula: [stem, prefix, ''],
+          text: `Remove 'i' prefix to form past stem. Pronoun + ${stem}.`,
+          formula: [verb.igbo, '→', stem],
+        };
+      case 'future':
+        return {
+          text: `Same as present with 'ga' particle. Pronoun + ga + ${vowelPrefix}${stem}.`,
+          formula: [verb.igbo, '→', `ga ${vowelPrefix}${stem}`],
+        };
+      case 'subjunctive':
+        return {
+          text: `Remove 'i' prefix, add 'e' suffix. ${stem}e.`,
+          formula: [verb.igbo, '→', `${stem}e`],
+        };
+      case 'imperative':
+        return {
+          text: `Command form uses the stem directly. ${stem}!`,
+          formula: [verb.igbo, '→', `${stem}!`],
+        };
+      case 'conditional':
+        return {
+          text: `Conditional uses 'ga' with subjunctive. Pronoun + ga + ${stem}e.`,
+          formula: [verb.igbo, '→', `ga ${stem}e`],
         };
       default:
         return {

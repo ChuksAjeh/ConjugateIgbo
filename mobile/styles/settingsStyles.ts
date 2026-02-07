@@ -335,6 +335,15 @@ export const createStyles = (theme: Theme, isDark: boolean) =>
       textAlign: 'center',
       fontFamily: 'Inter-Regular',
     },
+    reminderHint: {
+      fontSize: 14,
+      color: theme.colors.textSecondary,
+      marginTop: 16,
+      marginBottom: 8,
+      textAlign: 'center',
+      fontFamily: 'Manjari-Regular',
+      lineHeight: 20,
+    },
     timePicker: {
       alignItems: 'center',
     },
