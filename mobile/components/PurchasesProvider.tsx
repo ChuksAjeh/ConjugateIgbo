@@ -18,6 +18,7 @@ const isNative = Platform.OS === 'ios' || Platform.OS === 'android';
 interface PurchasesContextType {
   isProUser: boolean;
   isLoading: boolean;
+  hasLoaded: boolean;
   packages: PurchasesPackage[];
   offerings: PurchasesOfferings | null;
   customerInfo: CustomerInfo | null;
@@ -38,6 +39,7 @@ export const usePurchases = () => {
 
 export const PurchasesProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
+  const [hasLoaded, setHasLoaded] = useState(false);
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo | null>(null);
   const [offerings, setOfferings] = useState<PurchasesOfferings | null>(null);
 
@@ -69,6 +71,7 @@ export const PurchasesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       ]);
       setCustomerInfo(info);
       setOfferings(offs);
+      setHasLoaded(true);
     } catch (e: any) {
       Sentry.logger.warn(
         `[PurchasesProvider] RevenueCat initialization failed: ${e?.message || e}`,
@@ -117,14 +120,28 @@ export const PurchasesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       if (err?.code === PURCHASES_ERROR_CODE.PRODUCT_ALREADY_PURCHASED_ERROR || 
           // @ts-ignore
           err?.code === PURCHASES_ERROR_CODE.ProductAlreadyPurchasedError ||
-          err?.code === (2 as any)) {
+          err?.code === (2 as any) ||
+          err?.message?.toLowerCase().includes('already active') ||
+          err?.message?.toLowerCase().includes('already owned')) {
          try {
            const restoredInfo = await Purchases.restorePurchases();
            setCustomerInfo(restoredInfo);
-           return (
-             !!restoredInfo.entitlements?.active?.[ENTITLEMENT_ID] ||
-             !!restoredInfo.entitlements?.active?.[ENTITLEMENT_ID_ALT]
-           );
+           
+           const hasPro = !!restoredInfo.entitlements?.active?.[ENTITLEMENT_ID] ||
+                          !!restoredInfo.entitlements?.active?.[ENTITLEMENT_ID_ALT];
+           
+           if (!hasPro) {
+             Sentry.captureMessage('User already owned product but no matching active entitlement found after restore', {
+               level: 'warning',
+               extra: { 
+                 activeEntitlements: Object.keys(restoredInfo.entitlements?.active || {}),
+                 errorCode: err?.code,
+                 errorMessage: err?.message
+               }
+             });
+           }
+           
+           return hasPro;
          } catch {
            // fallback to regular error handling
          }
@@ -188,13 +205,14 @@ export const PurchasesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const value = useMemo(() => ({
     isProUser,
     isLoading,
+    hasLoaded,
     packages,
     offerings,
     customerInfo,
     purchasePro,
     purchasePackage,
     restorePurchases,
-  }), [isProUser, isLoading, packages, offerings, customerInfo, purchasePro, purchasePackage, restorePurchases]);
+  }), [isProUser, isLoading, hasLoaded, packages, offerings, customerInfo, purchasePro, purchasePackage, restorePurchases]);
 
   return (
     <PurchasesContext.Provider value={value}>

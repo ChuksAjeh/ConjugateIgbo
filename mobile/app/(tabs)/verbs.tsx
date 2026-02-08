@@ -42,6 +42,7 @@ type FilterType = 'all' | 'common' | 'regular' | 'irregular';
 type SortType = 'alphabetical' | 'frequency' | 'difficulty';
 
 export default function VerbsScreen() {
+  const { settings } = useSettings();
   const { theme, isDark } = useTheme();
   const insets = useSafeAreaInsets();
   const { verbId, openDetails } = useLocalSearchParams<{
@@ -61,12 +62,15 @@ export default function VerbsScreen() {
     const loadVerbs = async () => {
       try {
         setIsLoading(true);
-        const allVerbs = await verbService.getAllVerbs();
-        setVerbs(allVerbs);
+        const { verbs: dialectVerbs } = await verbService.getAllVerbsForDialect(
+          settings.dialect as any,
+          settings.verbLimit
+        );
+        setVerbs(dialectVerbs);
 
         // Only auto-open details if explicitly requested via openDetails flag
         if (verbId && openDetails) {
-          const targetVerb = allVerbs.find((verb) => verb.id === verbId);
+          const targetVerb = dialectVerbs.find((verb) => verb.id === verbId);
           if (targetVerb) {
             setSelectedVerb(targetVerb);
             // Clear the flag so subsequent visits to Verbs don't auto-open
@@ -91,7 +95,7 @@ export default function VerbsScreen() {
     };
 
     loadVerbs();
-  }, [verbId, openDetails]);
+  }, [verbId, openDetails, settings.dialect, settings.verbLimit]);
 
   // Ensure that when navigating here from Practice with a verbId,
   // closing the modal and pressing the details icon again reopens the modal.

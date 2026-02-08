@@ -33,8 +33,8 @@ export default function TabLayout() {
       <Tabs.Screen
         name="pro"
         options={{
-          title: 'Get Pro',
-          href: !isLoading && isProUser ? null : '/pro',
+          title: 'Pro',
+          href: !isLoading && !isProUser ? '/pro' : null,
         }}
       />
       <Tabs.Screen
