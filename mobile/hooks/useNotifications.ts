@@ -87,13 +87,11 @@ export const useNotifications = () => {
           data: { type: 'daily_reminder' },
         },
         trigger: {
-          type: Notifications.SchedulableTriggerInputTypes.CALENDAR,
+          type: Notifications.SchedulableTriggerInputTypes.DAILY,
           hour: hours,
           minute: minutes,
-          second: 0,
-          repeats: true,
           channelId: 'daily-reminders',
-        } as Notifications.CalendarTriggerInput,
+        } as Notifications.DailyTriggerInput,
       });
 
       Sentry.logger.info(
