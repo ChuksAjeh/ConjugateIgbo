@@ -13,7 +13,6 @@ import {
   Animated,
   ScrollView,
 } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Check } from 'lucide-react-native';
@@ -275,7 +274,7 @@ const AnimatedDiagonalPattern = () => {
 };
 
 export default function ProScreen() {
-  const { isProUser, isLoading, packages, purchasePro, restorePurchases } =
+  const { isProUser, hasLoaded, packages, purchasePro, restorePurchases } =
     usePurchases();
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -293,14 +292,7 @@ export default function ProScreen() {
     return proPackage?.product?.priceString || null;
   }, [packages]);
 
-  // If the user is already Pro, redirect them out
-  useFocusEffect(
-    useCallback(() => {
-      if (!isLoading && isProUser) {
-        router.replace('/(tabs)');
-      }
-    }, [isProUser, isLoading, router]),
-  );
+  // No longer redirecting Pro users out, let them see their status
 
   const handlePurchase = useCallback(async () => {
     if (isProUser || isPurchasing) return;
@@ -364,8 +356,8 @@ export default function ProScreen() {
     'Can set daily goals',
   ];
 
-  // If still loading, show spinner
-  if (isLoading) {
+  // If still loading initially, show spinner
+  if (!hasLoaded) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#F3703E" />

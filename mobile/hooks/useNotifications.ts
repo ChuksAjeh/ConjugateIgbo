@@ -66,6 +66,16 @@ export const useNotifications = () => {
         return;
       }
 
+      // Create Android channel
+      if (Platform.OS === 'android') {
+        await Notifications.setNotificationChannelAsync('daily-reminders', {
+          name: 'Daily Reminders',
+          importance: Notifications.AndroidImportance.MAX,
+          vibrationPattern: [0, 250, 250, 250],
+          lightColor: '#FF231F7C',
+        });
+      }
+
       // Parse time (format: "HH:MM")
       const [hours, minutes] = time.split(':').map(Number);
 
@@ -80,6 +90,7 @@ export const useNotifications = () => {
           hour: hours,
           minute: minutes,
           repeats: true,
+          channelId: 'daily-reminders',
         } as Notifications.CalendarTriggerInput,
       });
 

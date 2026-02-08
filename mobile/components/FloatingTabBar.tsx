@@ -85,7 +85,7 @@ export function FloatingTabBar({
             });
           };
 
-          // Skip rendering Pro tab if user is a pro user
+          // Skip rendering Pro tab if user is NOT a pro user
           if (route.name === 'pro' && shouldHideProTab) {
             return null;
           }
