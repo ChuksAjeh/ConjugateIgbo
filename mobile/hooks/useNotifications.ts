@@ -87,8 +87,10 @@ export const useNotifications = () => {
           data: { type: 'daily_reminder' },
         },
         trigger: {
+          type: Notifications.SchedulableTriggerInputTypes.CALENDAR,
           hour: hours,
           minute: minutes,
+          second: 0,
           repeats: true,
           channelId: 'daily-reminders',
         } as Notifications.CalendarTriggerInput,
