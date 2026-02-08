@@ -19,7 +19,6 @@ import { StatusBar } from 'expo-status-bar';
 import { PanGestureHandler, State } from 'react-native-gesture-handler';
 import {
   RotateCcw,
-  Volume2,
   Book,
   Bookmark,
   BookmarkCheck,
@@ -331,17 +330,17 @@ export default function PracticeScreen() {
     }
   };
 
-  const handlePlayAudio = () => {
-    Sentry.logger.info(
-      `[PracticeScreen] Playing audio for: ${currentVerb?.igbo}`,
-      {
-        tags: {
-          feature: 'practice - play card audio',
-          screen: 'PracticeScreen',
-        },
-      },
-    );
-  };
+  // const handlePlayAudio = () => {
+  //   Sentry.logger.info(
+  //     `[PracticeScreen] Playing audio for: ${currentVerb?.igbo}`,
+  //     {
+  //       tags: {
+  //         feature: 'practice - play card audio',
+  //         screen: 'PracticeScreen',
+  //       },
+  //     },
+  //   );
+  // };
 
   const handleShowVerbsList = () => {
     router.push('/(tabs)/verbs');
@@ -486,16 +485,6 @@ export default function PracticeScreen() {
                 <RotateCcw size={28} color={isDark ? theme.colors.textSecondary : "#666"} />
               </View>
               <Text style={localStyles.actionLabel}>Back</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={localStyles.actionButton}
-              onPress={handlePlayAudio}
-            >
-              <View style={[localStyles.actionIconBox, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
-                <Volume2 size={28} color={isDark ? theme.colors.textSecondary : "#666"} />
-              </View>
-              <Text style={localStyles.actionLabel}>Audio</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -696,9 +685,9 @@ const localStyles = StyleSheet.create({
   },
   actionRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: width * 0.9,
-    maxWidth: 360,
+    justifyContent: 'space-around',
+    width: width * 0.85,
+    maxWidth: 320,
   },
   actionButton: {
     alignItems: 'center',
