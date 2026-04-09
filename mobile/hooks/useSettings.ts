@@ -1,27 +1,75 @@
+/**
+ * @fileoverview Global app settings hook with singleton storage.
+ *
+ * `useSettings` provides access to the user's preferences (dialect, tenses,
+ * appearance, daily goal, etc.) from any component without prop-drilling.
+ *
+ * ## Architecture — module-level singleton
+ * Settings state lives in module-level variables (`currentSettings`,
+ * `settingsListeners`) rather than inside a React context. This means:
+ * - All hook instances share the same state automatically.
+ * - Settings are loaded from storage exactly once per app launch.
+ * - Calling `updateSettings` from any component notifies every subscriber.
+ *
+ * ## Usage
+ * ```ts
+ * const { settings, updateSettings, isLoading } = useSettings();
+ *
+ * // Toggle the dark theme:
+ * updateSettings({ appearance: 'dark' });
+ *
+ * // Enable the future tense:
+ * updateSettings({
+ *   enabledTenses: { ...settings.enabledTenses, future: true }
+ * });
+ * ```
+ */
+
 import { useState, useEffect } from 'react';
 import * as Sentry from '@sentry/react-native';
-import { Tense, Pronoun } from '@/models/verb';
+import { Dialect, Pronoun, Tense } from '@/models/verb';
 
-// Type-safe enabledTenses that only includes actual Tense types
+/** A map from every `Tense` key to an enabled/disabled boolean. */
 type EnabledTenses = Record<Tense, boolean>;
 
+/**
+ * The full settings object persisted to and restored from storage.
+ * Defaults are applied for any keys absent from a saved snapshot
+ * (forward-compatible when new settings are added).
+ */
 export interface AppSettings {
+  /** Whether audio auto-play is enabled. */
   audioEnabled: boolean;
+  /** Whether the app should automatically pronounce the verb on reveal. */
   autoPronounce: boolean;
+  /** Daily conjugation goal (number of cards to complete). */
   dailyGoal: number;
+  /** Colour scheme preference: explicit or follow the OS. */
   appearance: 'light' | 'dark' | 'system';
-  dialect: 'central' | 'delta' | 'anambra' | 'imo' | 'abia';
+  /** The Igbo dialect used for verb conjugation and data fetching. */
+  dialect: Dialect;
+  /** Controls how much of the verb card is shown before the answer is revealed. */
   displayMode: 'Verb and translation' | 'Only translation' | 'Only verb';
+  /** Whether the user can manually rate their answer as correct/incorrect. */
   rateAnswers: boolean;
+  /** Which tenses are included in the practice session. */
   enabledTenses: EnabledTenses;
+  /**
+   * Maximum number of verbs loaded from the verb pool.
+   * Higher limits require a Pro subscription.
+   */
   verbLimit: 100 | 250 | 500 | 1000;
+  /** Which pronoun persons are included in the practice session. */
   enabledPronouns: Record<Pronoun, boolean>;
+  /** Daily push notification configuration. */
   notifications: {
     daily: boolean;
+    /** Time of day for the daily reminder in `HH:MM` 24-hour format. */
     reminderTime: string;
   };
 }
 
+/** Applied when no saved settings are found or after a reset. */
 const defaultSettings: AppSettings = {
   audioEnabled: true,
   autoPronounce: false,
@@ -56,31 +104,34 @@ const defaultSettings: AppSettings = {
 
 const SETTINGS_STORAGE_KEY = 'igbo_verb_settings';
 
-// ---------------- Singleton store (module-level) ----------------
+// ---------------------------------------------------------------------------
+// Module-level singleton store
+// ---------------------------------------------------------------------------
+
 let currentSettings: AppSettings = defaultSettings;
 let initialized = false;
 const settingsListeners = new Set<(s: AppSettings) => void>();
 
-// Mock AsyncStorage for cross-platform compatibility
-// Use in-memory storage for React Native environments
+/**
+ * Lightweight cross-platform storage shim.
+ * Prefers `localStorage` (web) and falls back to an in-memory map.
+ * The real AsyncStorage is imported separately in native builds; this shim
+ * exists only for web and test environments where AsyncStorage is unavailable.
+ */
 const memoryStorage: Record<string, string> = {};
 
 const AsyncStorage = {
   getItem: async (key: string): Promise<string | null> => {
     try {
-      if (typeof localStorage !== 'undefined') {
-        return localStorage.getItem(key);
-      }
-      return memoryStorage[key] || null;
+      if (typeof localStorage !== 'undefined') return localStorage.getItem(key);
+      return memoryStorage[key] ?? null;
     } catch {
-      return memoryStorage[key] || null;
+      return memoryStorage[key] ?? null;
     }
   },
   setItem: async (key: string, value: string): Promise<void> => {
     try {
-      if (typeof localStorage !== 'undefined') {
-        localStorage.setItem(key, value);
-      }
+      if (typeof localStorage !== 'undefined') localStorage.setItem(key, value);
       memoryStorage[key] = value;
     } catch {
       memoryStorage[key] = value;
@@ -88,9 +139,7 @@ const AsyncStorage = {
   },
   removeItem: async (key: string): Promise<void> => {
     try {
-      if (typeof localStorage !== 'undefined') {
-        localStorage.removeItem(key);
-      }
+      if (typeof localStorage !== 'undefined') localStorage.removeItem(key);
       delete memoryStorage[key];
     } catch {
       delete memoryStorage[key];
@@ -98,6 +147,12 @@ const AsyncStorage = {
   },
 };
 
+/**
+ * Loads persisted settings from storage exactly once per app session.
+ * Merges saved values onto `defaultSettings` so new keys added in future
+ * releases are always present.
+ * Notifies all active listeners after the load completes.
+ */
 async function loadFromStorageOnce() {
   if (initialized) return;
   try {
@@ -106,11 +161,7 @@ async function loadFromStorageOnce() {
       const parsed = JSON.parse(saved);
       currentSettings = { ...defaultSettings, ...parsed } as AppSettings;
     } else {
-      // Persist defaults on the first run to keep storage in sync
-      await AsyncStorage.setItem(
-        SETTINGS_STORAGE_KEY,
-        JSON.stringify(currentSettings),
-      );
+      await AsyncStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(currentSettings));
     }
   } catch (e: any) {
     Sentry.captureException(e, {
@@ -119,33 +170,49 @@ async function loadFromStorageOnce() {
     });
   } finally {
     initialized = true;
-    // Notify all subscribers of the initial value
     settingsListeners.forEach((cb) => cb(currentSettings));
   }
 }
 
+/** Broadcasts the current settings snapshot to all active hook instances. */
 function notifyAll() {
   settingsListeners.forEach((cb) => cb(currentSettings));
 }
 
+// ---------------------------------------------------------------------------
+// Hook
+// ---------------------------------------------------------------------------
+
+/**
+ * Provides the current app settings and mutators.
+ *
+ * Safe to call in multiple components — they all share the same underlying
+ * state and will re-render together when settings change.
+ *
+ * @returns An object with:
+ *   - `settings`       — the current `AppSettings` snapshot.
+ *   - `updateSettings` — shallow-merges a partial update and persists it.
+ *   - `resetSettings`  — restores factory defaults and persists them.
+ *   - `isLoading`      — `true` until the first storage read completes.
+ */
 export const useSettings = () => {
   const [settings, setSettings] = useState<AppSettings>(currentSettings);
   const [isLoading, setIsLoading] = useState(!initialized);
 
   useEffect(() => {
     let mounted = true;
-    // Subscribe to store updates
+
     const listener = (s: AppSettings) => {
-      if (mounted) setSettings(s);
-      if (mounted) setIsLoading(false);
+      if (mounted) {
+        setSettings(s);
+        setIsLoading(false);
+      }
     };
     settingsListeners.add(listener);
 
-    // Ensure storage is loaded (once)
     if (!initialized) {
       loadFromStorageOnce();
     } else {
-      // Already initialized, ensure the local state is up to date
       setSettings(currentSettings);
       setIsLoading(false);
     }
@@ -156,15 +223,18 @@ export const useSettings = () => {
     };
   }, []);
 
+  /**
+   * Shallow-merges `newSettings` into the current settings and persists the
+   * result. For nested objects (e.g. `enabledTenses`) callers must spread the
+   * existing value themselves.
+   *
+   * @param newSettings - Partial settings to merge in.
+   */
   const updateSettings = async (newSettings: Partial<AppSettings>) => {
     try {
-      // Shallow merge. Callers supply nested merges as needed (existing callers do).
       currentSettings = { ...currentSettings, ...newSettings } as AppSettings;
       notifyAll();
-      await AsyncStorage.setItem(
-        SETTINGS_STORAGE_KEY,
-        JSON.stringify(currentSettings),
-      );
+      await AsyncStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(currentSettings));
     } catch (error: any) {
       Sentry.captureException(error, {
         tags: { feature: 'settings', hook: 'useSettings' },
@@ -173,14 +243,14 @@ export const useSettings = () => {
     }
   };
 
+  /**
+   * Restores all settings to the factory defaults and persists the reset.
+   */
   const resetSettings = async () => {
     try {
       currentSettings = { ...defaultSettings };
       notifyAll();
-      await AsyncStorage.setItem(
-        SETTINGS_STORAGE_KEY,
-        JSON.stringify(currentSettings),
-      );
+      await AsyncStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(currentSettings));
     } catch (error: any) {
       Sentry.captureException(error, {
         tags: { feature: 'settings', hook: 'useSettings' },
@@ -189,10 +259,5 @@ export const useSettings = () => {
     }
   };
 
-  return {
-    settings,
-    updateSettings,
-    resetSettings,
-    isLoading,
-  };
+  return { settings, updateSettings, resetSettings, isLoading };
 };

@@ -1,10 +1,33 @@
+/**
+ * @fileoverview Hook for managing Expo push notifications and daily reminders.
+ *
+ * Handles:
+ * - Registering for push notifications and obtaining the Expo push token.
+ * - Listening for received notifications and user interaction responses.
+ * - Scheduling and cancelling a single daily reminder at a user-specified time.
+ *
+ * Push notifications are skipped on web (`Platform.OS === 'web'`), where the
+ * Expo notifications API is unavailable.
+ *
+ * ## Usage
+ * ```ts
+ * const { scheduleDailyReminder, cancelDailyReminder } = useNotifications();
+ *
+ * // Schedule a reminder at 7:30 PM:
+ * await scheduleDailyReminder('19:30');
+ *
+ * // Cancel all scheduled reminders:
+ * await cancelDailyReminder();
+ * ```
+ */
+
 import { useState, useEffect } from 'react';
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 import * as Sentry from '@sentry/react-native';
 
-// Configure notification behavior
+// Configure how incoming notifications are displayed while the app is in the foreground.
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
@@ -15,6 +38,16 @@ Notifications.setNotificationHandler({
   }),
 });
 
+/**
+ * Provides push notification registration state and scheduling helpers.
+ *
+ * @returns An object with:
+ *   - `expoPushToken`         — the Expo push token string (empty until granted).
+ *   - `notification`          — the last `Notifications.Notification` received,
+ *                               or `null` if none yet.
+ *   - `scheduleDailyReminder` — schedules a recurring daily notification.
+ *   - `cancelDailyReminder`   — cancels all scheduled notifications.
+ */
 export const useNotifications = () => {
   const [expoPushToken, setExpoPushToken] = useState<string>('');
   const [notification, setNotification] =
@@ -25,25 +58,21 @@ export const useNotifications = () => {
     let responseSubscription: Notifications.Subscription | undefined;
 
     registerForPushNotificationsAsync().then((token) => {
-      if (token) {
-        setExpoPushToken(token);
-      }
+      if (token) setExpoPushToken(token);
     });
 
-    // Listen for notifications
     notificationSubscription = Notifications.addNotificationReceivedListener(
-      (notification) => {
-        setNotification(notification);
-      },
+      (received) => setNotification(received),
     );
 
-    responseSubscription =
-      Notifications.addNotificationResponseReceivedListener((_response) => {
-        Sentry.logger.info('Notification response', {
-          extra: { response: _response },
+    responseSubscription = Notifications.addNotificationResponseReceivedListener(
+      (response) => {
+        Sentry.logger.info('Notification response received', {
+          extra: { response },
           tags: { feature: 'notifications' },
         });
-      });
+      },
+    );
 
     return () => {
       notificationSubscription?.remove();
@@ -51,22 +80,28 @@ export const useNotifications = () => {
     };
   }, []);
 
+  /**
+   * Schedules a daily recurring push notification at the given time.
+   * Any previously scheduled notifications are cancelled first so only one
+   * daily reminder is ever active.
+   *
+   * On Android, creates (or updates) a notification channel named
+   * `'daily-reminders'` before scheduling.
+   *
+   * @param time - Reminder time in 24-hour `HH:MM` format, e.g. `'19:00'`.
+   */
   const scheduleDailyReminder = async (time: string) => {
     try {
-      // Cancel existing notifications
       await Notifications.cancelAllScheduledNotificationsAsync();
 
       if (Platform.OS === 'web') {
         Sentry.logger.warn(
           '[useNotifications] Push notifications not supported on web',
-          {
-            tags: { feature: 'notifications' },
-          },
+          { tags: { feature: 'notifications' } },
         );
         return;
       }
 
-      // Create Android channel
       if (Platform.OS === 'android') {
         await Notifications.setNotificationChannelAsync('daily-reminders', {
           name: 'Daily Reminders',
@@ -76,10 +111,8 @@ export const useNotifications = () => {
         });
       }
 
-      // Parse time (format: "HH:MM")
       const [hours, minutes] = time.split(':').map(Number);
 
-      // Schedule daily notification
       await Notifications.scheduleNotificationAsync({
         content: {
           title: 'Time to practice conjugating Igbo!',
@@ -96,60 +129,48 @@ export const useNotifications = () => {
 
       Sentry.logger.info(
         `[useNotifications] Daily reminder scheduled for ${time}`,
-        {
-          tags: { feature: 'notifications', hook: 'useNotifications' },
-        },
+        { tags: { feature: 'notifications', hook: 'useNotifications' } },
       );
     } catch (error: any) {
       Sentry.captureException(error, {
-        tags: {
-          feature: 'notifications',
-          hook: 'useNotifications',
-        },
-        extra: {
-          context: 'Error scheduling notification',
-        },
+        tags: { feature: 'notifications', hook: 'useNotifications' },
+        extra: { context: 'Error scheduling notification' },
       });
     }
   };
 
+  /**
+   * Cancels all currently scheduled push notifications.
+   */
   const cancelDailyReminder = async () => {
     try {
       await Notifications.cancelAllScheduledNotificationsAsync();
       Sentry.logger.info('[useNotifications] Daily reminders cancelled', {
-        tags: {
-          feature: 'notifications',
-          hook: 'useNotifications',
-        },
+        tags: { feature: 'notifications', hook: 'useNotifications' },
       });
     } catch (error: any) {
       Sentry.captureException(error, {
-        tags: {
-          feature: 'notifications',
-          hook: 'useNotifications',
-        },
-        extra: {
-          context: 'Error cancelling notifications',
-        },
+        tags: { feature: 'notifications', hook: 'useNotifications' },
+        extra: { context: 'Error cancelling notifications' },
       });
     }
   };
 
-  return {
-    expoPushToken,
-    notification,
-    scheduleDailyReminder,
-    cancelDailyReminder,
-  };
+  return { expoPushToken, notification, scheduleDailyReminder, cancelDailyReminder };
 };
 
-async function registerForPushNotificationsAsync() {
-  let token;
+// ---------------------------------------------------------------------------
+// Internal helpers
+// ---------------------------------------------------------------------------
 
-  if (Platform.OS === 'web') {
-    // Web doesn't support push notifications in the same way
-    return null;
-  }
+/**
+ * Requests push notification permissions and retrieves the Expo push token.
+ *
+ * @returns The Expo push token string, or `null` if permissions were denied
+ *   or the platform does not support push notifications (web).
+ */
+async function registerForPushNotificationsAsync(): Promise<string | null> {
+  if (Platform.OS === 'web') return null;
 
   const { status: existingStatus } = await Notifications.getPermissionsAsync();
   let finalStatus = existingStatus;
@@ -161,31 +182,22 @@ async function registerForPushNotificationsAsync() {
 
   if (finalStatus !== 'granted') {
     Sentry.logger.warn(
-      '[useNotifications] Failed to get push token for push notification!',
-      {
-        tags: { feature: 'notifications' },
-      },
+      '[useNotifications] Push permission not granted',
+      { tags: { feature: 'notifications' } },
     );
     return null;
   }
 
   try {
-    token = await Notifications.getExpoPushTokenAsync({
+    const token = await Notifications.getExpoPushTokenAsync({
       projectId: Constants.expoConfig?.extra?.eas?.projectId,
     });
+    return token.data;
   } catch (error: any) {
     Sentry.captureException(error, {
-      tags: {
-        feature: 'notifications',
-        hook: 'useNotifications',
-        context: 'registerForPushNotificationsAsync',
-      },
-      extra: {
-        message: 'Error getting push token',
-      },
+      tags: { feature: 'notifications', hook: 'useNotifications' },
+      extra: { message: 'Error getting push token' },
     });
     return null;
   }
-
-  return token.data;
 }

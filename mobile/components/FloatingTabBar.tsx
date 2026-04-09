@@ -1,36 +1,68 @@
+/**
+ * @fileoverview Custom floating pill-shaped bottom tab bar.
+ *
+ * Renders a centred, rounded tab bar that floats above the content with a
+ * drop shadow. The Pro tab is automatically hidden for subscribers so the
+ * bar shrinks to fit the remaining tabs.
+ *
+ * Consumed by the tab navigator in `app/(tabs)/_layout.tsx` via the
+ * `tabBar` prop on `<Tabs>`.
+ */
+
 import React from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-} from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { Mic, List, Settings, Crown, Bookmark } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from './ThemeProvider';
 import { usePurchases } from '@/hooks/usePurchases';
+import { Colors, FontFamily, FontSize, Radius, ZIndex } from '@/constants/theme';
 
+/** Minimum bar width (px) when 4 or fewer tabs are visible. */
+const BAR_WIDTH_SMALL = 260;
 
-export function FloatingTabBar({
-  state,
-  descriptors,
-  navigation,
-}: BottomTabBarProps) {
+/** Bar width (px) when all 5 tabs are visible. */
+const BAR_WIDTH_FULL = 320;
+
+/**
+ * Returns the Lucide icon component that corresponds to a route name.
+ *
+ * @param routeName - The Expo Router route file name.
+ * @returns The matching icon component (defaults to `Mic`).
+ */
+function iconForRoute(routeName: string) {
+  switch (routeName) {
+    case 'index':     return Mic;
+    case 'verbs':     return List;
+    case 'favorites': return Bookmark;
+    case 'settings':  return Settings;
+    case 'pro':       return Crown;
+    default:          return Mic;
+  }
+}
+
+/**
+ * Floating pill tab bar rendered at the bottom of every tab screen.
+ *
+ * Hides the "Pro" tab once the user has an active Pro subscription to avoid
+ * surfacing the paywall to paying customers.
+ *
+ * @param state       - Current navigator state (active index, routes).
+ * @param descriptors - Route descriptors containing tab options.
+ * @param navigation  - Navigation object used to emit press/long-press events.
+ */
+export function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
   const { theme, isDark } = useTheme();
   const { isProUser, isLoading: purchasesLoading } = usePurchases();
 
-  // Determine if pro tab should be hidden
   const shouldHideProTab = !purchasesLoading && isProUser;
 
-  // Count visible routes to shrink the bar
-  const visibleRoutesCount = state.routes.filter((route) => {
-    if (route.name === 'pro' && shouldHideProTab) return false;
-    return true;
-  }).length;
+  const visibleCount = state.routes.filter(
+    (route) => !(route.name === 'pro' && shouldHideProTab),
+  ).length;
 
-  const barWidth = visibleRoutesCount <= 4 ? 260 : 320;
+  const barWidth = visibleCount <= 4 ? BAR_WIDTH_SMALL : BAR_WIDTH_FULL;
 
   return (
     <View style={[styles.container, { bottom: insets.bottom + 10 }]}>
@@ -38,33 +70,51 @@ export function FloatingTabBar({
         style={[
           styles.tabBar,
           {
-            backgroundColor: isDark ? theme.colors.surface : '#FFFFFF',
+            backgroundColor: isDark
+              ? Colors.dark.tabBarBackground
+              : Colors.light.tabBarBackground,
             width: barWidth,
-            borderColor: '#F3703E',
-            shadowColor: isDark ? '#000000' : '#F3703E',
+            borderColor: Colors.light.tabBarBorder,
+            shadowColor: isDark
+              ? Colors.dark.tabBarShadow
+              : Colors.light.tabBarShadow,
           },
         ]}
       >
         {state.routes.map((route, index) => {
+          if (route.name === 'pro' && shouldHideProTab) return null;
+
           const { options } = descriptors[route.key] as any;
-          const label =
+          const isFocused = state.index === index;
+
+          const rawLabel =
             options.tabBarLabel !== undefined
               ? options.tabBarLabel
               : options.title !== undefined
                 ? options.title
                 : route.name;
 
-          const isFocused = state.index === index;
-
-          const labelToRender =
-            typeof label === 'function'
-              ? label({
+          const label =
+            typeof rawLabel === 'function'
+              ? rawLabel({
                   focused: isFocused,
-                  color: isFocused ? '#CE3B3B' : '#9ca3af',
+                  color: isFocused
+                    ? Colors.light.tabIndicator
+                    : Colors.light.tabInactive,
                   position: 'below-icon',
                   children: route.name,
                 })
-              : label;
+              : rawLabel;
+
+          const activeColor = isDark
+            ? Colors.dark.primary
+            : Colors.light.tabActive;
+          const inactiveColor = isDark
+            ? Colors.dark.tabInactive
+            : Colors.light.tabInactive;
+          const iconColor = isFocused ? Colors.light.tabIndicator : inactiveColor;
+
+          const Icon = iconForRoute(route.name);
 
           const onPress = () => {
             const event = navigation.emit({
@@ -72,30 +122,14 @@ export function FloatingTabBar({
               target: route.key,
               canPreventDefault: true,
             });
-
             if (!isFocused && !event.defaultPrevented) {
               navigation.navigate(route.name, route.params);
             }
           };
 
           const onLongPress = () => {
-            navigation.emit({
-              type: 'tabLongPress',
-              target: route.key,
-            });
+            navigation.emit({ type: 'tabLongPress', target: route.key });
           };
-
-          // Skip rendering Pro tab if user is NOT a pro user
-          if (route.name === 'pro' && shouldHideProTab) {
-            return null;
-          }
-
-          let Icon = Mic;
-          if (route.name === 'index') Icon = Mic;
-          else if (route.name === 'verbs') Icon = List;
-          else if (route.name === 'favorites') Icon = Bookmark;
-          else if (route.name === 'settings') Icon = Settings;
-          else if (route.name === 'pro') Icon = Crown;
 
           return (
             <TouchableOpacity
@@ -108,18 +142,9 @@ export function FloatingTabBar({
               onLongPress={onLongPress}
               style={styles.tabItem}
             >
-              <Icon
-                size={24}
-                color={isFocused ? '#CE3B3B' : '#9ca3af'}
-                strokeWidth={isFocused ? 2.5 : 2}
-              />
-              <Text
-                style={[
-                  styles.label,
-                  { color: isFocused ? (isDark ? '#F3703E' : '#333') : '#9ca3af' },
-                ]}
-              >
-                {labelToRender}
+              <Icon size={24} color={iconColor} strokeWidth={isFocused ? 2.5 : 2} />
+              <Text style={[styles.label, { color: isFocused ? activeColor : inactiveColor }]}>
+                {label}
               </Text>
               {isFocused && <View style={styles.indicator} />}
             </TouchableOpacity>
@@ -136,18 +161,16 @@ const styles = StyleSheet.create({
     left: 20,
     right: 20,
     alignItems: 'center',
-    zIndex: 100,
+    zIndex: ZIndex.tabBar,
   },
   tabBar: {
     flexDirection: 'row',
-    borderRadius: 25,
+    borderRadius: Radius.pill,
     height: 65,
     paddingHorizontal: 10,
-    // Shadow for iOS
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.2,
     shadowRadius: 12,
-    // Elevation for Android
     elevation: 8,
     alignItems: 'center',
     justifyContent: 'space-around',
@@ -160,16 +183,16 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   label: {
-    fontSize: 10,
+    fontSize: FontSize.xs,
     marginTop: 2,
-    fontFamily: 'Manjari-Regular',
+    fontFamily: FontFamily.manjariRegular,
   },
   indicator: {
     position: 'absolute',
     bottom: 6,
     width: 16,
     height: 3,
-    backgroundColor: '#CE3B3B',
-    borderRadius: 2,
+    backgroundColor: Colors.light.tabIndicator,
+    borderRadius: Radius.xs,
   },
 });
