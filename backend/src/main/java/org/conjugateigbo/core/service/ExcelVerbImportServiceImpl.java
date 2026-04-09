@@ -18,15 +18,40 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Service to import verbs from an Excel file into verbs_delta_igbo table.
+ * Reads an Excel ({@code .xlsx}) workbook and bulk-inserts Igbo verbs into the
+ * {@code verbs_delta_igbo} PostgreSQL table.
+ *
+ * <h2>Expected file format</h2>
+ * <p>The workbook's first sheet must contain a header row with at least two
+ * recognisable columns:
+ * <ul>
+ *   <li><strong>Igbo column</strong> — header matches (case-insensitively,
+ *       stripping non-alpha characters) any of:
+ *       {@code verbdeltaigbo}, {@code deltaigboverb}, {@code deltaigbo},
+ *       {@code igbo}, or {@code verb}.</li>
+ *   <li><strong>English column</strong> — header equals {@code english}.</li>
+ * </ul>
+ * <p>All other columns and rows before the header row are ignored.
+ *
+ * <h2>Conflict handling</h2>
+ * <p>Duplicate verbs (same {@code igbo} value) are skipped silently via
+ * {@code ON CONFLICT (igbo) DO NOTHING}. The returned {@link ImportResult}
+ * distinguishes between inserted and skipped counts.
  */
 @Service
 @RequiredArgsConstructor
 public class ExcelVerbImportServiceImpl implements ExcelVerbImportService {
-    private static final Logger log = LoggerFactory.getLogger(ExcelVerbImportServiceImpl.class);
 
+    private static final Logger log = LoggerFactory.getLogger(ExcelVerbImportServiceImpl.class);
     private final NamedParameterJdbcTemplate jdbc;
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws IOException if the file at {@code filePath} does not exist,
+     *         the workbook has no sheets, or no recognisable header row is found.
+     */
+    @Override
     public ImportResult importDeltaFromExcel(String filePath) throws IOException {
         Path path = Path.of(filePath);
         if (!Files.exists(path)) {
@@ -39,7 +64,6 @@ public class ExcelVerbImportServiceImpl implements ExcelVerbImportService {
 
             DataFormatter formatter = new DataFormatter();
 
-            // Find header row and column indices
             int headerRowIdx = -1;
             int igboCol = -1;
             int englishCol = -1;
@@ -56,7 +80,8 @@ public class ExcelVerbImportServiceImpl implements ExcelVerbImportService {
             }
 
             if (headerRowIdx < 0 || igboCol < 0 || englishCol < 0) {
-                throw new IOException("Could not find required headers 'Verb (Delta Igbo)' and 'English'");
+                throw new IOException(
+                        "Could not find required headers 'Verb (Delta Igbo)' and 'English'");
             }
 
             List<MapSqlParameterSource> batch = new ArrayList<>();
@@ -67,13 +92,12 @@ public class ExcelVerbImportServiceImpl implements ExcelVerbImportService {
                 if (row == null) continue;
                 String igbo = formatter.formatCellValue(row.getCell(igboCol)).trim();
                 String english = formatter.formatCellValue(row.getCell(englishCol)).trim();
-                if (igbo.isBlank()) continue; // nothing to insert
+                if (igbo.isBlank()) continue;
                 total++;
 
-                var params = new MapSqlParameterSource()
+                batch.add(new MapSqlParameterSource()
                         .addValue("igbo", igbo)
-                        .addValue("english", english.isBlank() ? null : english);
-                batch.add(params);
+                        .addValue("english", english.isBlank() ? null : english));
             }
 
             if (batch.isEmpty()) {
@@ -86,23 +110,37 @@ public class ExcelVerbImportServiceImpl implements ExcelVerbImportService {
             int[] results = jdbc.batchUpdate(sql, batch.toArray(new MapSqlParameterSource[0]));
             int inserted = 0;
             for (int c : results) {
-                // In PostgreSQL, 1 means row inserted; 0 means conflicted/no-op
                 if (c > 0) inserted += c;
             }
             int skipped = total - inserted;
-            log.info("Imported {} rows (inserted: {}, skipped: {}) from {}", total, inserted, skipped, path);
+
+            log.info("Imported {} rows (inserted: {}, skipped: {}) from {}",
+                    total, inserted, skipped, path);
             return new ImportResult(total, inserted, skipped);
         }
     }
 
+    /**
+     * Scans a header row and returns a map of recognised column roles to their
+     * zero-based column indices.
+     *
+     * <p>Column headers are normalised by converting to lower-case and removing
+     * all non-alpha characters before matching, so headers like
+     * {@code "Verb (Delta Igbo)"} and {@code "delta-igbo"} are both accepted.
+     *
+     * @param row       the candidate header row.
+     * @param formatter Apache POI {@link DataFormatter} for reading cell values.
+     * @return a map with keys {@code "igbo"} and/or {@code "english"} pointing
+     *         to their column indices; empty if no recognised headers were found.
+     */
     private Map<String, Integer> findHeaderColumns(Row row, DataFormatter formatter) {
         Map<String, Integer> map = new HashMap<>();
         for (Cell cell : row) {
             String v = formatter.formatCellValue(cell);
             if (v == null) continue;
             String norm = v.trim().toLowerCase().replaceAll("[^a-z]", "");
-            // Accept common variants and be forgiving about spaces/punctuation/case
-            if (norm.equals("verbdeltaigbo") || norm.equals("deltaigboverb") || norm.equals("deltaigbo") || norm.equals("igbo") || norm.equals("verb")) {
+            if (norm.equals("verbdeltaigbo") || norm.equals("deltaigboverb")
+                    || norm.equals("deltaigbo") || norm.equals("igbo") || norm.equals("verb")) {
                 map.put("igbo", cell.getColumnIndex());
             }
             if (norm.equals("english")) {
@@ -112,6 +150,14 @@ public class ExcelVerbImportServiceImpl implements ExcelVerbImportService {
         return map;
     }
 
+    /**
+     * Immutable summary of a single import operation.
+     *
+     * @param totalRows total data rows processed (excluding the header).
+     * @param inserted  rows actually written to the database.
+     * @param skipped   rows that conflicted with an existing {@code igbo} value
+     *                  and were silently ignored.
+     */
     public record ImportResult(int totalRows, int inserted, int skipped) {
     }
 }

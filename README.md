@@ -1,77 +1,267 @@
+# ConjugateIgbo — Language Curation Platform
 
-# Language Curation Platform
+A full-stack Igbo language learning platform. Learners practice verb conjugation across multiple Igbo dialects on a React Native mobile app backed by a Spring Boot REST API and PostgreSQL database.
 
-A modular platform that allows users to create communities and build language resources for their respective languages. Each Language then has an api and documentation associated with it.
+---
+
+## Project Structure
+
+```
+ConjugateIgbo/
+├── backend/                    # Spring Boot 3.5 REST API (Java 21)
+│   ├── src/
+│   │   ├── main/
+│   │   │   ├── java/org/conjugateigbo/core/
+│   │   │   │   ├── ConjugateIgboApplication.java   # Entry point
+│   │   │   │   ├── configuration/                  # CORS, startup runner
+│   │   │   │   ├── controller/                     # REST controllers
+│   │   │   │   ├── model/
+│   │   │   │   │   ├── dto/                        # VerbDTO, AudioDTO
+│   │   │   │   │   └── enums/                      # Dialect enum
+│   │   │   │   ├── repository/verb/                # JDBC repository
+│   │   │   │   ├── service/                        # Business logic + Excel import
+│   │   │   │   └── util/                           # File/word utilities
+│   │   │   └── resources/
+│   │   │       ├── application.yml                 # Spring configuration
+│   │   │       └── db/migration/                   # Flyway SQL migrations
+│   │   └── test/                                   # Integration tests (Testcontainers)
+│   ├── pom.xml                                     # Maven build descriptor
+│   └── Dockerfile                                  # Container image
+│
+├── mobile/                     # React Native / Expo app (TypeScript)
+│   ├── app/                    # Expo Router screens
+│   │   ├── _layout.tsx         # Root layout (Sentry, theme, purchases init)
+│   │   ├── (tabs)/             # Tab group
+│   │   │   ├── index.tsx       # Practice screen (verb conjugation cards)
+│   │   │   ├── verbs.tsx       # Verb library with search & filter
+│   │   │   ├── favorites.tsx   # Bookmarked verbs
+│   │   │   ├── pro.tsx         # Pro upgrade / subscriber status
+│   │   │   └── settings.tsx    # User preferences
+│   │   └── verb-filters.tsx    # Pronoun & verb-limit filter modal
+│   ├── components/             # Shared UI components
+│   │   ├── ThemeProvider.tsx   # Light/dark theme context
+│   │   ├── FloatingTabBar.tsx  # Custom pill-shaped tab bar
+│   │   ├── SplashScreen.tsx    # Animated splash screen
+│   │   ├── IntroScreen.tsx     # First-launch onboarding
+│   │   ├── StartPracticingScreen.tsx
+│   │   └── PurchasesProvider.tsx   # RevenueCat context wrapper
+│   ├── constants/
+│   │   └── theme.ts            # Design tokens (colours, spacing, typography)
+│   ├── hooks/                  # Custom React hooks
+│   │   ├── useSettings.ts      # Global app settings (singleton store)
+│   │   ├── useFavorites.ts     # Bookmarked verb IDs
+│   │   ├── useProgress.ts      # Daily goal tracking
+│   │   ├── usePurchases.ts     # Pro subscription state (RevenueCat)
+│   │   ├── useNotifications.ts # Push notification scheduling
+│   │   ├── useFrameworkReady.ts
+│   │   └── models/
+│   │       └── hooksInterfaces.ts  # Shared hook types
+│   ├── lib/                    # Business logic & utilities
+│   │   ├── conjugateVerbs.ts   # Rule-based Igbo conjugation engine
+│   │   ├── verbService.ts      # Verb fetching, caching, offline fallback
+│   │   ├── storage.ts          # AsyncStorage → FileSystem → memory fallback
+│   │   ├── revenuecat.ts       # RevenueCat SDK initialisation
+│   │   └── revenuecatUI.ts     # RevenueCat paywall UI helpers
+│   ├── models/
+│   │   ├── verb.ts             # Domain types: IgboVerb, Tense, Dialect, …
+│   │   └── interfaces.ts       # UI constants: tenses, pronouns, labels
+│   ├── data/
+│   │   └── igboVerbs.ts        # Offline seed verbs (10 entries)
+│   ├── styles/                 # Screen-specific style factories
+│   │   ├── indexStyles.ts
+│   │   ├── settingsStyles.ts
+│   │   └── proStyles.ts
+│   ├── assets/                 # Fonts, images, icons
+│   ├── app.config.ts           # Expo configuration (EAS, Sentry, plugins)
+│   └── package.json
+│
+└── README.md                   # ← you are here
+```
+
+---
+
+## Architecture overview
+
+```
+Mobile app (Expo / React Native)
+    │
+    │  GET /{dialect}/verbs/all
+    ▼
+Backend REST API (Spring Boot)
+    │
+    │  JDBC
+    ▼
+PostgreSQL (Railway / local Docker)
+    │
+    Flyway migrations manage schema
+```
+
+The mobile app generates verb conjugations **locally** using a rule-based engine (`lib/conjugateVerbs.ts`). The backend only serves the verb list — it never returns conjugated forms. This keeps the API surface small and the app fully functional offline.
+
+---
 
 ## Backend
 
 ### Prerequisites
-- Java JDK (version 21 minimum). Mac/Linux users are recommended to install sdkman to install and manage their JDK versions.
-- Apache Maven (version 3.8.8)
-- MongoDB (contact admin for access to the development cluster)
-- Any IDE/Editor of your choice. Our Recommendation is the IntelliJ community edition. Download the JetBrains toolbox for easy installation.
 
-### Running the Backend
+| Tool | Version |
+|------|---------|
+| Java JDK | 21+ (recommended: install via [SDKMAN](https://sdkman.io)) |
+| Apache Maven | 3.8+ |
+| PostgreSQL | 15+ (or Docker — see below) |
 
-1. Open or import the project via the root `pom.xml` file.
-2. Open a terminal/command prompt in the project root directory.
-3. Run the following command to clean, build, and install the project:
+### Environment variables
 
-    ```bash
-    mvn clean install
-    ```
-4. You will need to create a .env file at the root of the project. Here, you will place your MongoDB connection string to our development cluster. Speak with the admin to whitelist your IP address. You can use the command ipconfig to get this. Alternatively, you can update the the run configurations to include environment variables.
-   You want to include env variables for the following:
-   - MONGODB_URI - this should be the connection string to the MongoDB cluster. Speak to the admin to get this.
-   - MONGO_DB - this should be the name of the database you want to use. for local dec it is the first letter of your name and then your surname followed by db. e.g. `jdoe_db`
-   - SPRING_PROFILES_ACTIVE - configures the profile to use. For development, use `dev`.
-   - API_KEY - allows requests to the backend.
-5. Start the backend server using the LCP main class.
-6. The backend is now running at [http://localhost:8080](http://localhost:8080).
+Create a `.env` file in `backend/` (or set the variables in your IDE run config):
 
-## Frontend
+```env
+# PostgreSQL connection
+SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/conjugate_igbo
+SPRING_DATASOURCE_USERNAME=postgres
+SPRING_DATASOURCE_PASSWORD=yourpassword
+
+# Spring profile
+SPRING_PROFILES_ACTIVE=dev
+```
+
+For local development with Docker you can spin up PostgreSQL quickly:
+
+```bash
+docker run --name conjugate-pg \
+  -e POSTGRES_DB=conjugate_igbo \
+  -e POSTGRES_USER=postgres \
+  -e POSTGRES_PASSWORD=yourpassword \
+  -p 5432:5432 \
+  -d postgres:15
+```
+
+### Running the backend
+
+```bash
+cd backend
+
+# Build and run tests
+mvn clean install
+
+# Start the server (port 8080)
+mvn spring-boot:run
+```
+
+The server starts at **http://localhost:8080**.
+
+Flyway will automatically apply migrations from `src/main/resources/db/migration/` on first startup, creating the dialect verb tables.
+
+### API endpoints
+
+All routes are prefixed with `/api`.
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/ping` | Health check — returns `"pong"` |
+| `GET` | `/{dialect}/verbs` | Paginated verb list (`limit`, `search` params) |
+| `GET` | `/{dialect}/verbs/all` | All verbs for a dialect (no limit) |
+| `GET` | `/{dialect}/verbs/{id}` | Single verb by ID |
+| `GET` | `/{dialect}/verbs/{id}/audio` | 302 redirect to signed audio URL |
+| `POST` | `/{dialect}/verbs/import` | Import verbs from an `.xlsx` file |
+
+**Supported dialect slugs:** `delta-igbo`, `central-igbo`
+
+### Running tests
+
+```bash
+mvn test
+```
+
+Integration tests use [Testcontainers](https://testcontainers.com/) to spin up a real PostgreSQL instance automatically. Docker must be running.
+
+---
+
+## Mobile
 
 ### Prerequisites
-- Node.js and npm (version 16.20.2)
-- Any IDE/Editor of your choice. Our Recommendation is Webstorm. Download the JetBrains toolbox for easy installation.
 
-### Running the UI
+| Tool | Version |
+|------|---------|
+| Node.js | 18+ |
+| npm | 9+ |
+| Expo CLI | latest (`npm install -g expo-cli`) |
+| Expo Go (optional) | Latest from App Store / Play Store |
 
-1. Open a terminal/command prompt.
+### Environment variables
 
-2. Navigate to the UI directory:
+Create a `.env` file in `mobile/`:
 
-    ```bash
-    cd UI/
-    ```
+```env
+# Point to your local backend (use your machine's local IP, not localhost, for device testing)
+EXPO_PUBLIC_API_URL=http://192.168.x.x:8080/api/
 
-3. Run the following command to install dependencies:
+# Expo project ID (from expo.dev dashboard)
+EXPO_PROJECT_ID=your-expo-project-id
 
-    ```bash
-    npm install
-    ```
+# RevenueCat API key (optional for local dev — Pro features will be skipped if absent)
+EXPO_PUBLIC_REVENUECAT_API_KEY=your_revenuecat_key
+```
 
-4. After the installation is complete, start the frontend development server:
+### Installing dependencies
 
-    ```bash
-    npm run dev
-    # or
-    yarn dev
-    # or
-    pnpm dev
-    # or
-    bun dev
-    ```
-Or you can use the run command found in the package.json
-5. The front end is now accessible at [http://localhost:5173](http://localhost:5173).
+```bash
+cd mobile
+npm install
+```
 
-## Repository Rules:
-- **I BEG YOU DO NOT MERGE DIRECTLY INTO MAIN OR DEVELOP**
-- All feature branches are to be merged into the **develop** branch.
-- PRs are subject to reviews and must pass builds before being merged. UI Changes have their own UI Build. Backend Changes have theirs.
-- UI changes will cause a redeploy to Netlify UI deployment. A merge to the main branch will cause a redeploy to the prod version on Netlify
-- The backend is still not connected to the UI, and once it is, it will be connected via an API key and URL (aka GCP API gateway). Speak to Admin to get access.
-- You will need a connection string if you start doing stuff on the backend. Please let an admin know, and you'll be given one and restricted access to GCP.
-- **PLEASE DO NOT MERGE TO THE MAIN BRANCH**. We create a PR for the main only once the develop branch deployment succeeds, and we test changes. We will then create a PR to merge changes in develop into to main to trigger a new Prod deployment
-- **When doing merges from develop to main. DO NOT UPDATE THE BRANCH; THIS WILL POLLUTE THE PR.** If the build succeeds and the PR is approved. **Just merge**.
+### Running the app
 
+```bash
+# Start Metro bundler (opens Expo dev tools)
+npx expo start
+
+# Run on iOS simulator
+npx expo start --ios
+
+# Run on Android emulator
+npx expo start --android
+
+# Run in a web browser (limited functionality — no push notifications)
+npx expo start --web
+```
+
+Scan the QR code in the terminal with **Expo Go** to run on a physical device.
+
+### Project conventions
+
+**Design tokens** — all colours, spacing values, typography, and shadow presets live in `constants/theme.ts`. Never hardcode hex values or pixel numbers in components or style sheets.
+
+**Style factories** — screen-level styles use the `createStyles(theme, isDark)` pattern rather than static `StyleSheet.create` calls. This keeps styles tree-shakeable and theme-aware.
+
+**Hooks** — state that outlives a single component (settings, favorites, progress) lives in custom hooks under `hooks/`. The settings hook uses a module-level singleton so all instances share state without a context provider.
+
+**Conjugation engine** — `lib/conjugateVerbs.ts` generates forms from linguistic rules. To add a new dialect, see the `@fileoverview` comment at the top of that file. To add a new tense, follow the documented steps in the same file.
+
+### Building for production
+
+```bash
+# iOS (requires Apple Developer account)
+npx eas build --platform ios
+
+# Android
+npx eas build --platform android
+```
+
+---
+
+## Branch & merge rules
+
+- **Never push directly to `main`.**
+- All feature work branches off `develop`.
+- Open a PR into `develop`; PRs require review and must pass CI.
+- A merge to `develop` triggers a staging deployment.
+- A merge to `main` (from `develop` only, after staging sign-off) triggers production.
+- When merging `develop` → `main`, **do not update/rebase the branch** — just merge.
+
+---
+
+## Contributing
+
+1. Fork the repo and create a branch from `develop`.
+2. Follow the coding conventions above (design tokens, JSDoc/Javadoc, no direct main merges).
+3. Open a PR against `develop` with a clear description of the change.
