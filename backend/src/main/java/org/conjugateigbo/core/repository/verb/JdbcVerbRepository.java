@@ -14,13 +14,30 @@ import java.util.Optional;
 
 import static org.conjugateigbo.core.repository.verb.Tables.VERB_TABLE;
 
-
+/**
+ * JDBC-backed implementation of {@link VerbRepository}.
+ *
+ * <p>Uses {@link NamedParameterJdbcTemplate} with named parameters ({@code :name})
+ * for all queries, which prevents SQL injection and improves readability over
+ * positional {@code ?} placeholders.
+ *
+ * <p>Table names are resolved at runtime from {@link Tables#VERB_TABLE} using
+ * the supplied {@link Dialect}, so the same query logic serves every dialect
+ * without code duplication.
+ */
 @Repository
 @RequiredArgsConstructor
 public class JdbcVerbRepository implements VerbRepository {
 
     private final NamedParameterJdbcTemplate jdbc;
 
+    /**
+     * {@inheritDoc}
+     *
+     * <p>Results are sorted by {@code coalesce(freq_rank, 2147483647)} so that
+     * verbs without a frequency rank sink to the bottom rather than appearing
+     * at the top.
+     */
     @Override
     public List<VerbDTO> list(Dialect dialect, int limit, String search) {
         final String table = tableFor(dialect);
@@ -51,6 +68,13 @@ public class JdbcVerbRepository implements VerbRepository {
         );
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @return an empty {@link Optional} when the ID does not exist in the table
+     *         (catches {@link EmptyResultDataAccessException} from
+     *         {@code queryForObject}).
+     */
     @Override
     public Optional<VerbDTO> findOne(Dialect dialect, long id) {
         final String table = tableFor(dialect);
@@ -71,6 +95,13 @@ public class JdbcVerbRepository implements VerbRepository {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * <p>Returns the most recently uploaded audio asset
+     * ({@code order by created_at desc limit 1}) so that re-recorded verbs
+     * automatically supersede older recordings.
+     */
     @Override
     public Optional<AudioDTO> findAudio(Dialect dialect, long verbId) {
         final String sql =
@@ -79,7 +110,7 @@ public class JdbcVerbRepository implements VerbRepository {
                         "order by created_at desc limit 1";
 
         var params = new MapSqlParameterSource()
-                .addValue("dialect", dialect.name().toLowerCase()) // if you used a PostgreSQL ENUM, ensure casing matches
+                .addValue("dialect", dialect.name().toLowerCase())
                 .addValue("verbId", verbId);
 
         try {
@@ -97,6 +128,13 @@ public class JdbcVerbRepository implements VerbRepository {
         }
     }
 
+    /**
+     * Resolves the PostgreSQL table name for the given dialect.
+     *
+     * @param dialect the dialect to look up.
+     * @return the table name string.
+     * @throws IllegalArgumentException if {@code dialect} has no registered table.
+     */
     private String tableFor(Dialect dialect) {
         var table = VERB_TABLE.get(dialect);
         if (table == null) throw new IllegalArgumentException("Unsupported dialect: " + dialect);
