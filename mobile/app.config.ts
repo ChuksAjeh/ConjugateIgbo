@@ -55,7 +55,7 @@ export default {
         {
           url: 'https://sentry.io/',
           project: 'conjugateigbo',
-          organization: 'chuksajeh',
+          organization: 'threeleavestechnology',
         },
       ],
     ],
