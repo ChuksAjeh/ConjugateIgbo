@@ -1,7 +1,7 @@
 // Verb Service - Fetches verbs from backend, caches in-memory, seeds from offline list if needed
 import * as Sentry from '@sentry/react-native';
 import { IgboVerb, VerbDTO } from '@/models/verb';
-import type { Dialect } from '@/lib/conjugateVerbs';
+import type { Dialect } from '@/models/verb';
 import { offlineVerbs } from '@/data/igboVerbs';
 import { getItem, setItem } from '@/lib/storage';
 import Constants from 'expo-constants';

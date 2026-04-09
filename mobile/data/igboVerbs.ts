@@ -1,14 +1,23 @@
 import { IgboVerb } from '@/models/verb';
 
-// Minimal offline verb list (first 10), used as seed when no network/cache
+/**
+ * Offline seed verbs used when no network connection or cache is available.
+ *
+ * Each entry includes a `rootForm` — the bare stem after stripping the
+ * infinitive 'i-' prefix — so the conjugation engine can derive forms
+ * reliably without re-applying the strip heuristic to the `igbo` field.
+ *
+ * Verb selection: the 10 most frequent, beginner-level Igbo verbs, covering
+ * a range of vowel-harmony classes (front-vowel and back-vowel stems).
+ */
 export const offlineVerbs: IgboVerb[] = [
   {
     id: 'ije',
     igbo: 'ije',
+    rootForm: 'je',
     english: 'to go',
     type: 'irregular',
     difficulty: 'beginner',
-    // optional legacy label; backend uses freqRank instead
     frequency: 'high',
     examples: [
       { igbo: 'Ana m aga ahia', english: 'I am going to the market' },
@@ -18,6 +27,7 @@ export const offlineVerbs: IgboVerb[] = [
   {
     id: 'iri',
     igbo: 'iri',
+    rootForm: 'ri',
     english: 'to eat',
     type: 'regular',
     frequency: 'high',
@@ -26,6 +36,7 @@ export const offlineVerbs: IgboVerb[] = [
   {
     id: 'ibia',
     igbo: 'ibia',
+    rootForm: 'bia',
     english: 'to come',
     type: 'irregular',
     frequency: 'high',
@@ -38,6 +49,7 @@ export const offlineVerbs: IgboVerb[] = [
   {
     id: 'ikwu',
     igbo: 'ikwu',
+    rootForm: 'kwu',
     english: 'to say/speak',
     type: 'regular',
     frequency: 'high',
@@ -50,6 +62,7 @@ export const offlineVerbs: IgboVerb[] = [
   {
     id: 'ile',
     igbo: 'ile',
+    rootForm: 'le',
     english: 'to see/look',
     type: 'regular',
     frequency: 'high',
@@ -62,6 +75,7 @@ export const offlineVerbs: IgboVerb[] = [
   {
     id: 'ime',
     igbo: 'ime',
+    rootForm: 'me',
     english: 'to do/make',
     type: 'regular',
     frequency: 'high',
@@ -74,6 +88,7 @@ export const offlineVerbs: IgboVerb[] = [
   {
     id: 'inu',
     igbo: 'inu',
+    rootForm: 'nu',
     english: 'to drink',
     type: 'regular',
     frequency: 'high',
@@ -86,6 +101,7 @@ export const offlineVerbs: IgboVerb[] = [
   {
     id: 'ira',
     igbo: 'ira',
+    rootForm: 'ra',
     english: 'to buy',
     type: 'regular',
     frequency: 'medium',
@@ -94,6 +110,7 @@ export const offlineVerbs: IgboVerb[] = [
   {
     id: 'igu',
     igbo: 'igu',
+    rootForm: 'gu',
     english: 'to read/count',
     type: 'regular',
     frequency: 'medium',
@@ -102,6 +119,7 @@ export const offlineVerbs: IgboVerb[] = [
   {
     id: 'ide',
     igbo: 'ide',
+    rootForm: 'de',
     english: 'to write',
     type: 'regular',
     frequency: 'medium',
@@ -109,6 +127,5 @@ export const offlineVerbs: IgboVerb[] = [
   },
 ];
 
-// Note: This file acts solely as the offline seed store for verbs.
-// If the app cannot fetch from the backend or has no cached verbs,
-// `verbService` will seed from this `offlineVerbs` list.
+// Note: This file is the offline seed store only. If the app cannot reach the
+// backend and has no cached verbs, `verbService` will seed from this list.

@@ -1,13 +1,44 @@
+/**
+ * @fileoverview Styles for the Settings screen and its sub-modals.
+ *
+ * Follows the `createStyles(theme, isDark)` factory pattern so every style
+ * value is resolved from the design-token constants rather than hardcoded.
+ *
+ * @example
+ * ```ts
+ * const { theme, isDark } = useTheme();
+ * const styles = createStyles(theme, isDark);
+ * ```
+ */
+
 import { StyleSheet } from 'react-native';
 import { Theme } from '@/components/ThemeProvider';
+import {
+  Colors,
+  FontFamily,
+  FontSize,
+  Radius,
+  Shadows,
+  Spacing,
+} from '@/constants/theme';
 
+/**
+ * Produces a theme-aware StyleSheet for the Settings screen.
+ *
+ * @param theme  - The resolved theme object from `useTheme()`.
+ * @param isDark - Whether dark mode is currently active.
+ * @returns A `StyleSheet` object covering all Settings UI variants.
+ */
 export const createStyles = (theme: Theme, isDark: boolean) =>
   StyleSheet.create({
+    // ----- Screen container -----
     container: {
       flex: 1,
-      backgroundColor: isDark ? theme.colors.background : '#FFFFFF',
+      backgroundColor: isDark ? theme.colors.background : Colors.light.surface,
       position: 'relative',
     },
+
+    // ----- Background wave decorations -----
     bgWaveLeft: {
       position: 'absolute',
       left: 0,
@@ -24,72 +55,77 @@ export const createStyles = (theme: Theme, isDark: boolean) =>
       width: 40,
       opacity: isDark ? 0.15 : 0.2,
     },
+
+    // ----- Orange header bar -----
     header: {
-      backgroundColor: '#F3703E',
+      backgroundColor: Colors.light.accent,
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
-      paddingBottom: 20,
+      paddingBottom: Spacing.lg,
       paddingHorizontal: 15,
       position: 'relative',
     },
     backButton: {
       position: 'absolute',
       left: 15,
-      bottom: 20,
+      bottom: Spacing.lg,
       flexDirection: 'row',
       alignItems: 'center',
     },
     backButtonText: {
-      color: '#FFFFFF',
-      fontSize: 16,
-      fontFamily: 'Manjari-Regular',
+      color: Colors.light.textOnPrimary,
+      fontSize: FontSize.md,
+      fontFamily: FontFamily.manjariRegular,
       marginLeft: -4,
     },
     headerTitle: {
-      fontSize: 22,
-      color: '#FFFFFF',
-      fontFamily: 'Manjari-Bold',
+      fontSize: FontSize.xxl,
+      color: Colors.light.textOnPrimary,
+      fontFamily: FontFamily.manjariBold,
     },
     headerSubtitle: {
       display: 'none',
     },
+
+    // ----- Scrollable content -----
     content: {
       flex: 1,
-      paddingHorizontal: 40,
+      paddingHorizontal: Spacing.xxxl,
     },
+
+    // ----- Section groups -----
     section: {
-      marginBottom: 20,
+      marginBottom: Spacing.lg,
     },
     sectionTitle: {
-      fontSize: 14,
-      color: '#9ca3af',
-      paddingHorizontal: 0,
+      fontSize: FontSize.base,
+      color: Colors.light.textMuted,
       paddingVertical: 10,
       textTransform: 'uppercase',
-      fontFamily: 'Manjari-Regular',
+      fontFamily: FontFamily.manjariRegular,
       letterSpacing: 1,
     },
     subSectionTitle: {
-      fontSize: 14,
-      color: '#9ca3af',
-      paddingHorizontal: 0,
+      fontSize: FontSize.base,
+      color: Colors.light.textMuted,
       paddingVertical: 10,
       textTransform: 'uppercase',
-      fontFamily: 'Manjari-Regular',
+      fontFamily: FontFamily.manjariRegular,
       letterSpacing: 1,
     },
     sectionContent: {
-      backgroundColor: 'transparent',
+      backgroundColor: Colors.light.transparent,
     },
+
+    // ----- Individual setting row -----
     settingsItem: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
       paddingVertical: 18,
-      paddingHorizontal: 0,
       borderBottomWidth: 1,
-      borderBottomColor: '#F0F0F0',
+      borderBottomColor: isDark ? theme.colors.border : Colors.light.separator,
     },
     lockedItem: {
       opacity: 0.6,
@@ -104,70 +140,72 @@ export const createStyles = (theme: Theme, isDark: boolean) =>
       height: 24,
       alignItems: 'center',
       justifyContent: 'center',
-      marginRight: 12,
+      marginRight: Spacing.md,
     },
     lockedIcon: {
-      backgroundColor: isDark ? '#1f2937' : '#f9fafb',
+      backgroundColor: isDark ? '#1f2937' : Colors.light.slate100,
     },
     titleRow: {
       flexDirection: 'row',
       alignItems: 'center',
     },
     settingsItemTitle: {
-      fontSize: 16,
+      fontSize: FontSize.md,
       color: isDark ? theme.colors.text : '#333',
-      fontFamily: 'Manjari-Regular',
+      fontFamily: FontFamily.manjariRegular,
     },
     lockedText: {
-      color: '#9ca3af',
+      color: Colors.light.textMuted,
     },
     proLabel: {
-      backgroundColor: '#f59e0b',
-      color: 'white',
-      fontSize: 10,
-      fontWeight: '600',
-      paddingHorizontal: 6,
+      backgroundColor: Colors.light.proLabel,
+      color: Colors.light.textOnPrimary,
+      fontSize: FontSize.xs,
+      fontFamily: FontFamily.manjariBold,
+      paddingHorizontal: Spacing.xs + 2,
       paddingVertical: 2,
-      borderRadius: 8,
-      marginLeft: 8,
-      fontFamily: 'Manjari-Bold',
+      borderRadius: Radius.sm,
+      marginLeft: Spacing.sm,
     },
     settingsItemSubtitle: {
-      display: 'none', // Subtitles are not shown in Settings.png except for specific items maybe
+      display: 'none',
     },
     settingsItemRight: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 8,
+      gap: Spacing.sm,
     },
+
+    // ----- App info footer -----
     appInfo: {
       alignItems: 'center',
-      paddingVertical: 32,
-      paddingHorizontal: 20,
+      paddingVertical: Spacing.xxl,
+      paddingHorizontal: Spacing.lg,
     },
     appInfoTitle: {
-      fontSize: 20,
-      fontWeight: 'bold',
+      fontSize: FontSize.xl,
+      fontFamily: FontFamily.bold,
       color: theme.colors.text,
       marginBottom: 4,
-      fontFamily: 'Inter-Bold',
     },
     appInfoVersion: {
-      fontSize: 14,
+      fontSize: FontSize.base,
+      fontFamily: FontFamily.regular,
       color: theme.colors.textSecondary,
-      marginBottom: 12,
-      fontFamily: 'Inter-Regular',
+      marginBottom: Spacing.md,
     },
     appInfoDescription: {
-      fontSize: 14,
+      fontSize: FontSize.base,
+      fontFamily: FontFamily.regular,
       color: theme.colors.textSecondary,
       textAlign: 'center',
       lineHeight: 20,
-      fontFamily: 'Inter-Regular',
     },
+
+    // ----- Modal scaffolding -----
     modalContainer: {
       flex: 1,
-      backgroundColor: isDark ? theme.colors.background : '#FFFFFF',
+      backgroundColor: isDark ? theme.colors.background : Colors.light.surface,
       position: 'relative',
     },
     modalWaveLeft: {
@@ -187,11 +225,11 @@ export const createStyles = (theme: Theme, isDark: boolean) =>
       opacity: isDark ? 0.15 : 0.2,
     },
     modalOrangeHeader: {
-      backgroundColor: '#F3703E',
+      backgroundColor: Colors.light.accent,
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
-      paddingBottom: 20,
+      paddingBottom: Spacing.lg,
       paddingHorizontal: 15,
       position: 'relative',
       zIndex: 2,
@@ -199,273 +237,119 @@ export const createStyles = (theme: Theme, isDark: boolean) =>
     modalHeaderBackButton: {
       position: 'absolute',
       left: 15,
-      bottom: 20,
+      bottom: Spacing.lg,
       flexDirection: 'row',
       alignItems: 'center',
     },
     modalHeaderTitle: {
-      fontSize: 22,
-      color: '#FFFFFF',
-      fontFamily: 'Manjari-Bold',
+      fontSize: FontSize.xxl,
+      color: Colors.light.textOnPrimary,
+      fontFamily: FontFamily.manjariBold,
     },
     modalHeaderCloseButton: {
       position: 'absolute',
       right: 15,
-      bottom: 20,
+      bottom: Spacing.lg,
       padding: 4,
     },
     modalHeader: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      padding: 20,
+      padding: Spacing.lg,
       backgroundColor: theme.colors.surface,
       borderBottomWidth: 1,
-      borderBottomColor: isDark ? '#374151' : '#e5e7eb',
+      borderBottomColor: isDark ? Colors.dark.border : theme.colors.border,
     },
     modalTitle: {
-      fontSize: 20,
-      fontWeight: 'bold',
+      fontSize: FontSize.xl,
+      fontFamily: FontFamily.bold,
       color: theme.colors.text,
-      fontFamily: 'Inter-Bold',
     },
     modalContent: {
       flex: 1,
-      padding: 20,
+      padding: Spacing.lg,
     },
     modalText: {
-      fontSize: 16,
+      fontSize: FontSize.md,
+      fontFamily: FontFamily.regular,
       color: theme.colors.text,
       textAlign: 'center',
-      fontFamily: 'Inter-Regular',
     },
+
+    // ----- Generic option list items -----
     optionItem: {
       backgroundColor: theme.colors.surface,
-      padding: 16,
-      borderRadius: 12,
-      marginBottom: 8,
+      padding: Spacing.base,
+      borderRadius: Radius.md,
+      marginBottom: Spacing.sm,
       borderWidth: 2,
-      borderColor: 'transparent',
+      borderColor: Colors.light.transparent,
     },
     selectedOption: {
-      borderColor: '#3b82f6',
-      backgroundColor: isDark ? '#1e3a8a' : '#eff6ff',
+      borderColor: Colors.light.selected,
+      backgroundColor: isDark
+        ? Colors.dark.selectedBackground
+        : Colors.light.selectedBackground,
     },
     optionText: {
-      fontSize: 16,
+      fontSize: FontSize.md,
+      fontFamily: FontFamily.regular,
       color: theme.colors.text,
-      fontFamily: 'Inter-Regular',
     },
     selectedOptionText: {
-      color: '#3b82f6',
-      fontWeight: '500',
-      fontFamily: 'Inter-SemiBold',
+      color: Colors.light.selected,
+      fontFamily: FontFamily.semiBold,
     },
+
+    // ----- Dialect picker cards -----
     dialectOption: {
-      backgroundColor: '#FFFFFF',
-      padding: 20,
-      borderRadius: 15,
+      backgroundColor: Colors.light.surface,
+      padding: Spacing.lg,
+      borderRadius: Radius.lg,
       marginBottom: 15,
       borderWidth: 1,
-      borderColor: '#F0F0F0',
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.05,
-      shadowRadius: 5,
-      elevation: 2,
+      borderColor: Colors.light.borderSubtle,
+      ...Shadows.sm,
     },
     selectedDialectOption: {
-      backgroundColor: '#22C55E', // Green background for selected
-      borderColor: '#22C55E',
+      backgroundColor: Colors.light.dialectSelected,
+      borderColor: Colors.light.dialectSelected,
     },
     dialectLabel: {
-      fontSize: 18,
+      fontSize: FontSize.lg,
       color: '#333',
-      fontFamily: 'Manjari-Bold',
+      fontFamily: FontFamily.manjariBold,
     },
     selectedDialectLabel: {
-      color: '#FFFFFF',
+      color: Colors.light.textOnPrimary,
     },
     dialectDescription: {
-      fontSize: 14,
-      color: '#9ca3af',
+      fontSize: FontSize.base,
+      color: Colors.light.textMuted,
       marginTop: 4,
-      fontFamily: 'Manjari-Regular',
+      fontFamily: FontFamily.manjariRegular,
       textTransform: 'uppercase',
     },
     selectedDialectDescription: {
       color: 'rgba(255, 255, 255, 0.8)',
     },
+
+    // ----- Appearance toggle -----
     appearanceToggle: {
-      padding: 8,
-      borderRadius: 8,
-      backgroundColor: isDark ? '#374151' : '#f3f4f6',
-    },
-    reminderToggleContainer: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      backgroundColor: theme.colors.surface,
-      padding: 20,
-      borderRadius: 12,
-      marginBottom: 20,
-    },
-    reminderToggleLabel: {
-      fontSize: 16,
-      fontWeight: '500',
-      color: theme.colors.text,
-      fontFamily: 'Inter-SemiBold',
-    },
-    timePickerContainer: {
-      backgroundColor: theme.colors.surface,
-      padding: 20,
-      borderRadius: 12,
-    },
-    timePickerLabel: {
-      fontSize: 16,
-      fontWeight: '500',
-      color: theme.colors.text,
-      marginBottom: 16,
-      fontFamily: 'Inter-SemiBold',
-    },
-    currentTimeText: {
-      fontSize: 14,
-      color: theme.colors.textSecondary,
-      marginTop: 12,
-      textAlign: 'center',
-      fontFamily: 'Inter-Regular',
-    },
-    reminderHint: {
-      fontSize: 14,
-      color: theme.colors.textSecondary,
-      marginTop: 16,
-      marginBottom: 8,
-      textAlign: 'center',
-      fontFamily: 'Manjari-Regular',
-      lineHeight: 20,
-    },
-    timePicker: {
-      alignItems: 'center',
-    },
-    timeDisplayButton: {
-      backgroundColor: isDark ? '#374151' : '#f3f4f6',
-      borderRadius: 12,
-      paddingVertical: 20,
-      paddingHorizontal: 40,
-      alignItems: 'center',
-      marginBottom: 16,
-      borderWidth: 2,
-      borderColor: '#F3703E',
-    },
-    timeDisplayText: {
-      fontSize: 36,
-      fontWeight: 'bold',
-      color: theme.colors.text,
-      fontFamily: 'Manjari-Bold',
-    },
-    timeDisplayHint: {
-      fontSize: 12,
-      color: theme.colors.textSecondary,
-      marginTop: 4,
-      fontFamily: 'Manjari-Regular',
-    },
-    dateTimePickerWrapper: {
-      backgroundColor: isDark ? '#1e293b' : '#f8fafc',
-      borderRadius: 12,
-      padding: 16,
-      marginBottom: 16,
-      alignItems: 'center',
-    },
-    doneButton: {
-      backgroundColor: '#F3703E',
-      paddingHorizontal: 32,
-      paddingVertical: 10,
-      borderRadius: 8,
-      marginTop: 12,
-    },
-    doneButtonText: {
-      color: 'white',
-      fontSize: 16,
-      fontWeight: '600',
-      fontFamily: 'Manjari-Bold',
-    },
-    timeInputContainer: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      marginBottom: 8,
-    },
-    timeInput: {
-      backgroundColor: isDark ? '#374151' : '#f3f4f6',
-      borderRadius: 8,
-      padding: 12,
-      fontSize: 18,
-      fontWeight: 'bold',
-      textAlign: 'center',
-      width: 60,
-      fontFamily: 'Inter-Bold',
-      color: theme.colors.text,
-    },
-    timeSeparator: {
-      fontSize: 18,
-      fontWeight: 'bold',
-      marginHorizontal: 8,
-      fontFamily: 'Inter-Bold',
-      color: theme.colors.text,
-    },
-    timeFormat: {
-      fontSize: 12,
-      color: theme.colors.textSecondary,
-      fontFamily: 'Inter-Regular',
-    },
-    saveButton: {
-      backgroundColor: '#3b82f6',
-      paddingHorizontal: 24,
-      paddingVertical: 12,
-      borderRadius: 8,
-      marginTop: 20,
-    },
-    saveButtonText: {
-      color: 'white',
-      fontSize: 16,
-      fontWeight: '600',
-      textAlign: 'center',
-      fontFamily: 'Inter-SemiBold',
-    },
-    goalDescription: {
-      fontSize: 16,
-      color: theme.colors.textSecondary,
-      textAlign: 'center',
-      marginBottom: 24,
-      fontFamily: 'Inter-Regular',
-    },
-    goalInputContainer: {
-      alignItems: 'center',
-      marginBottom: 24,
-    },
-    goalInput: {
-      backgroundColor: isDark ? '#374151' : '#f3f4f6',
-      borderRadius: 12,
-      padding: 16,
-      fontSize: 24,
-      fontWeight: 'bold',
-      textAlign: 'center',
-      width: 200,
-      marginBottom: 8,
-      fontFamily: 'Inter-Bold',
-      color: theme.colors.text,
-    },
-    goalUnit: {
-      fontSize: 16,
-      color: theme.colors.textSecondary,
-      fontFamily: 'Inter-Regular',
+      padding: Spacing.sm,
+      borderRadius: Radius.sm,
+      backgroundColor: isDark
+        ? Colors.dark.toggleBackground
+        : Colors.light.toggleBackground,
     },
     appearanceOption: {
       backgroundColor: theme.colors.surface,
-      padding: 16,
-      borderRadius: 12,
-      marginBottom: 8,
+      padding: Spacing.base,
+      borderRadius: Radius.md,
+      marginBottom: Spacing.sm,
       borderWidth: 2,
-      borderColor: 'transparent',
+      borderColor: Colors.light.transparent,
     },
     appearanceOptionLeft: {
       flexDirection: 'row',
@@ -475,21 +359,187 @@ export const createStyles = (theme: Theme, isDark: boolean) =>
       width: 40,
       height: 40,
       borderRadius: 20,
-      backgroundColor: isDark ? '#374151' : '#f3f4f6',
+      backgroundColor: isDark
+        ? Colors.dark.toggleBackground
+        : Colors.light.toggleBackground,
       alignItems: 'center',
       justifyContent: 'center',
-      marginRight: 12,
+      marginRight: Spacing.md,
     },
     appearanceLabel: {
-      fontSize: 16,
+      fontSize: FontSize.md,
+      fontFamily: FontFamily.semiBold,
       color: theme.colors.text,
-      fontWeight: '500',
-      fontFamily: 'Inter-SemiBold',
     },
     appearanceDescription: {
-      fontSize: 14,
+      fontSize: FontSize.base,
+      fontFamily: FontFamily.regular,
       color: theme.colors.textSecondary,
       marginTop: 2,
-      fontFamily: 'Inter-Regular',
+    },
+
+    // ----- Notifications / reminder -----
+    reminderToggleContainer: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      backgroundColor: theme.colors.surface,
+      padding: Spacing.lg,
+      borderRadius: Radius.md,
+      marginBottom: Spacing.lg,
+    },
+    reminderToggleLabel: {
+      fontSize: FontSize.md,
+      fontFamily: FontFamily.semiBold,
+      color: theme.colors.text,
+    },
+    timePickerContainer: {
+      backgroundColor: theme.colors.surface,
+      padding: Spacing.lg,
+      borderRadius: Radius.md,
+    },
+    timePickerLabel: {
+      fontSize: FontSize.md,
+      fontFamily: FontFamily.semiBold,
+      color: theme.colors.text,
+      marginBottom: Spacing.base,
+    },
+    currentTimeText: {
+      fontSize: FontSize.base,
+      fontFamily: FontFamily.regular,
+      color: theme.colors.textSecondary,
+      marginTop: Spacing.md,
+      textAlign: 'center',
+    },
+    reminderHint: {
+      fontSize: FontSize.base,
+      fontFamily: FontFamily.manjariRegular,
+      color: theme.colors.textSecondary,
+      marginTop: Spacing.base,
+      marginBottom: Spacing.sm,
+      textAlign: 'center',
+      lineHeight: 20,
+    },
+    timePicker: {
+      alignItems: 'center',
+    },
+    timeDisplayButton: {
+      backgroundColor: isDark
+        ? Colors.dark.toggleBackground
+        : Colors.light.toggleBackground,
+      borderRadius: Radius.md,
+      paddingVertical: Spacing.lg,
+      paddingHorizontal: Spacing.xxxl,
+      alignItems: 'center',
+      marginBottom: Spacing.base,
+      borderWidth: 2,
+      borderColor: Colors.light.accent,
+    },
+    timeDisplayText: {
+      fontSize: FontSize.giant,
+      fontFamily: FontFamily.manjariBold,
+      color: theme.colors.text,
+    },
+    timeDisplayHint: {
+      fontSize: FontSize.sm,
+      fontFamily: FontFamily.manjariRegular,
+      color: theme.colors.textSecondary,
+      marginTop: 4,
+    },
+    dateTimePickerWrapper: {
+      backgroundColor: isDark ? Colors.dark.surface : Colors.light.background,
+      borderRadius: Radius.md,
+      padding: Spacing.base,
+      marginBottom: Spacing.base,
+      alignItems: 'center',
+    },
+    doneButton: {
+      backgroundColor: Colors.light.accent,
+      paddingHorizontal: Spacing.xxl,
+      paddingVertical: 10,
+      borderRadius: Radius.sm,
+      marginTop: Spacing.md,
+    },
+    doneButtonText: {
+      color: Colors.light.textOnPrimary,
+      fontSize: FontSize.md,
+      fontFamily: FontFamily.manjariBold,
+    },
+    timeInputContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: Spacing.sm,
+    },
+    timeInput: {
+      backgroundColor: isDark
+        ? Colors.dark.toggleBackground
+        : Colors.light.toggleBackground,
+      borderRadius: Radius.sm,
+      padding: Spacing.md,
+      fontSize: FontSize.lg,
+      fontFamily: FontFamily.bold,
+      textAlign: 'center',
+      width: 60,
+      color: theme.colors.text,
+    },
+    timeSeparator: {
+      fontSize: FontSize.lg,
+      fontFamily: FontFamily.bold,
+      marginHorizontal: Spacing.sm,
+      color: theme.colors.text,
+    },
+    timeFormat: {
+      fontSize: FontSize.sm,
+      fontFamily: FontFamily.regular,
+      color: theme.colors.textSecondary,
+    },
+
+    // ----- Save / action buttons -----
+    saveButton: {
+      backgroundColor: Colors.light.primary,
+      paddingHorizontal: Spacing.xl,
+      paddingVertical: Spacing.md,
+      borderRadius: Radius.sm,
+      marginTop: Spacing.lg,
+    },
+    saveButtonText: {
+      color: Colors.light.textOnPrimary,
+      fontSize: FontSize.md,
+      fontFamily: FontFamily.semiBold,
+      textAlign: 'center',
+    },
+
+    // ----- Daily goal modal -----
+    goalDescription: {
+      fontSize: FontSize.md,
+      fontFamily: FontFamily.regular,
+      color: theme.colors.textSecondary,
+      textAlign: 'center',
+      marginBottom: Spacing.xl,
+    },
+    goalInputContainer: {
+      alignItems: 'center',
+      marginBottom: Spacing.xl,
+    },
+    goalInput: {
+      backgroundColor: isDark
+        ? Colors.dark.toggleBackground
+        : Colors.light.toggleBackground,
+      borderRadius: Radius.md,
+      padding: Spacing.base,
+      fontSize: FontSize.xxxl,
+      fontFamily: FontFamily.bold,
+      textAlign: 'center',
+      width: 200,
+      marginBottom: Spacing.sm,
+      color: theme.colors.text,
+    },
+    goalUnit: {
+      fontSize: FontSize.md,
+      fontFamily: FontFamily.regular,
+      color: theme.colors.textSecondary,
     },
   });
+
+/** Convenience type alias for the return value of `createStyles`. */
+export type SettingsStyles = ReturnType<typeof createStyles>;

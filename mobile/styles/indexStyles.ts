@@ -1,150 +1,195 @@
-import { StyleSheet } from 'react-native';
+/**
+ * @fileoverview Styles for the Practice (index) screen.
+ *
+ * Uses the `createStyles` factory pattern so styles can reference the current
+ * `Theme` and `isDark` flag resolved by `useTheme()`.  Call this once per
+ * render and memoize with `useMemo` if performance profiling suggests it is
+ * necessary (StyleSheet.create is cheap for small sheets).
+ *
+ * @example
+ * ```ts
+ * const { theme, isDark } = useTheme();
+ * const styles = createStyles(theme, isDark);
+ * ```
+ */
 
-export const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  progressContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-  },
-  progressTitle: {
-    fontSize: 16,
-    fontFamily: 'Inter-Regular',
-  },
-  progressCount: {
-    fontSize: 16,
-    fontFamily: 'Inter-Regular',
-  },
-  content: {
-    flex: 1,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    paddingHorizontal: 20,
-  },
-  cardContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 400,
-  },
-  card: {
-    width: '100%',
-    maxWidth: 350,
-    borderRadius: 24,
-    padding: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 4,
+import { StyleSheet } from 'react-native';
+import { Theme } from '@/components/ThemeProvider';
+import {
+  Colors,
+  FontFamily,
+  FontSize,
+  Radius,
+  Shadows,
+  Spacing,
+} from '@/constants/theme';
+
+/**
+ * Produces a theme-aware StyleSheet for the Practice screen.
+ *
+ * @param theme  - The resolved theme object from `useTheme()`.
+ * @param isDark - Whether dark mode is currently active.
+ * @returns A `StyleSheet` object scoped to the Practice screen.
+ */
+export const createStyles = (theme: Theme, isDark: boolean) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.colors.background,
     },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 8,
-    minHeight: 320,
-    position: 'relative',
-  },
-  englishMeaning: {
-    fontSize: 18,
-    textAlign: 'center',
-    marginBottom: 40,
-    fontFamily: 'Inter-Regular',
-  },
-  igboVerb: {
-    fontSize: 48,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 60,
-    fontFamily: 'Inter-Bold',
-  },
-  tenseBadge: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    marginBottom: 40,
-  },
-  tenseBadgeText: {
-    color: 'white',
-    fontSize: 14,
-    fontWeight: '600',
-    fontFamily: 'Inter-SemiBold',
-  },
-  answerSection: {
-    alignItems: 'center',
-    minHeight: 60,
-    justifyContent: 'center',
-  },
-  answerText: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    fontFamily: 'Inter-Bold',
-  },
-  pronounText: {
-    fontSize: 18,
-    fontWeight: '500',
-    textAlign: 'center',
-    marginBottom: 16,
-    fontFamily: 'Inter-SemiBold',
-  },
-  tapToNextText: {
-    fontSize: 14,
-    textAlign: 'center',
-    marginTop: 12,
-    fontFamily: 'Inter-Regular',
-  },
-  answerPlaceholder: {
-    alignItems: 'center',
-  },
-  answerLine: {
-    width: 200,
-    height: 2,
-    marginBottom: 20,
-  },
-  tapToShowButton: {
-    paddingVertical: 8,
-  },
-  tapToShowText: {
-    fontSize: 16,
-    fontFamily: 'Inter-Regular',
-  },
-  bottomActions: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingBottom: 40,
-    gap: 24,
-  },
-  actionButton: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
+
+    // ----- Progress bar header -----
+    progressContainer: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingHorizontal: Spacing.lg,
+      paddingVertical: Spacing.base,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.colors.border,
+    },
+    progressTitle: {
+      fontSize: FontSize.md,
+      fontFamily: FontFamily.regular,
+      color: theme.colors.text,
+    },
+    progressCount: {
+      fontSize: FontSize.md,
+      fontFamily: FontFamily.regular,
+      color: theme.colors.text,
+    },
+
+    // ----- Main scrollable content -----
+    content: {
+      flex: 1,
+    },
+    scrollContent: {
+      flexGrow: 1,
+      justifyContent: 'center',
+      paddingHorizontal: Spacing.lg,
+    },
+
+    // ----- Conjugation card -----
+    cardContainer: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: 400,
+    },
+    card: {
+      width: '100%',
+      maxWidth: 350,
+      borderRadius: Radius.xxl,
+      padding: Spacing.xxxl,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.colors.card,
+      minHeight: 320,
+      position: 'relative',
+      ...Shadows.md,
+    },
+
+    // ----- Card content -----
+    englishMeaning: {
+      fontSize: FontSize.lg,
+      textAlign: 'center',
+      marginBottom: Spacing.xxxl,
+      fontFamily: FontFamily.regular,
+      color: theme.colors.textSecondary,
+    },
+    igboVerb: {
+      fontSize: FontSize.jumbo,
+      fontFamily: FontFamily.bold,
+      textAlign: 'center',
+      marginBottom: 60,
+      color: theme.colors.text,
+    },
+    tenseBadge: {
+      paddingHorizontal: Spacing.base,
+      paddingVertical: Spacing.sm,
+      borderRadius: Radius.xl,
+      marginBottom: Spacing.xxxl,
+      backgroundColor: isDark ? Colors.dark.primary : Colors.light.primary,
+    },
+    tenseBadgeText: {
+      color: Colors.light.textOnPrimary,
+      fontSize: FontSize.base,
+      fontFamily: FontFamily.semiBold,
+    },
+
+    // ----- Answer reveal section -----
+    answerSection: {
+      alignItems: 'center',
+      minHeight: 60,
+      justifyContent: 'center',
+    },
+    pronounText: {
+      fontSize: FontSize.lg,
+      fontFamily: FontFamily.semiBold,
+      textAlign: 'center',
+      marginBottom: Spacing.base,
+      color: theme.colors.text,
+    },
+    answerText: {
+      fontSize: FontSize.hero,
+      fontFamily: FontFamily.bold,
+      textAlign: 'center',
+      color: theme.colors.text,
+    },
+    tapToNextText: {
+      fontSize: FontSize.base,
+      textAlign: 'center',
+      marginTop: Spacing.md,
+      fontFamily: FontFamily.regular,
+      color: theme.colors.textSecondary,
+    },
+
+    // ----- "Tap to show" placeholder -----
+    answerPlaceholder: {
+      alignItems: 'center',
+    },
+    answerLine: {
+      width: 200,
       height: 2,
+      marginBottom: Spacing.lg,
+      backgroundColor: theme.colors.border,
     },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 4,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    fontSize: 18,
-    fontFamily: 'Inter-Regular',
-  },
-});
+    tapToShowButton: {
+      paddingVertical: Spacing.sm,
+    },
+    tapToShowText: {
+      fontSize: FontSize.md,
+      fontFamily: FontFamily.regular,
+      color: theme.colors.textSecondary,
+    },
+
+    // ----- Bottom action row -----
+    bottomActions: {
+      flexDirection: 'row',
+      justifyContent: 'center',
+      alignItems: 'center',
+      paddingHorizontal: Spacing.lg,
+      paddingBottom: Spacing.xxxl,
+      gap: Spacing.xl,
+    },
+    actionButton: {
+      width: 56,
+      height: 56,
+      borderRadius: 28,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.colors.surface,
+      ...Shadows.button,
+    },
+
+    // ----- Loading state -----
+    loadingContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    loadingText: {
+      fontSize: FontSize.lg,
+      fontFamily: FontFamily.regular,
+      color: theme.colors.textSecondary,
+    },
+  });
