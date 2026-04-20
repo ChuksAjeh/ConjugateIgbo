@@ -1002,8 +1002,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 5,
     elevation: 2,
-    borderWidth: 1,
-    borderColor: '#F0F0F0',
+    borderWidth: 1.5,
+    borderColor: '#D85A22',
   },
   verbItemContent: {
     flex: 1,

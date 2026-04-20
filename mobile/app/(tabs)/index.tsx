@@ -596,6 +596,8 @@ const localStyles = StyleSheet.create({
     borderRadius: 20,
     height: 400,
     overflow: 'hidden',
+    borderWidth: 1.5,
+    borderColor: '#D85A22',
     // Shadow
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },

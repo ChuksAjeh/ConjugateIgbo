@@ -17,12 +17,6 @@ export default {
     icon: './assets/images/icon.png',
     backgroundColor: '#AD1102',
 
-    splash: {
-      image: './assets/images/icon.png',
-      resizeMode: 'contain',
-      backgroundColor: '#AD1102',
-    },
-
     newArchEnabled: true,
 
     ios: {
@@ -44,6 +38,15 @@ export default {
       'expo-router',
       'expo-font',
       'expo-web-browser',
+      [
+        'expo-splash-screen',
+        {
+          image: './assets/images/icon.png',
+          backgroundColor: '#AD1102',
+          imageWidth: 160,
+          resizeMode: 'contain',
+        },
+      ],
       [
         'expo-notifications',
         {

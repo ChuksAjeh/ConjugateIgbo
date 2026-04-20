@@ -114,6 +114,8 @@ export const Colors = {
     success: Palette.success,
     warning: Palette.warning,
     error: Palette.error,
+
+    transparent: Palette.transparent,
   },
   dark: {
     background: Palette.slate900,

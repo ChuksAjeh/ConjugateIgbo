@@ -22,6 +22,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Smartphone,
+  Check,
 } from 'lucide-react-native';
 import { useSettings } from '@/hooks/useSettings';
 import { usePurchases } from '@/hooks/usePurchases';
@@ -94,7 +95,7 @@ export default function SettingsScreen() {
 
 
   const handleContactUs = async () => {
-    const email = 'ajehworks@gmail.com';
+    const email = 'support@3lt.dev';
     const subject = 'ConjugateIgbo Support';
     const body =
       `Hi ConjugateIgbo team,\n\n` +
@@ -567,40 +568,39 @@ export default function SettingsScreen() {
                 icon: Smartphone,
                 description: 'Follow device settings',
               },
-            ].map((appearance) => (
-              <TouchableOpacity
-                key={appearance.key}
-                style={[
-                  styles.appearanceOption,
-                  settings.appearance === appearance.key &&
-                    styles.selectedOption,
-                ]}
-                onPress={() => {
-                  updateSettings({ appearance: appearance.key as any });
-                  setShowAppearanceModal(false);
-                }}
-              >
-                <View style={styles.appearanceOptionLeft}>
-                  <View style={styles.appearanceIcon}>
-                    <appearance.icon size={20} color="#6b7280" />
+            ].map((appearance) => {
+              const isSelected = settings.appearance === appearance.key;
+              return (
+                <TouchableOpacity
+                  key={appearance.key}
+                  style={styles.appearanceOption}
+                  onPress={() => {
+                    updateSettings({ appearance: appearance.key as any });
+                    setShowAppearanceModal(false);
+                  }}
+                >
+                  <View style={styles.appearanceOptionLeft}>
+                    <View style={styles.appearanceIcon}>
+                      <appearance.icon size={20} color="#6b7280" />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text
+                        style={[
+                          styles.appearanceLabel,
+                          isSelected && styles.selectedOptionText,
+                        ]}
+                      >
+                        {appearance.label}
+                      </Text>
+                      <Text style={styles.appearanceDescription}>
+                        {appearance.description}
+                      </Text>
+                    </View>
                   </View>
-                  <View>
-                    <Text
-                      style={[
-                        styles.appearanceLabel,
-                        settings.appearance === appearance.key &&
-                          styles.selectedOptionText,
-                      ]}
-                    >
-                      {appearance.label}
-                    </Text>
-                    <Text style={styles.appearanceDescription}>
-                      {appearance.description}
-                    </Text>
-                  </View>
-                </View>
-              </TouchableOpacity>
-            ))}
+                  {isSelected && <Check size={20} color="#F3703E" />}
+                </TouchableOpacity>
+              );
+            })}
           </View>
         </SafeAreaView>
       </Modal>
@@ -632,28 +632,29 @@ export default function SettingsScreen() {
           <View style={styles.modalContent}>
             {(
               ['Verb and translation', 'Only translation', 'Only verb'] as const
-            ).map((mode) => (
-              <TouchableOpacity
-                key={mode}
-                style={[
-                  styles.optionItem,
-                  settings.displayMode === mode && styles.selectedOption,
-                ]}
-                onPress={() => {
-                  updateSettings({ displayMode: mode });
-                  setShowDisplayModal(false);
-                }}
-              >
-                <Text
-                  style={[
-                    styles.optionText,
-                    settings.displayMode === mode && styles.selectedOptionText,
-                  ]}
+            ).map((mode) => {
+              const isSelected = settings.displayMode === mode;
+              return (
+                <TouchableOpacity
+                  key={mode}
+                  style={styles.optionItem}
+                  onPress={() => {
+                    updateSettings({ displayMode: mode });
+                    setShowDisplayModal(false);
+                  }}
                 >
-                  {mode}
-                </Text>
-              </TouchableOpacity>
-            ))}
+                  <Text
+                    style={[
+                      styles.optionText,
+                      isSelected && styles.selectedOptionText,
+                    ]}
+                  >
+                    {mode}
+                  </Text>
+                  {isSelected && <Check size={20} color="#F3703E" />}
+                </TouchableOpacity>
+              );
+            })}
           </View>
         </SafeAreaView>
       </Modal>
@@ -692,7 +693,7 @@ export default function SettingsScreen() {
               {
                 key: 'delta',
                 label: 'Delta Igbo',
-                description: 'WESTERN IGBO DIALECT',
+                description: '',
                 disabled: false,
               },
               {
@@ -736,7 +737,7 @@ export default function SettingsScreen() {
                     setShowDialectModal(false);
                   }}
                 >
-                  <View>
+                  <View style={{ flex: 1 }}>
                     <Text
                       style={[
                         styles.dialectLabel,
@@ -745,15 +746,18 @@ export default function SettingsScreen() {
                     >
                       {dialect.label}
                     </Text>
-                    <Text
-                      style={[
-                        styles.dialectDescription,
-                        isSelected && styles.selectedDialectDescription,
-                      ]}
-                    >
-                      {dialect.description}
-                    </Text>
+                    {!!dialect.description && (
+                      <Text
+                        style={[
+                          styles.dialectDescription,
+                          isSelected && styles.selectedDialectDescription,
+                        ]}
+                      >
+                        {dialect.description}
+                      </Text>
+                    )}
                   </View>
+                  {isSelected && <Check size={20} color="#F3703E" />}
                 </TouchableOpacity>
               );
             })}
@@ -890,14 +894,6 @@ export default function SettingsScreen() {
             <Text style={styles.modalHeaderTitle}>Answers</Text>
           </View>
           <View style={styles.modalContent}>
-            <ToggleItem
-              title="Auto Pronounce Answers"
-              subtitle="Play audio when answer is revealed"
-              value={settings.autoPronounce}
-              onValueChange={(value) =>
-                updateSettings({ autoPronounce: value })
-              }
-            />
             <SettingsItem
               title="Daily Goal"
               subtitle={

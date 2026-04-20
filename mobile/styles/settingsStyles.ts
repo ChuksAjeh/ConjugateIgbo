@@ -277,65 +277,64 @@ export const createStyles = (theme: Theme, isDark: boolean) =>
       textAlign: 'center',
     },
 
-    // ----- Generic option list items -----
+    // ----- Sub-page option rows (dialect / appearance / display) -----
+    // Match the settings home page: a row with a bottom-border separator,
+    // title (+ optional subtitle) on the left, selected indicator on the
+    // right. No rounded cards / no tinted backgrounds.
     optionItem: {
-      backgroundColor: theme.colors.surface,
-      padding: Spacing.base,
-      borderRadius: Radius.md,
-      marginBottom: Spacing.sm,
-      borderWidth: 2,
-      borderColor: Colors.light.transparent,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingVertical: 18,
+      borderBottomWidth: 1,
+      borderBottomColor: isDark ? theme.colors.border : Colors.light.separator,
     },
     selectedOption: {
-      borderColor: Colors.light.selected,
-      backgroundColor: isDark
-        ? Colors.dark.selectedBackground
-        : Colors.light.selectedBackground,
+      // Intentionally empty — selection is indicated via the check icon and
+      // coloured text, not a background change.
     },
     optionText: {
       fontSize: FontSize.md,
-      fontFamily: FontFamily.regular,
-      color: theme.colors.text,
+      fontFamily: FontFamily.manjariRegular,
+      color: isDark ? theme.colors.text : '#333',
     },
     selectedOptionText: {
-      color: Colors.light.selected,
-      fontFamily: FontFamily.semiBold,
-    },
-
-    // ----- Dialect picker cards -----
-    dialectOption: {
-      backgroundColor: Colors.light.surface,
-      padding: Spacing.lg,
-      borderRadius: Radius.lg,
-      marginBottom: 15,
-      borderWidth: 1,
-      borderColor: Colors.light.borderSubtle,
-      ...Shadows.sm,
-    },
-    selectedDialectOption: {
-      backgroundColor: Colors.light.dialectSelected,
-      borderColor: Colors.light.dialectSelected,
-    },
-    dialectLabel: {
-      fontSize: FontSize.lg,
-      color: '#333',
+      color: Colors.light.accent,
       fontFamily: FontFamily.manjariBold,
     },
+
+    // Aliases so existing JSX that references dialect* / appearance* styles
+    // continues to render with the unified row look.
+    dialectOption: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingVertical: 18,
+      borderBottomWidth: 1,
+      borderBottomColor: isDark ? theme.colors.border : Colors.light.separator,
+    },
+    selectedDialectOption: {},
+    dialectLabel: {
+      fontSize: FontSize.md,
+      color: isDark ? theme.colors.text : '#333',
+      fontFamily: FontFamily.manjariRegular,
+    },
     selectedDialectLabel: {
-      color: Colors.light.textOnPrimary,
+      color: Colors.light.accent,
+      fontFamily: FontFamily.manjariBold,
     },
     dialectDescription: {
-      fontSize: FontSize.base,
+      fontSize: FontSize.xs,
       color: Colors.light.textMuted,
-      marginTop: 4,
+      marginTop: 2,
       fontFamily: FontFamily.manjariRegular,
+      letterSpacing: 1,
       textTransform: 'uppercase',
     },
     selectedDialectDescription: {
-      color: 'rgba(255, 255, 255, 0.8)',
+      color: Colors.light.accent,
     },
 
-    // ----- Appearance toggle -----
     appearanceToggle: {
       padding: Spacing.sm,
       borderRadius: Radius.sm,
@@ -344,24 +343,21 @@ export const createStyles = (theme: Theme, isDark: boolean) =>
         : Colors.light.toggleBackground,
     },
     appearanceOption: {
-      backgroundColor: theme.colors.surface,
-      padding: Spacing.base,
-      borderRadius: Radius.md,
-      marginBottom: Spacing.sm,
-      borderWidth: 2,
-      borderColor: Colors.light.transparent,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingVertical: 18,
+      borderBottomWidth: 1,
+      borderBottomColor: isDark ? theme.colors.border : Colors.light.separator,
     },
     appearanceOptionLeft: {
       flexDirection: 'row',
       alignItems: 'center',
+      flex: 1,
     },
     appearanceIcon: {
-      width: 40,
-      height: 40,
-      borderRadius: 20,
-      backgroundColor: isDark
-        ? Colors.dark.toggleBackground
-        : Colors.light.toggleBackground,
+      width: 32,
+      height: 32,
       alignItems: 'center',
       justifyContent: 'center',
       marginRight: Spacing.md,
