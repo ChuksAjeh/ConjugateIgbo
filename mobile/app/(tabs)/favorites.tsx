@@ -15,11 +15,9 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import {
-  Volume2,
   Bookmark,
   ChevronLeft,
   ChevronDown,
-  Play,
 } from 'lucide-react-native';
 import { WavePattern } from '@/components/SplashScreen';
 import { IgboVerb, Tense } from '@/models/verb';
@@ -92,9 +90,6 @@ export default function FavoritesScreen() {
           <Text style={[styles.verbInfinitive, { color: theme.colors.text }]}>
             {item.igbo}
           </Text>
-          <TouchableOpacity style={styles.audioButton}>
-            <Volume2 size={16} color="#6b7280" />
-          </TouchableOpacity>
         </View>
 
         <Text
@@ -177,9 +172,11 @@ export default function FavoritesScreen() {
 
 // Tenses organized by tab - matching verbs.tsx
 const tensesByTab = {
-  Indicative: ['present', 'past', 'future', 'imperfect'] as Tense[],
+  Indicative: ['present', 'past', 'future', 'presentPerfect', 'habitualPresent'] as Tense[],
   Subjunctive: ['subjunctive'] as Tense[],
-  Others: ['imperative', 'conditional'] as Tense[],
+  Negation: ['negativePast', 'negativeFuture', 'negativeImperative', 'negativePerfect', 'neverPerfect'] as Tense[],
+  Others: ['imperative'] as Tense[],
+  Extras: ['finished', 'together', 'first', 'forSomeone', 'polite'] as Tense[],
 };
 
 // VerbDetailContent matching the design from verbs.tsx
@@ -198,7 +195,7 @@ const VerbDetailContent = ({
   const { settings } = useSettings();
   const { isProUser, isLoading } = usePurchases();
   const [activeTab, setActiveTab] = useState<
-    'Indicative' | 'Subjunctive' | 'Others'
+    'Indicative' | 'Subjunctive' | 'Negation' | 'Others' | 'Extras'
   >('Indicative');
   const [expandedTenses, setExpandedTenses] = useState<Record<string, boolean>>({
     PRESENT: true,
@@ -210,8 +207,11 @@ const VerbDetailContent = ({
   const availableTensesInTab = useMemo(() => {
     let list = tensesByTab[activeTab];
     if (!isLoading && !isProUser) {
+      // Free tier: Present / Past / Future only.
       if (activeTab === 'Indicative') {
-        list = list.filter((t) => t === 'present' || t === 'past');
+        list = list.filter(
+          (t) => t === 'present' || t === 'past' || t === 'future',
+        );
       } else {
         list = [];
       }
@@ -280,9 +280,6 @@ const VerbDetailContent = ({
         </TouchableOpacity>
         <View style={styles.detailHeaderTitleContainer}>
           <Text style={styles.detailHeaderTitle}>{verb.igbo}</Text>
-          <TouchableOpacity style={styles.detailAudioButton}>
-            <Volume2 size={20} color="#FFFFFF" />
-          </TouchableOpacity>
         </View>
         <View style={{ width: 60 }} />
       </View>
@@ -293,7 +290,7 @@ const VerbDetailContent = ({
         contentContainerStyle={{ paddingBottom: 120 }}
       >
         <View style={styles.detailTabBar}>
-          {(['Indicative', 'Subjunctive', 'Others'] as const).map((tab) => (
+          {(['Indicative', 'Subjunctive', 'Negation', 'Others', 'Extras'] as const).map((tab) => (
             <TouchableOpacity
               key={tab}
               onPress={() => setActiveTab(tab)}
@@ -397,9 +394,6 @@ const VerbDetailContent = ({
                               <View style={styles.easyBadge}>
                                 <Text style={styles.easyBadgeText}>Easy</Text>
                               </View>
-                              <TouchableOpacity style={styles.playButton}>
-                                <Play size={16} color="#F3703E" />
-                              </TouchableOpacity>
                             </View>
 
                             <View style={styles.formulaContainer}>

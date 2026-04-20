@@ -690,40 +690,48 @@ export default function SettingsScreen() {
           >
             {[
               {
-                key: 'central',
-                label: 'Central Igbo',
-                description: 'STANDARD IGBO (OWERRI/UMUAHIA)',
-              },
-              {
                 key: 'delta',
                 label: 'Delta Igbo',
                 description: 'WESTERN IGBO DIALECT',
+                disabled: false,
+              },
+              {
+                key: 'central',
+                label: 'Central Igbo',
+                description: 'COMING SOON',
+                disabled: true,
               },
               {
                 key: 'anambra',
                 label: 'Anambra Igbo',
-                description: 'NORTHERN IGBO DIALECT',
+                description: 'COMING SOON',
+                disabled: true,
               },
               {
                 key: 'imo',
                 label: 'Imo Igbo',
-                description: 'CENTRAL-SOUTHERN DIALECT',
+                description: 'COMING SOON',
+                disabled: true,
               },
               {
                 key: 'abia',
                 label: 'Abia Igbo',
-                description: 'EASTERN DIALECT',
+                description: 'COMING SOON',
+                disabled: true,
               },
             ].map((dialect) => {
               const isSelected = settings.dialect === dialect.key;
               return (
                 <TouchableOpacity
                   key={dialect.key}
+                  disabled={dialect.disabled}
                   style={[
                     styles.dialectOption,
                     isSelected && styles.selectedDialectOption,
+                    dialect.disabled && { opacity: 0.4 },
                   ]}
                   onPress={() => {
+                    if (dialect.disabled) return;
                     updateSettings({ dialect: dialect.key as any });
                     setShowDialectModal(false);
                   }}
@@ -778,89 +786,81 @@ export default function SettingsScreen() {
             <Text style={styles.modalHeaderTitle}>Tenses</Text>
           </View>
           <ScrollView style={styles.modalContent}>
-            <Text style={styles.subSectionTitle}>Indicative Tenses</Text>
-            <ToggleItem
-              title="Present"
-              value={settings.enabledTenses.present}
-              onValueChange={(value) =>
-                updateSettings({
-                  enabledTenses: { ...settings.enabledTenses, present: value },
-                })
-              }
-            />
-            <ToggleItem
-              title="Past"
-              value={settings.enabledTenses.past}
-              onValueChange={(value) =>
-                updateSettings({
-                  enabledTenses: { ...settings.enabledTenses, past: value },
-                })
-              }
-            />
-            <ToggleItem
-              title="Imperfect"
-              value={settings.enabledTenses.imperfect}
-              onValueChange={(value) =>
-                updateSettings({
-                  enabledTenses: {
-                    ...settings.enabledTenses,
-                    imperfect: value,
-                  },
-                })
-              }
-              isLocked={isLockedItem(!isProUser)}
-            />
-            <ToggleItem
-              title="Conditional"
-              value={settings.enabledTenses.conditional}
-              onValueChange={(value) =>
-                updateSettings({
-                  enabledTenses: {
-                    ...settings.enabledTenses,
-                    conditional: value,
-                  },
-                })
-              }
-              isLocked={isLockedItem(!isProUser)}
-            />
-            <ToggleItem
-              title="Future"
-              value={settings.enabledTenses.future}
-              onValueChange={(value) =>
-                updateSettings({
-                  enabledTenses: { ...settings.enabledTenses, future: value },
-                })
-              }
-              isLocked={isLockedItem(!isProUser)}
-            />
-
-            <Text style={styles.subSectionTitle}>Other Tenses</Text>
-            <ToggleItem
-              title="Subjunctive"
-              value={settings.enabledTenses.subjunctive}
-              onValueChange={(value) =>
-                updateSettings({
-                  enabledTenses: {
-                    ...settings.enabledTenses,
-                    subjunctive: value,
-                  },
-                })
-              }
-              isLocked={isLockedItem(!isProUser)}
-            />
-            <ToggleItem
-              title="Imperative"
-              value={settings.enabledTenses.imperative}
-              onValueChange={(value) =>
-                updateSettings({
-                  enabledTenses: {
-                    ...settings.enabledTenses,
-                    imperative: value,
-                  },
-                })
-              }
-              isLocked={isLockedItem(!isProUser)}
-            />
+            {(
+              [
+                {
+                  heading: 'Easy — Free',
+                  items: [
+                    { key: 'present', title: 'Present' },
+                    { key: 'past', title: 'Past' },
+                    { key: 'future', title: 'Future' },
+                  ],
+                  proLocked: false,
+                },
+                {
+                  heading: 'Pro — Aspect',
+                  items: [
+                    { key: 'presentPerfect', title: 'Present Perfect' },
+                    { key: 'habitualPresent', title: 'Habitual Present' },
+                  ],
+                  proLocked: true,
+                },
+                {
+                  heading: 'Pro — Mood',
+                  items: [
+                    { key: 'subjunctive', title: 'Subjunctive' },
+                    { key: 'imperative', title: 'Imperative' },
+                  ],
+                  proLocked: true,
+                },
+                {
+                  heading: 'Pro — Negation',
+                  items: [
+                    { key: 'negativePast', title: 'Negative Past' },
+                    { key: 'negativeFuture', title: 'Negative Future' },
+                    { key: 'negativeImperative', title: 'Negative Imperative' },
+                    { key: 'negativePerfect', title: 'Negative Perfect' },
+                    { key: 'neverPerfect', title: 'Never Perfect' },
+                  ],
+                  proLocked: true,
+                },
+                {
+                  heading: 'Pro — Derivational Suffixes',
+                  items: [
+                    { key: 'finished', title: 'Finished (-si)' },
+                    { key: 'together', title: 'Together (-kota)' },
+                    { key: 'first', title: 'First (-gode)' },
+                    { key: 'forSomeone', title: 'For Someone (-nye)' },
+                    { key: 'polite', title: 'Polite (-nụ́)' },
+                  ],
+                  proLocked: true,
+                },
+              ] as const
+            ).map((group) => (
+              <View key={group.heading}>
+                <Text style={styles.subSectionTitle}>{group.heading}</Text>
+                {group.items.map((item) => (
+                  <ToggleItem
+                    key={item.key}
+                    title={item.title}
+                    value={
+                      settings.enabledTenses[
+                        item.key as keyof typeof settings.enabledTenses
+                      ]
+                    }
+                    onValueChange={(value) =>
+                      updateSettings({
+                        enabledTenses: {
+                          ...settings.enabledTenses,
+                          [item.key]: value,
+                        },
+                      })
+                    }
+                    isLocked={group.proLocked ? isLockedItem(!isProUser) : false}
+                  />
+                ))}
+              </View>
+            ))}
           </ScrollView>
         </SafeAreaView>
       </Modal>

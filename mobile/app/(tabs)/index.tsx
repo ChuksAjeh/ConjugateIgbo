@@ -34,7 +34,7 @@ import { usePurchases } from '@/hooks/usePurchases';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useTheme } from '@/components/ThemeProvider';
 import { WavePattern } from '@/components/SplashScreen';
-import { pronounLabels, pronouns, tenses } from '@/models/interfaces';
+import { pronounLabels, pronouns, tenses, tenseLabels } from '@/models/interfaces';
 
 import * as Sentry from '@sentry/react-native';
 
@@ -438,8 +438,7 @@ export default function PracticeScreen() {
 
                   <View style={localStyles.tenseBadge}>
                     <Text style={localStyles.tenseText}>
-                      {selectedTense.charAt(0).toUpperCase() +
-                        selectedTense.slice(1)}
+                      {tenseLabels[selectedTense]}
                     </Text>
                   </View>
 

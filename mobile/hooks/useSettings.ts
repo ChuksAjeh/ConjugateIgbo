@@ -79,13 +79,25 @@ const defaultSettings: AppSettings = {
   displayMode: 'Verb and translation',
   rateAnswers: false,
   enabledTenses: {
+    // Free-tier defaults — present, past, future enabled out of the box.
     present: true,
     past: true,
-    future: false,
+    future: true,
     imperative: false,
-    imperfect: false,
-    conditional: false,
     subjunctive: false,
+    presentPerfect: false,
+    habitualPresent: false,
+    negativePast: false,
+    negativeFuture: false,
+    negativeImperative: false,
+    negativePerfect: false,
+    neverPerfect: false,
+    // Pro-only derivational helpers, off by default.
+    finished: false,
+    together: false,
+    first: false,
+    forSomeone: false,
+    polite: false,
   },
   verbLimit: 100,
   enabledPronouns: {

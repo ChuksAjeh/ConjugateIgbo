@@ -19,12 +19,10 @@ import { useFocusEffect } from '@react-navigation/native';
 import {
   Search,
   Filter,
-  Volume2,
   X,
   ChevronLeft,
   ChevronDown,
   ChevronRight,
-  Play,
 } from 'lucide-react-native';
 import { IgboVerb, Tense } from '@/models/verb';
 import { verbService } from '@/lib/verbService';
@@ -189,9 +187,6 @@ export default function VerbsScreen() {
                 {rankToLabel(item.freqRank, (item as any).frequency)}
               </Text>
             </View>
-            <TouchableOpacity style={styles.audioButton}>
-              <Volume2 size={16} color="#6b7280" />
-            </TouchableOpacity>
           </View>
         </View>
 
@@ -494,9 +489,11 @@ export default function VerbsScreen() {
 
 // Separate component for verb detail content
 const tensesByTab = {
-  Indicative: ['present', 'past', 'future', 'imperfect'] as Tense[],
+  Indicative: ['present', 'past', 'future', 'presentPerfect', 'habitualPresent'] as Tense[],
   Subjunctive: ['subjunctive'] as Tense[],
-  Others: ['imperative', 'conditional'] as Tense[],
+  Negation: ['negativePast', 'negativeFuture', 'negativeImperative', 'negativePerfect', 'neverPerfect'] as Tense[],
+  Others: ['imperative'] as Tense[],
+  Extras: ['finished', 'together', 'first', 'forSomeone', 'polite'] as Tense[],
 };
 
 const VerbDetailContent = ({
@@ -514,7 +511,7 @@ const VerbDetailContent = ({
   const { settings } = useSettings();
   const { isProUser, isLoading } = usePurchases();
   const [activeTab, setActiveTab] = useState<
-    'Indicative' | 'Subjunctive' | 'Others'
+    'Indicative' | 'Subjunctive' | 'Negation' | 'Others' | 'Extras'
   >('Indicative');
   const [expandedTenses, setExpandedTenses] = useState<Record<string, boolean>>(
     {
@@ -528,9 +525,12 @@ const VerbDetailContent = ({
   const availableTensesInTab = useMemo(() => {
     let list = tensesByTab[activeTab];
     if (!isLoading && !isProUser) {
-      // Free users only see Present and Past in Indicative
+      // Free tier: Present, Past, Future only (all live under Indicative).
+      // Every other tab — negation, perfects, derivational helpers — is Pro.
       if (activeTab === 'Indicative') {
-        list = list.filter((t) => t === 'present' || t === 'past');
+        list = list.filter(
+          (t) => t === 'present' || t === 'past' || t === 'future',
+        );
       } else {
         list = [];
       }
@@ -546,49 +546,138 @@ const VerbDetailContent = ({
     setExpandedConjugation((prev) => (prev === id ? null : id));
   };
 
-  const getRuleData = (tense: Tense) => {
-    // Actual conjugation rules matching lib/conjugateVerbs.ts
+  const getRuleData = (tense: Tense): { source: string; parts: string[]; text: string } => {
+    // Mirrors lib/conjugateVerbs.ts. Keep surface particles aligned with the
+    // active dialect profile so the worked example matches the output cell.
     const stem = verb.igbo.startsWith('i') || verb.igbo.startsWith('ị')
       ? verb.igbo.substring(1)
       : verb.igbo;
-    // Vowel harmony: 'a' if stem contains a/ọ/ụ/ị, else 'e'
-    const vowelPrefix = /[aọụịỌỤỊ]/.test(stem) ? 'a' : 'e';
+    const isHeavy = /[aọụịỌỤỊ]/.test(stem);
+    const vowelPrefix = isHeavy ? 'a' : 'e';
+    // Negative past (Notion Rule 5) uses the accented '-ná/né' suffix,
+    // while the negative imperative (Imperatives page, Rule 2) uses the
+    // unaccented '-na/ne'. The engine currently outputs unaccented for
+    // both — flagged as a known divergence from the Notion grammar.
+    const negPastSuffix = isHeavy ? 'ná' : 'né';
+    const negImpSuffix = isHeavy ? 'na' : 'ne';
+    const source = verb.igbo;
+
+    const imperativeExceptions = new Set(['bia', 'je', 'nodu']);
+    const lastChar = stem.length ? stem[stem.length - 1] : '';
+    const imperativeForm = imperativeExceptions.has(stem)
+      ? stem
+      : stem + ('aịọụ'.includes(lastChar) ? 'a' : 'e');
 
     switch (tense) {
       case 'present':
         return {
-          text: `Remove 'i' prefix, add vowel harmony prefix '${vowelPrefix}'. Pronoun + na + ${vowelPrefix}${stem}.`,
-          formula: [verb.igbo, '→', `${vowelPrefix}${stem}`],
+          source,
+          parts: ['na', `${vowelPrefix}${stem}`],
+          text: `Remove the 'i' prefix and add the vowel-harmony prefix '${vowelPrefix}'. Pronoun + na + ${vowelPrefix}${stem}.`,
         };
       case 'past':
         return {
-          text: `Remove 'i' prefix to form past stem. Pronoun + ${stem}.`,
-          formula: [verb.igbo, '→', stem],
+          source,
+          parts: [stem],
+          text: `Remove the 'i' prefix to form the past stem. Pronoun + ${stem}.`,
         };
       case 'future':
         return {
-          text: `Same as present with 'ga' particle. Pronoun + ga + ${vowelPrefix}${stem}.`,
-          formula: [verb.igbo, '→', `ga ${vowelPrefix}${stem}`],
-        };
-      case 'subjunctive':
-        return {
-          text: `Remove 'i' prefix, add 'e' suffix. ${stem}e.`,
-          formula: [verb.igbo, '→', `${stem}e`],
+          source,
+          parts: ['ga', `${vowelPrefix}${stem}`],
+          text: `Same stem as present, with the 'ga' auxiliary. Pronoun + ga + ${vowelPrefix}${stem}.`,
         };
       case 'imperative':
         return {
-          text: `Command form uses the stem directly. ${stem}!`,
-          formula: [verb.igbo, '→', `${stem}!`],
+          source,
+          parts: [imperativeForm],
+          text: imperativeExceptions.has(stem)
+            ? `${stem} is an imperative exception — the bare stem is used.`
+            : `Append '${isHeavy ? 'a' : 'e'}' to the stem by vowel harmony.`,
         };
-      case 'conditional':
+      case 'subjunctive':
         return {
-          text: `Conditional uses 'ga' with subjunctive. Pronoun + ga + ${stem}e.`,
-          formula: [verb.igbo, '→', `ga ${stem}e`],
+          source,
+          parts: [`${stem}e`],
+          text: `Remove the 'i' prefix and append 'e'. Pronoun + ${stem}e.`,
+        };
+      case 'presentPerfect':
+        return {
+          source,
+          parts: [`${vowelPrefix}${stem}`, 'ga'],
+          text: `Plural subjects: vowel-harmony prefix + stem + '-ga'. Singular pronouns (m/i/o) drop the suffix.`,
+        };
+      case 'habitualPresent':
+        return {
+          source,
+          parts: ['na', `${vowelPrefix}${stem}`, 'kari'],
+          text: `Present frame with the habitual suffix '-kari'. Pronoun + na + ${vowelPrefix}${stem}kari.`,
+        };
+      case 'negativePast':
+        return {
+          source,
+          parts: [stem, negPastSuffix],
+          text: `Stem + '-${negPastSuffix}' (vowel harmony). Plural subjects also insert the '${vowelPrefix}' linker.`,
+        };
+      case 'negativeFuture':
+        return {
+          source,
+          parts: ['ma', stem],
+          text: `Replace 'ga' with 'ma' and drop the harmony prefix. Pronoun + ma + ${stem}.`,
+        };
+      case 'negativeImperative':
+        return {
+          source,
+          parts: [`${vowelPrefix}${stem}`, negImpSuffix],
+          text: `Only 2sg / 1pl / 2pl carry forms. Vowel-harmony prefix + stem + '-${negImpSuffix}'.`,
+        };
+      case 'negativePerfect':
+        return {
+          source,
+          parts: ['dika', `${vowelPrefix}${stem}`],
+          text: `Pronoun + dika + ${vowelPrefix}${stem}. Plural subjects prefix 'dika' with the harmony vowel.`,
+        };
+      case 'neverPerfect':
+        return {
+          source,
+          parts: [stem, 'nene'],
+          text: `Stem + '-nene'. The suffix does not take a verb-prefix linker on its own — only when combined with a tense that requires one.`,
+        };
+      case 'finished':
+        return {
+          source,
+          parts: [stem, 'si'],
+          text: `Derivational suffix for a completed action. Shown here in the present-perfect frame: plural subjects add '-ga'; singular pronouns use the bare derived stem.`,
+        };
+      case 'together':
+        return {
+          source,
+          parts: [stem, 'kota'],
+          text: `Derivational suffix meaning "together". Shown in the future frame (Pronoun + ga + ${vowelPrefix}${stem}kota).`,
+        };
+      case 'first':
+        return {
+          source,
+          parts: [stem, 'gode'],
+          text: `Derivational suffix meaning "do X first of all". Imperative only: 2sg / 1pl / 2pl carry forms.`,
+        };
+      case 'forSomeone':
+        return {
+          source,
+          parts: [stem, 'nye'],
+          text: `Derivational suffix meaning "do X for someone". Imperative only: 2sg / 1pl / 2pl carry forms.`,
+        };
+      case 'polite':
+        return {
+          source,
+          parts: [stem, 'nụ́'],
+          text: `Polite intensifier ("please"). Imperative-form base + '-nụ́'. Only 2sg / 1pl / 2pl carry forms.`,
         };
       default:
         return {
+          source,
+          parts: [stem],
           text: 'Follows the standard conjugation rule for this tense.',
-          formula: [stem, '-', '+'],
         };
     }
   };
@@ -613,11 +702,8 @@ const VerbDetailContent = ({
         </TouchableOpacity>
         <View style={styles.detailHeaderTitleContainer}>
           <Text style={styles.detailHeaderTitle}>{verb.igbo}</Text>
-          <TouchableOpacity style={styles.detailAudioButton}>
-            <Volume2 size={20} color="#FFFFFF" />
-          </TouchableOpacity>
         </View>
-        <View style={{ width: 60 }} /> {/* Spacer to balance Back button */}
+        <View style={{ width: 60 }} />
       </View>
 
       <ScrollView
@@ -627,7 +713,7 @@ const VerbDetailContent = ({
       >
         {/* Tab Bar */}
         <View style={styles.detailTabBar}>
-          {(['Indicative', 'Subjunctive', 'Others'] as const).map((tab) => (
+          {(['Indicative', 'Subjunctive', 'Negation', 'Others', 'Extras'] as const).map((tab) => (
             <TouchableOpacity
               key={tab}
               onPress={() => setActiveTab(tab)}
@@ -734,22 +820,9 @@ const VerbDetailContent = ({
                               <View style={styles.easyBadge}>
                                 <Text style={styles.easyBadgeText}>Easy</Text>
                               </View>
-                              <TouchableOpacity style={styles.rulePlayButton}>
-                                <Play
-                                  size={16}
-                                  color="#F3703E"
-                                  fill="#F3703E"
-                                />
-                              </TouchableOpacity>
                             </View>
 
                             <View style={styles.formulaRow}>
-                              <View style={styles.formulaBox}>
-                                <Text style={styles.formulaText}>
-                                  {ruleData.formula[0]}
-                                </Text>
-                              </View>
-                              <Text style={styles.formulaOperator}>-</Text>
                               <View
                                 style={[
                                   styles.formulaBox,
@@ -757,15 +830,24 @@ const VerbDetailContent = ({
                                 ]}
                               >
                                 <Text style={styles.formulaText}>
-                                  {ruleData.formula[1]}
+                                  {ruleData.source}
                                 </Text>
                               </View>
-                              <Text style={styles.formulaOperator}>+</Text>
-                              <View style={styles.formulaBox}>
-                                <Text style={styles.formulaText}>
-                                  {ruleData.formula[2]}
-                                </Text>
-                              </View>
+                              <Text style={styles.formulaOperator}>→</Text>
+                              {ruleData.parts.map((part, idx) => (
+                                <React.Fragment key={`${part}-${idx}`}>
+                                  {idx > 0 && (
+                                    <Text style={styles.formulaOperator}>
+                                      +
+                                    </Text>
+                                  )}
+                                  <View style={styles.formulaBox}>
+                                    <Text style={styles.formulaText}>
+                                      {part}
+                                    </Text>
+                                  </View>
+                                </React.Fragment>
+                              ))}
                             </View>
 
                             <Text style={styles.ruleDescription}>

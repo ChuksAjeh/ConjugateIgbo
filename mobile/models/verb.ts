@@ -16,9 +16,26 @@ export type Tense =
   | 'past'
   | 'future'
   | 'imperative'
-  | 'imperfect'
-  | 'conditional'
-  | 'subjunctive';
+  | 'subjunctive'
+  // Perfective / aspect
+  | 'presentPerfect'
+  | 'habitualPresent'
+  // Negation frames
+  | 'negativePast'
+  | 'negativeFuture'
+  | 'negativeImperative'
+  | 'negativePerfect'
+  | 'neverPerfect'
+  // Derivational/modal suffixes shown as standalone helper tenses.
+  // These are pronoun-composed in their most natural frame (see the
+  // engine for details): `finished` uses the present-perfect frame,
+  // `together` uses future, and `first` / `forSomeone` / `polite` use
+  // imperative.
+  | 'finished'
+  | 'together'
+  | 'first'
+  | 'forSomeone'
+  | 'polite';
 export type Pronoun = 'm' | 'i' | 'o' | 'anyi' | 'unu' | 'wa';
 
 export type VerbType = 'regular' | 'irregular';
@@ -38,12 +55,32 @@ export interface Conjugations {
   future: Record<Pronoun, string>;
   /** Imperative — only 2sg, 1pl (inclusive), and 2pl slots produce actual forms; others return '—'. */
   imperative?: Record<Pronoun, string>;
-  /** Imperfect (habitual/continuous past) — rules are a work-in-progress; see conjugateVerbs.ts. */
-  imperfect?: Record<Pronoun, string>;
-  /** Conditional — rules are a work-in-progress; see conjugateVerbs.ts. */
-  conditional?: Record<Pronoun, string>;
   /** Subjunctive. */
   subjunctive?: Record<Pronoun, string>;
+  /** Present perfect ("has/have done") — suffix -ga/ge/go. */
+  presentPerfect?: Record<Pronoun, string>;
+  /** Habitual present ("usually does") — suffix -kari on the present frame. */
+  habitualPresent?: Record<Pronoun, string>;
+  /** Negative past ("did not") — suffix -ná/né. */
+  negativePast?: Record<Pronoun, string>;
+  /** Negative future ("will not") — "ma" auxiliary replaces "ga", drops verb prefix. */
+  negativeFuture?: Record<Pronoun, string>;
+  /** Negative imperative ("don't") — suffix -ná/né with vowel-harmony prefix. */
+  negativeImperative?: Record<Pronoun, string>;
+  /** Negative perfect ("has not/have not") — prefix dị́ká before the verb. */
+  negativePerfect?: Record<Pronoun, string>;
+  /** Never-perfect ("has never") — suffix -nene. */
+  neverPerfect?: Record<Pronoun, string>;
+  /** Finished action ("has finished X") — suffix -si, present-perfect frame. */
+  finished?: Record<Pronoun, string>;
+  /** Together ("will do X together") — suffix -kota, future frame. */
+  together?: Record<Pronoun, string>;
+  /** First ("do X first") — suffix -gode, imperative frame. */
+  first?: Record<Pronoun, string>;
+  /** For someone ("do X for me") — suffix -nye/ye, imperative frame. */
+  forSomeone?: Record<Pronoun, string>;
+  /** Polite ("please do X") — suffix -nụ́, imperative frame. */
+  polite?: Record<Pronoun, string>;
 }
 
 export interface ExamplePair {

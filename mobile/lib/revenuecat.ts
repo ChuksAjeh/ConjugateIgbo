@@ -4,6 +4,8 @@ import Purchases, { LOG_LEVEL } from 'react-native-purchases';
 
 const REVENUECAT_API_KEY = process.env.EXPO_PUBLIC_REVENUECAT_API_KEY;
 
+let configured = false;
+
 /**
  * Initializes RevenueCat SDK.
  * Should be called once at the app root to set up the singleton instance.
@@ -13,6 +15,12 @@ const REVENUECAT_API_KEY = process.env.EXPO_PUBLIC_REVENUECAT_API_KEY;
 export function configureRevenueCat() {
   // Skip configuration on non-native platforms (web)
   if (Platform.OS !== 'ios' && Platform.OS !== 'android') {
+    return;
+  }
+
+  // Guard against double-configure (Fast Refresh / StrictMode re-runs the
+  // mounting effect). RevenueCat logs a warning on re-configure.
+  if (configured) {
     return;
   }
 
@@ -32,4 +40,6 @@ export function configureRevenueCat() {
   Purchases.configure({
     apiKey: REVENUECAT_API_KEY,
   });
+
+  configured = true;
 }

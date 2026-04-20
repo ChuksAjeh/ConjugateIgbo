@@ -6,9 +6,19 @@ export const tenses: Tense[] = [
   'past',
   'future',
   'imperative',
-  'imperfect',
-  'conditional',
   'subjunctive',
+  'presentPerfect',
+  'habitualPresent',
+  'negativePast',
+  'negativeFuture',
+  'negativeImperative',
+  'negativePerfect',
+  'neverPerfect',
+  'finished',
+  'together',
+  'first',
+  'forSomeone',
+  'polite',
 ];
 
 /** Human-readable labels for each tense. */
@@ -17,10 +27,23 @@ export const tenseLabels: Record<Tense, string> = {
   past: 'Past',
   future: 'Future',
   imperative: 'Imperative',
-  imperfect: 'Imperfect',
-  conditional: 'Conditional',
   subjunctive: 'Subjunctive',
+  presentPerfect: 'Present Perfect',
+  habitualPresent: 'Habitual Present',
+  negativePast: 'Negative Past',
+  negativeFuture: 'Negative Future',
+  negativeImperative: 'Negative Imperative',
+  negativePerfect: 'Negative Perfect',
+  neverPerfect: 'Never Perfect',
+  finished: 'Finished (-si)',
+  together: 'Together (-kota)',
+  first: 'First (-gode)',
+  forSomeone: 'For Someone (-nye)',
+  polite: 'Polite (-nụ́)',
 };
+
+/** Tenses available on the free tier. Everything else requires Pro. */
+export const freeTierTenses: Tense[] = ['present', 'past', 'future'];
 
 /** All supported pronouns, in display order. */
 export const pronouns: Pronoun[] = ['m', 'i', 'o', 'anyi', 'unu', 'wa'];

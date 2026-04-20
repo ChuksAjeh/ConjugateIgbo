@@ -143,8 +143,6 @@ export default Sentry.wrap(function RootLayout() {
           <>
             <Stack screenOptions={{ headerShown: false, gestureEnabled: true }}>
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-              <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-              <Stack.Screen name="not-found" options={{ title: 'Not Found' }} />
             </Stack>
             <StatusBar style="auto" />
           </>

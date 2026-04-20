@@ -59,6 +59,9 @@ export const PurchasesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   const load = useCallback(async () => {
     if (!isNative) {
+      // Web: no RevenueCat, but the UI still needs to render out of its
+      // loading skeleton. Mark as "loaded" so gated screens display.
+      setHasLoaded(true);
       setIsLoading(false);
       return;
     }
@@ -71,7 +74,6 @@ export const PurchasesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       ]);
       setCustomerInfo(info);
       setOfferings(offs);
-      setHasLoaded(true);
     } catch (e: any) {
       Sentry.logger.warn(
         `[PurchasesProvider] RevenueCat initialization failed: ${e?.message || e}`,
@@ -81,6 +83,10 @@ export const PurchasesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         }
       );
     } finally {
+      // Always flip hasLoaded: failure to reach RevenueCat shouldn't trap
+      // the pro screen on a spinner. Gated UI can still render (without
+      // packages) and the user can retry via pull-to-refresh / restore.
+      setHasLoaded(true);
       setIsLoading(false);
     }
   }, []);

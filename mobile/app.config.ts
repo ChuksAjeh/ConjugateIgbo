@@ -26,6 +26,7 @@ export default {
     newArchEnabled: true,
 
     ios: {
+      bundleIdentifier: 'com.chuksajeh.conjugateigbo',
       supportsTablet: true,
     },
 
