@@ -29,7 +29,6 @@ export interface DialectRules {
   applyFinishedRule: RuleFn;
   applyTogetherRule: RuleFn;
   applyFirstRule: RuleFn;
-  applyForSomeoneRule: RuleFn;
   applyPoliteRule: RuleFn;
 }
 

@@ -95,7 +95,6 @@ const defaultSettings: AppSettings = {
     finished: false,
     together: false,
     first: false,
-    forSomeone: false,
     polite: false,
   },
   verbLimit: 100,

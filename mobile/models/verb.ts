@@ -28,12 +28,10 @@ export type Tense =
   // Derivational/modal suffixes shown as standalone helper tenses.
   // These are pronoun-composed in their most natural frame (see the
   // engine for details): `finished` uses the present-perfect frame,
-  // `together` uses future, and `first` / `forSomeone` / `polite` use
-  // imperative.
+  // `together` uses future, and `first` / `polite` use imperative.
   | 'finished'
   | 'together'
   | 'first'
-  | 'forSomeone'
   | 'polite';
 export type Pronoun = 'm' | 'i' | 'o' | 'anyi' | 'unu' | 'wa';
 
@@ -74,8 +72,6 @@ export interface Conjugations {
   together?: Record<Pronoun, string>;
   /** First ("do X first") — suffix -gode, imperative frame. */
   first?: Record<Pronoun, string>;
-  /** For someone ("do X for me") — suffix -nye/ye, imperative frame. */
-  forSomeone?: Record<Pronoun, string>;
   /** Polite ("please do X") — suffix -nụ́, imperative frame. */
   polite?: Record<Pronoun, string>;
 }

@@ -274,18 +274,6 @@ export function generateConjugations(
     },
 
     /**
-     * For-someone ('-nye/ye', Notion Rule 9) — imperative frame.
-     */
-    forSomeone: {
-      m:    rules.applyForSomeoneRule(root, 'm'),
-      i:    rules.applyForSomeoneRule(root, 'i'),
-      o:    rules.applyForSomeoneRule(root, 'o'),
-      anyi: rules.applyForSomeoneRule(root, 'anyi'),
-      unu:  rules.applyForSomeoneRule(root, 'unu'),
-      wa:   rules.applyForSomeoneRule(root, 'wa'),
-    },
-
-    /**
      * Polite intensifier ('-nụ́', Notion Rule 6 "please") — imperative frame.
      */
     polite: {

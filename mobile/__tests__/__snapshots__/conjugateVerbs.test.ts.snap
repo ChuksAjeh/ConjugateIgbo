@@ -18,14 +18,6 @@ exports[`generateConjugations — Central dialect ibia (ibia) 1`] = `
     "unu": "biagode",
     "wa": "—",
   },
-  "forSomeone": {
-    "anyi": "bianye",
-    "i": "bianye",
-    "m": "—",
-    "o": "—",
-    "unu": "bianye",
-    "wa": "—",
-  },
   "future": {
     "anyi": "Anyị ga abia",
     "i": "Ị ga abia",
@@ -149,14 +141,6 @@ exports[`generateConjugations — Central dialect ide (ide) 1`] = `
     "m": "—",
     "o": "—",
     "unu": "deegode",
-    "wa": "—",
-  },
-  "forSomeone": {
-    "anyi": "deenye",
-    "i": "deenye",
-    "m": "—",
-    "o": "—",
-    "unu": "deenye",
     "wa": "—",
   },
   "future": {
@@ -284,14 +268,6 @@ exports[`generateConjugations — Central dialect igbaOso (igba ọsọ) 1`] = `
     "unu": "gba ọsọagode",
     "wa": "—",
   },
-  "forSomeone": {
-    "anyi": "gba ọsọanye",
-    "i": "gba ọsọanye",
-    "m": "—",
-    "o": "—",
-    "unu": "gba ọsọanye",
-    "wa": "—",
-  },
   "future": {
     "anyi": "Anyị ga agba ọsọ",
     "i": "Ị ga agba ọsọ",
@@ -415,14 +391,6 @@ exports[`generateConjugations — Central dialect ikwu (ikwu) 1`] = `
     "m": "—",
     "o": "—",
     "unu": "kwuegode",
-    "wa": "—",
-  },
-  "forSomeone": {
-    "anyi": "kwuenye",
-    "i": "kwuenye",
-    "m": "—",
-    "o": "—",
-    "unu": "kwuenye",
     "wa": "—",
   },
   "future": {
@@ -550,14 +518,6 @@ exports[`generateConjugations — Central dialect iri (irị) 1`] = `
     "unu": "rịagode",
     "wa": "—",
   },
-  "forSomeone": {
-    "anyi": "rịanye",
-    "i": "rịanye",
-    "m": "—",
-    "o": "—",
-    "unu": "rịanye",
-    "wa": "—",
-  },
   "future": {
     "anyi": "Anyị ga arị",
     "i": "Ị ga arị",
@@ -681,14 +641,6 @@ exports[`generateConjugations — Delta dialect ibia (ibia) 1`] = `
     "m": "—",
     "o": "—",
     "unu": "biagode",
-    "wa": "—",
-  },
-  "forSomeone": {
-    "anyi": "bianye",
-    "i": "bianye",
-    "m": "—",
-    "o": "—",
-    "unu": "bianye",
     "wa": "—",
   },
   "future": {
@@ -816,14 +768,6 @@ exports[`generateConjugations — Delta dialect ide (ide) 1`] = `
     "unu": "deegode",
     "wa": "—",
   },
-  "forSomeone": {
-    "anyi": "deenye",
-    "i": "deenye",
-    "m": "—",
-    "o": "—",
-    "unu": "deenye",
-    "wa": "—",
-  },
   "future": {
     "anyi": "Anyi ga ede",
     "i": "I ga ede",
@@ -947,14 +891,6 @@ exports[`generateConjugations — Delta dialect igbaOso (igba ọsọ) 1`] = `
     "m": "—",
     "o": "—",
     "unu": "gba ọsọagode",
-    "wa": "—",
-  },
-  "forSomeone": {
-    "anyi": "gba ọsọanye",
-    "i": "gba ọsọanye",
-    "m": "—",
-    "o": "—",
-    "unu": "gba ọsọanye",
     "wa": "—",
   },
   "future": {
@@ -1082,14 +1018,6 @@ exports[`generateConjugations — Delta dialect ikwu (ikwu) 1`] = `
     "unu": "kwuegode",
     "wa": "—",
   },
-  "forSomeone": {
-    "anyi": "kwuenye",
-    "i": "kwuenye",
-    "m": "—",
-    "o": "—",
-    "unu": "kwuenye",
-    "wa": "—",
-  },
   "future": {
     "anyi": "Anyi ga ekwu",
     "i": "I ga ekwu",
@@ -1213,14 +1141,6 @@ exports[`generateConjugations — Delta dialect iri (irị) 1`] = `
     "m": "—",
     "o": "—",
     "unu": "rịagode",
-    "wa": "—",
-  },
-  "forSomeone": {
-    "anyi": "rịanye",
-    "i": "rịanye",
-    "m": "—",
-    "o": "—",
-    "unu": "rịanye",
     "wa": "—",
   },
   "future": {

@@ -70,7 +70,7 @@ const IMPERATIVE_EXCEPTIONS = new Set(['bia', 'je', 'nodu']);
 
 /**
  * 2sg imperative surface form, pronoun-free — used by derivational helpers
- * (first/forSomeone/polite) that compose onto the imperative stem.
+ * (first/polite) that compose onto the imperative stem.
  */
 function buildImperativeForm(root: string): string {
   const stem = removePrefixI(root);
@@ -162,17 +162,6 @@ export function applyFirstRule(root: string, pronoun: Pronoun): string {
 }
 
 /**
- * For-someone stem: imperative form + '-nye' (or '-ye' for stems ending
- * in a consonant cluster where 'nye' would double).
- * Only 2sg/1pl/2pl carry forms.
- */
-export function applyForSomeoneRule(root: string, pronoun: Pronoun): string {
-  if (!root) return '';
-  if (pronoun !== 'i' && pronoun !== 'anyi' && pronoun !== 'unu') return '—';
-  return buildImperativeForm(root) +'nye';
-}
-
-/**
  * Polite intensifier stem: imperative form + '-nụ́'.
  * Only 2sg/1pl/2pl carry forms.
  */
@@ -199,6 +188,5 @@ export const sharedRules: DialectRules = {
   applyFinishedRule,
   applyTogetherRule,
   applyFirstRule,
-  applyForSomeoneRule,
   applyPoliteRule,
 };

@@ -16,7 +16,6 @@ export const tenses: Tense[] = [
   'finished',
   'together',
   'first',
-  'forSomeone',
   'polite',
 ];
 
@@ -36,7 +35,6 @@ export const tenseLabels: Record<Tense, string> = {
   finished: 'Finished (-si)',
   together: 'Together (-kota)',
   first: 'First (-gode)',
-  forSomeone: 'For Someone (-nye)',
   polite: 'Polite (-nụ́)',
 };
 
@@ -57,7 +55,6 @@ export const tenseAnnotations: Record<Tense, string> = {
   finished: '-si (finished)',
   together: '-kota (together)',
   first: '-gode (first of all)',
-  forSomeone: '-nye (for someone)',
   polite: '-nụ́ (please)',
 };
 
