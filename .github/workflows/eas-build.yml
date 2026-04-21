@@ -1,0 +1,106 @@
+name: EAS Build & Deploy
+
+on:
+  push:
+    branches: [main]
+    paths: ['mobile/**']
+    # GitHub Actions does NOT evaluate `paths` for tag pushes — the
+    # production job therefore runs on ANY v*.*.* tag regardless of
+    # which files changed. Intentional.
+    tags: ['v*.*.*']
+
+jobs:
+
+  # ── Preview — merge-to-main (matrix across platforms) ──────────────────
+
+  preview:
+    name: Preview — ${{ matrix.platform }} build & submit
+    if: github.ref_type == 'branch'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [android, ios]
+    concurrency:
+      group: eas-preview-${{ matrix.platform }}
+      cancel-in-progress: true
+    defaults:
+      run:
+        working-directory: mobile
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      # iOS-only; harmless for Android.
+      EXPO_ASC_KEY_ID: ${{ secrets.EXPO_ASC_KEY_ID }}
+      EXPO_ASC_ISSUER_ID: ${{ secrets.EXPO_ASC_ISSUER_ID }}
+      EXPO_ASC_API_KEY: ${{ secrets.EXPO_ASC_API_KEY }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+
+      - run: npm ci
+      - run: npm install -g eas-cli@18
+      - name: Verify Expo auth
+        run: eas whoami
+
+      - name: Build (${{ matrix.platform }}, preview)
+        id: build
+        run: |
+          BUILD_JSON=$(eas build \
+            --platform ${{ matrix.platform }} \
+            --profile preview \
+            --non-interactive \
+            --no-wait \
+            --json)
+
+          echo "$BUILD_JSON"
+          echo "build_id=$(echo "$BUILD_JSON" | jq -r '.[0].id')" >> "$GITHUB_OUTPUT"
+
+      - name: Submit (${{ matrix.platform }})
+        run: |
+          eas submit \
+            --platform ${{ matrix.platform }} \
+            --id ${{ steps.build.outputs.build_id }} \
+            --non-interactive \
+            --no-wait
+
+  # ── Production — on v*.*.* tag (all platforms, one EAS call) ───────────
+
+  production:
+    name: Production — build all platforms
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    concurrency:
+      group: eas-production-${{ github.ref }}
+      cancel-in-progress: false
+    defaults:
+      run:
+        working-directory: mobile
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+
+      - run: npm ci
+      - run: npm install -g eas-cli@18
+      - run: eas whoami
+
+      - name: Build production (all platforms)
+        run: |
+          eas build \
+            --platform all \
+            --profile production \
+            --non-interactive \
+            --no-wait

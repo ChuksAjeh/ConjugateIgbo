@@ -30,8 +30,15 @@
       "android": {
         "track": "internal",
         "releaseStatus": "draft"
+      },
+      "ios": {
+        "ascAppId": "6762678071"
       }
     },
-    "production": {}
+    "production": {
+      "ios": {
+        "ascAppId": "6762678071"
+      }
+    }
   }
 }
