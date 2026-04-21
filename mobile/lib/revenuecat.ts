@@ -2,7 +2,8 @@ import { Platform } from 'react-native';
 import * as Sentry from '@sentry/react-native';
 import Purchases, { LOG_LEVEL } from 'react-native-purchases';
 
-const REVENUECAT_API_KEY = process.env.EXPO_PUBLIC_REVENUECAT_API_KEY;
+const REVENUECAT_API_KEY_IOS = process.env.EXPO_PUBLIC_REVENUECAT_API_IOS_KEY;
+const REVENUECAT_API_KEY_ANDROID = process.env.EXPO_PUBLIC_REVENUECAT_API_KEY;
 
 let configured = false;
 
@@ -24,12 +25,18 @@ export function configureRevenueCat() {
     return;
   }
 
-  if (!REVENUECAT_API_KEY) {
+  const apiKey = __DEV__
+    ? REVENUECAT_API_KEY_ANDROID
+    : Platform.OS === 'ios'
+      ? REVENUECAT_API_KEY_IOS
+      : REVENUECAT_API_KEY_ANDROID;
+
+  if (!apiKey) {
     Sentry.captureMessage(
-      '[RevenueCat] API key missing. Check your environment variables.',
+      `[RevenueCat] API key missing for ${Platform.OS}. Check your environment variables.`,
       {
         level: 'error',
-        tags: { feature: 'revenuecat' },
+        tags: { feature: 'revenuecat', os: Platform.OS },
       },
     );
     return;
@@ -38,7 +45,7 @@ export function configureRevenueCat() {
   Purchases.setLogLevel(__DEV__ ? LOG_LEVEL.DEBUG : LOG_LEVEL.INFO);
 
   Purchases.configure({
-    apiKey: REVENUECAT_API_KEY,
+    apiKey: apiKey,
   });
 
   configured = true;
