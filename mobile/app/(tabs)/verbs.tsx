@@ -18,8 +18,6 @@ import { useLocalSearchParams, router } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import {
   Search,
-  Filter,
-  X,
   ChevronLeft,
   ChevronDown,
   ChevronRight,
@@ -33,11 +31,10 @@ import { usePurchases } from '@/hooks/usePurchases';
 import {
   pronounLabels,
   pronouns,
+  tenseLabels,
+  tenseAnnotations,
 } from '@/models/interfaces';
 import { WavePattern } from '@/components/SplashScreen';
-
-type FilterType = 'all' | 'common' | 'regular' | 'irregular';
-type SortType = 'alphabetical' | 'frequency' | 'difficulty';
 
 export default function VerbsScreen() {
   const { settings } = useSettings();
@@ -50,10 +47,7 @@ export default function VerbsScreen() {
   const [verbs, setVerbs] = useState<IgboVerb[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedFilter, setSelectedFilter] = useState<FilterType>('all');
-  const [sortBy, setSortBy] = useState<SortType>('alphabetical');
   const [selectedVerb, setSelectedVerb] = useState<IgboVerb | null>(null);
-  const [showFilters, setShowFilters] = useState(false);
 
   // Load verbs on component mount
   useEffect(() => {
@@ -117,59 +111,13 @@ export default function VerbsScreen() {
 
   const filteredAndSortedVerbs = useMemo(() => {
     const q = searchQuery.toLowerCase();
-    let filtered = verbs.filter((verb) => {
-      const matchesSearch =
+    return verbs
+      .filter((verb) =>
         (verb.igbo ?? '').toLowerCase().includes(q) ||
-        (verb.english ?? '').toLowerCase().includes(q);
-
-      const matchesFilter =
-        selectedFilter === 'all' ||
-        (selectedFilter === 'common' &&
-          (verb.freqRank != null
-            ? verb.freqRank <= 100
-            : verb.frequency === 'high')) ||
-        (selectedFilter === 'regular' && verb.type === 'regular') ||
-        (selectedFilter === 'irregular' && verb.type === 'irregular');
-
-      return matchesSearch && matchesFilter;
-    });
-
-    const frequencyOrder = { high: 3, medium: 2, low: 1 } as const;
-    const getFreqScore = (v: IgboVerb) => {
-      if (v && typeof v.freqRank === 'number') {
-        // Lower rank = higher frequency; map to higher score
-        if (v.freqRank <= 100) return 3;
-        if (v.freqRank <= 300) return 2;
-        return 1;
-      }
-      // Fallback to legacy label if provided
-      // @ts-ignore legacy optional
-      return (
-        frequencyOrder[(v as any).frequency as keyof typeof frequencyOrder] ?? 1
-      );
-    };
-
-    return filtered.sort((a, b) => {
-      switch (sortBy) {
-        case 'alphabetical':
-          return (a.igbo ?? '').localeCompare(b.igbo ?? '');
-        case 'frequency':
-          return getFreqScore(b) - getFreqScore(a);
-        case 'difficulty':
-          const difficultyOrder = {
-            beginner: 1,
-            intermediate: 2,
-            advanced: 3,
-          } as const;
-          return (
-            (difficultyOrder[a.difficulty ?? 'beginner'] ?? 1) -
-            (difficultyOrder[b.difficulty ?? 'beginner'] ?? 1)
-          );
-        default:
-          return 0;
-      }
-    });
-  }, [searchQuery, selectedFilter, sortBy, verbs]);
+        (verb.english ?? '').toLowerCase().includes(q),
+      )
+      .sort((a, b) => (a.igbo ?? '').localeCompare(b.igbo ?? ''));
+  }, [searchQuery, verbs]);
 
   const renderVerbItem = ({ item }: { item: IgboVerb }) => (
     <TouchableOpacity
@@ -274,56 +222,24 @@ export default function VerbsScreen() {
         </Text>
       </View>
 
-      {/* Search and Filter Bar */}
+      {/* Search Bar */}
       <View style={styles.searchContainer}>
-        <View style={styles.searchInputContainer}>
-          <Search size={20} color="#6b7280" />
+        <View
+          style={[
+            styles.searchInputContainer,
+            { backgroundColor: theme.colors.surface },
+          ]}
+        >
+          <Search size={20} color={isDark ? theme.colors.textSecondary : '#6b7280'} />
           <TextInput
             style={[styles.searchInput, { color: theme.colors.text }]}
             placeholder="Search verbs..."
             value={searchQuery}
             onChangeText={setSearchQuery}
-            placeholderTextColor="#9ca3af"
+            placeholderTextColor={theme.colors.textSecondary}
           />
         </View>
-
-        <TouchableOpacity
-          style={[
-            styles.filterButton,
-            { backgroundColor: theme.colors.surface },
-          ]}
-          onPress={() => setShowFilters(true)}
-        >
-          <Filter size={20} color="#6b7280" />
-        </TouchableOpacity>
       </View>
-
-      {/* Filter Summary */}
-      {(selectedFilter !== 'all' || sortBy !== 'alphabetical') && (
-        <View style={styles.filterSummary}>
-          <Text
-            style={[
-              styles.filterSummaryText,
-              { color: theme.colors.textSecondary },
-            ]}
-          >
-            {selectedFilter !== 'all' && `Filter: ${selectedFilter} • `}
-            Sort: {sortBy}
-          </Text>
-          <TouchableOpacity
-            onPress={() => {
-              setSelectedFilter('all');
-              setSortBy('alphabetical');
-            }}
-          >
-            <Text
-              style={[styles.clearFilters, { color: theme.colors.primary }]}
-            >
-              Clear
-            </Text>
-          </TouchableOpacity>
-        </View>
-      )}
 
       {/* Verbs List */}
       {isLoading ? (
@@ -342,128 +258,6 @@ export default function VerbsScreen() {
           showsVerticalScrollIndicator={false}
         />
       )}
-
-      {/* Filter Modal */}
-      <Modal
-        visible={showFilters}
-        animationType="slide"
-        presentationStyle="pageSheet"
-      >
-        <SafeAreaView
-          style={[
-            styles.modalContainer,
-            { backgroundColor: theme.colors.background },
-          ]}
-        >
-          <View
-            style={[
-              styles.modalHeader,
-              {
-                backgroundColor: theme.colors.surface,
-                borderBottomColor: theme.colors.border,
-              },
-            ]}
-          >
-            <Text style={[styles.modalTitle, { color: theme.colors.text }]}>
-              Filters & Sorting
-            </Text>
-            <TouchableOpacity onPress={() => setShowFilters(false)}>
-              <X size={24} color={theme.colors.text} />
-            </TouchableOpacity>
-          </View>
-
-          <ScrollView style={styles.modalContent}>
-            {/* Filter Options */}
-            <View style={styles.filterSection}>
-              <Text
-                style={[
-                  styles.filterSectionTitle,
-                  { color: theme.colors.text },
-                ]}
-              >
-                Filter by
-              </Text>
-              {[
-                { key: 'all', label: 'All Verbs' },
-                { key: 'common', label: 'Common Verbs' },
-                { key: 'regular', label: 'Regular Verbs' },
-                { key: 'irregular', label: 'Irregular Verbs' },
-              ].map((filter) => (
-                <TouchableOpacity
-                  key={filter.key}
-                  style={[
-                    styles.filterOption,
-                    { backgroundColor: theme.colors.surface },
-                    selectedFilter === filter.key && {
-                      ...styles.filterOptionActive,
-                      backgroundColor: isDark ? '#7c2d12' : '#fff7ed',
-                      borderColor: '#F3703E',
-                    },
-                  ]}
-                  onPress={() => setSelectedFilter(filter.key as FilterType)}
-                >
-                  <Text
-                    style={[
-                      styles.filterOptionText,
-                      { color: theme.colors.text },
-                      selectedFilter === filter.key && {
-                        color: '#F3703E',
-                        fontWeight: '500',
-                      },
-                    ]}
-                  >
-                    {filter.label}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-
-            {/* Sort Options */}
-            <View style={styles.filterSection}>
-              <Text
-                style={[
-                  styles.filterSectionTitle,
-                  { color: theme.colors.text },
-                ]}
-              >
-                Sort by
-              </Text>
-              {[
-                { key: 'alphabetical', label: 'Alphabetical' },
-                { key: 'frequency', label: 'Frequency' },
-                { key: 'difficulty', label: 'Difficulty' },
-              ].map((sort) => (
-                <TouchableOpacity
-                  key={sort.key}
-                  style={[
-                    styles.filterOption,
-                    { backgroundColor: theme.colors.surface },
-                    sortBy === sort.key && {
-                      ...styles.filterOptionActive,
-                      backgroundColor: isDark ? '#7c2d12' : '#fff7ed',
-                      borderColor: '#F3703E',
-                    },
-                  ]}
-                  onPress={() => setSortBy(sort.key as SortType)}
-                >
-                  <Text
-                    style={[
-                      styles.filterOptionText,
-                      { color: theme.colors.text },
-                      sortBy === sort.key && {
-                        color: '#F3703E',
-                        fontWeight: '500',
-                      },
-                    ]}
-                  >
-                    {sort.label}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </ScrollView>
-        </SafeAreaView>
-      </Modal>
 
       <Modal
         visible={selectedVerb !== null}
@@ -490,10 +284,9 @@ export default function VerbsScreen() {
 // Separate component for verb detail content
 const tensesByTab = {
   Indicative: ['present', 'past', 'future', 'presentPerfect', 'habitualPresent'] as Tense[],
-  Subjunctive: ['subjunctive'] as Tense[],
   Negation: ['negativePast', 'negativeFuture', 'negativeImperative', 'negativePerfect', 'neverPerfect'] as Tense[],
   Others: ['imperative'] as Tense[],
-  Extras: ['finished', 'together', 'first', 'forSomeone', 'polite'] as Tense[],
+  Extras: ['finished', 'together', 'first', 'polite'] as Tense[],
 };
 
 const VerbDetailContent = ({
@@ -511,7 +304,7 @@ const VerbDetailContent = ({
   const { settings } = useSettings();
   const { isProUser, isLoading } = usePurchases();
   const [activeTab, setActiveTab] = useState<
-    'Indicative' | 'Subjunctive' | 'Negation' | 'Others' | 'Extras'
+    'Indicative' | 'Negation' | 'Others' | 'Extras'
   >('Indicative');
   const [expandedTenses, setExpandedTenses] = useState<Record<string, boolean>>(
     {
@@ -595,12 +388,6 @@ const VerbDetailContent = ({
             ? `${stem} is an imperative exception — the bare stem is used.`
             : `Append '${isHeavy ? 'a' : 'e'}' to the stem by vowel harmony.`,
         };
-      case 'subjunctive':
-        return {
-          source,
-          parts: [`${stem}e`],
-          text: `Remove the 'i' prefix and append 'e'. Pronoun + ${stem}e.`,
-        };
       case 'presentPerfect':
         return {
           source,
@@ -629,7 +416,7 @@ const VerbDetailContent = ({
         return {
           source,
           parts: [`${vowelPrefix}${stem}`, negImpSuffix],
-          text: `Only 2sg / 1pl / 2pl carry forms. Vowel-harmony prefix + stem + '-${negImpSuffix}'.`,
+          text: `Vowel-harmony prefix + stem + '-${negImpSuffix}'. Pronoun prepended (e.g. "Anyi ${vowelPrefix}${stem}${negImpSuffix}").`,
         };
       case 'negativePerfect':
         return {
@@ -660,12 +447,6 @@ const VerbDetailContent = ({
           source,
           parts: [stem, 'gode'],
           text: `Derivational suffix meaning "do X first of all". Imperative only: 2sg / 1pl / 2pl carry forms.`,
-        };
-      case 'forSomeone':
-        return {
-          source,
-          parts: [stem, 'nye'],
-          text: `Derivational suffix meaning "do X for someone". Imperative only: 2sg / 1pl / 2pl carry forms.`,
         };
       case 'polite':
         return {
@@ -713,7 +494,7 @@ const VerbDetailContent = ({
       >
         {/* Tab Bar */}
         <View style={styles.detailTabBar}>
-          {(['Indicative', 'Subjunctive', 'Negation', 'Others', 'Extras'] as const).map((tab) => (
+          {(['Indicative', 'Negation', 'Others', 'Extras'] as const).map((tab) => (
             <TouchableOpacity
               key={tab}
               onPress={() => setActiveTab(tab)}
@@ -738,7 +519,9 @@ const VerbDetailContent = ({
         <View style={styles.meaningSection}>
           <View style={styles.meaningRow}>
             <Text style={styles.flagEmoji}>🇬🇧</Text>
-            <Text style={styles.englishMeaningLabel}>To {verb.english}</Text>
+            <Text style={styles.englishMeaningLabel}>
+              {/^to\s/i.test(verb.english ?? '') ? verb.english : `To ${verb.english ?? ''}`}
+            </Text>
           </View>
           <View style={styles.enabledRow}>
             <Text style={styles.enabledLabel}>Enabled for practise</Text>
@@ -767,7 +550,14 @@ const VerbDetailContent = ({
                 style={styles.tenseHeader}
                 onPress={() => toggleTense(tenseUpper)}
               >
-                <Text style={styles.tenseHeaderText}>{tenseUpper}</Text>
+                <View style={styles.tenseHeaderLabelGroup}>
+                  <Text style={styles.tenseHeaderText}>{tenseLabels[tense].toUpperCase()}</Text>
+                  {!!tenseAnnotations[tense] && (
+                    <Text style={styles.tenseHeaderAnnotation}>
+                      {tenseAnnotations[tense]}
+                    </Text>
+                  )}
+                </View>
                 <ChevronDown
                   size={20}
                   color="#9ca3af"
@@ -955,37 +745,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#333',
     fontFamily: 'Manjari-Regular',
-  },
-  filterButton: {
-    borderRadius: 15,
-    padding: 12,
-    backgroundColor: '#FFFFFF',
-    justifyContent: 'center',
-    alignItems: 'center',
-    // Shadow
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  filterSummary: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingBottom: 16,
-  },
-  filterSummaryText: {
-    fontSize: 14,
-    color: '#6b7280',
-    fontFamily: 'Manjari-Regular',
-  },
-  clearFilters: {
-    fontSize: 14,
-    color: '#F3703E',
-    fontWeight: '500',
-    fontFamily: 'Manjari-Bold',
   },
   verbsList: {
     flex: 1,
@@ -1212,11 +971,21 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     paddingHorizontal: 20,
   },
+  tenseHeaderLabelGroup: {
+    flex: 1,
+    flexDirection: 'column',
+  },
   tenseHeaderText: {
     fontSize: 14,
     color: '#9ca3af',
     fontFamily: 'Manjari-Bold',
     letterSpacing: 1,
+  },
+  tenseHeaderAnnotation: {
+    fontSize: 12,
+    color: '#9ca3af',
+    fontFamily: 'Manjari-Regular',
+    marginTop: 2,
   },
   tenseContent: {
     paddingBottom: 10,
@@ -1327,45 +1096,6 @@ const styles = StyleSheet.create({
     color: '#D97706',
     fontFamily: 'Manjari-Bold',
     fontSize: 16,
-  },
-  // Legacy styles to keep for now
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 20,
-    borderBottomWidth: 1,
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  modalContent: {
-    flex: 1,
-    padding: 20,
-  },
-  filterSection: {
-    marginBottom: 32,
-  },
-  filterSectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 16,
-    fontFamily: 'Manjari-Bold',
-  },
-  filterOption: {
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 8,
-    borderWidth: 2,
-    borderColor: 'transparent',
-  },
-  filterOptionActive: {
-    borderColor: '#3b82f6',
-  },
-  filterOptionText: {
-    fontSize: 16,
-    fontFamily: 'Manjari-Regular',
   },
   loadingContainer: {
     flex: 1,

@@ -385,7 +385,11 @@ class VerbService {
   ): Promise<{ verbs: IgboVerb[]; fellBackToDelta: boolean }> {
     const { dialectUsed } = await this.ensureLoaded(dialect);
     const used = dialectUsed === 'delta' && dialect !== 'delta';
-    let verbs = [...(this.cacheByDialect[dialectUsed] || [])];
+    // Drop verbs missing an English translation — they have nothing to show on
+    // the practice feed or verb list and surface as blank cards otherwise.
+    let verbs = [...(this.cacheByDialect[dialectUsed] || [])].filter(
+      (v) => !!v.english && v.english.trim().length > 0,
+    );
 
     if (limit) {
       // Filter by freqRank if available, otherwise just slice

@@ -12,9 +12,9 @@ import { IgboVerb } from '@/models/verb';
 
 /** Canonical test verbs — chosen for vowel-harmony coverage and edge cases. */
 const verbs: Record<string, IgboVerb> = {
-  // Light-vowel stem (e/i harmony), infinitive prefix "i".
-  iri:   { id: '1', igbo: 'iri', english: 'to eat' },
-  // Heavy-vowel stem (a/ị/ọ/ụ harmony), imperative exception ("bia").
+  // Heavy-vowel stem (a/ị/ọ/ụ harmony) — imperative stem "rị" → "rịa".
+  iri:   { id: '1', igbo: 'irị', english: 'to eat' },
+  // Heavy-vowel stem, imperative exception ("bia").
   ibia:  { id: '2', igbo: 'ibia', english: 'to come' },
   // Light stem, tests -ne negation suffix.
   ikwu:  { id: '3', igbo: 'ikwu', english: 'to say' },
@@ -41,26 +41,28 @@ describe('generateConjugations — Central dialect', () => {
 });
 
 describe('imperative vowel-ending rule', () => {
-  test('heavy-vowel stem appends "a" (ri → ria)', () => {
+  test('heavy-vowel stem appends "a" (rị → rịa)', () => {
     const { imperative } = generateConjugations(verbs.iri, 'delta');
-    expect(imperative!.i).toBe('rie');
+    expect(imperative!.i).toBe('I rịa');
   });
 
   test('exception "bia" stays bare', () => {
     const { imperative } = generateConjugations(verbs.ibia, 'delta');
-    expect(imperative!.i).toBe('bia');
+    expect(imperative!.i).toBe('I bia');
   });
 
   test('light-vowel stem appends "e" (de → dee)', () => {
     const { imperative } = generateConjugations(verbs.ide, 'delta');
-    expect(imperative!.i).toBe('dee');
+    expect(imperative!.i).toBe('I dee');
   });
 
-  test('non-imperative slots return "—"', () => {
+  test('every pronoun shares the same imperative form (only pronoun differs)', () => {
     const { imperative } = generateConjugations(verbs.iri, 'delta');
-    expect(imperative!.m).toBe('—');
-    expect(imperative!.o).toBe('—');
-    expect(imperative!.wa).toBe('—');
+    expect(imperative!.m).toMatch(/ rịa$/);
+    expect(imperative!.o).toMatch(/ rịa$/);
+    expect(imperative!.anyi).toBe('Anyi rịa');
+    expect(imperative!.unu).toBe('Unu rịa');
+    expect(imperative!.wa).toBe('Wa rịa');
   });
 });
 
@@ -80,28 +82,28 @@ describe('present perfect singular-vs-plural split', () => {
 });
 
 describe('negative future uses "ma" auxiliary and drops the verb prefix', () => {
-  test('1sg: M ma <bare-stem>', () => {
+  test('1sg keeps the bare "m" pronoun at the front', () => {
     const { negativeFuture } = generateConjugations(verbs.iri, 'delta');
-    expect(negativeFuture!.m).toBe('M ma ri');
+    expect(negativeFuture!.m).toBe('M ma rị');
   });
 
-  test('drops the verb prefix (no "eri"/"ari")', () => {
+  test('drops the verb prefix (no "arị")', () => {
     const { negativeFuture } = generateConjugations(verbs.iri, 'delta');
-    expect(negativeFuture!.i).not.toMatch(/eri|ari/);
+    expect(negativeFuture!.i).not.toMatch(/arị/);
   });
 });
 
-describe('negative imperative only populates 2sg / 1pl / 2pl', () => {
-  test('m/o/wa slots are "—"', () => {
-    const { negativeImperative } = generateConjugations(verbs.ikwu, 'delta');
-    expect(negativeImperative!.m).toBe('—');
-    expect(negativeImperative!.o).toBe('—');
-    expect(negativeImperative!.wa).toBe('—');
-  });
-
+describe('negative imperative — uniform form, pronoun prepended', () => {
   test('2sg carries the "-ne" suffix after harmony prefix', () => {
     const { negativeImperative } = generateConjugations(verbs.ikwu, 'delta');
-    expect(negativeImperative!.i).toBe('ekwune');
+    expect(negativeImperative!.i).toBe('I ekwune');
+  });
+
+  test('every pronoun shares the same neg-imperative form', () => {
+    const { negativeImperative } = generateConjugations(verbs.ikwu, 'delta');
+    expect(negativeImperative!.anyi).toBe('Anyi ekwune');
+    expect(negativeImperative!.unu).toBe('Unu ekwune');
+    expect(negativeImperative!.wa).toBe('Wa ekwune');
   });
 });
 

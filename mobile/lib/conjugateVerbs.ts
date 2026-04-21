@@ -57,6 +57,12 @@ function getVowelHarmonyPrefix(stem: string): 'a' | 'e' {
   return /[aọụịỌỤỊ]/.test(stem) ? 'a' : 'e';
 }
 
+/** True when the stem already opens with a vowel — in that case the
+ *  harmony prefix is not prepended to the bare stem. */
+function stemStartsWithVowel(stem: string): boolean {
+  return /^[aeiouọụịAEIOUỌỤỊ]/.test(stem);
+}
+
 // ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------
@@ -80,7 +86,8 @@ export function generateConjugations(
   const presentStem = rules.applyPresentRule(root, 'i');
   const pastStem = rules.applyPastRule(root, 'i');
   const perfectiveSuffix = s.particles.perfectSuffix;
-  const perfectedStem = `${vowelPrefixLower}${stem}${perfectiveSuffix}`;
+  const stemLinker = stemStartsWithVowel(stem) ? '' : vowelPrefixLower;
+  const perfectedStem = `${stemLinker}${stem}${perfectiveSuffix}`;
   const habStem = rules.applyHabitualPresentRule(root, 'i');
   const negPastStem = rules.applyNegativePastRule(root, 'i');
   const negFutureStem = rules.applyNegativeFutureRule(root, 'i');
@@ -112,22 +119,17 @@ export function generateConjugations(
       unu:  `${s.pronouns.unu} ${s.particles.futureAux} ${presentStem}`,
       wa:   `${s.pronouns.wa} ${s.particles.futureAux} ${presentStem}`,
     },
-    imperative: {
-      m:    rules.applyImperativeRule(root, 'm'),
-      i:    rules.applyImperativeRule(root, 'i'),
-      o:    rules.applyImperativeRule(root, 'o'),
-      anyi: rules.applyImperativeRule(root, 'anyi'),
-      unu:  rules.applyImperativeRule(root, 'unu'),
-      wa:   rules.applyImperativeRule(root, 'wa'),
-    },
-    subjunctive: {
-      m:    `${vowelPrefix} ${rules.applySubjunctiveRule(root, 'm')} m`,
-      i:    `${s.pronouns.i} ${rules.applySubjunctiveRule(root, 'i')}`,
-      o:    `${s.pronouns.o} ${rules.applySubjunctiveRule(root, 'o')}`,
-      anyi: `${s.pronouns.anyi} ${rules.applySubjunctiveRule(root, 'anyi')}`,
-      unu:  `${s.pronouns.unu} ${rules.applySubjunctiveRule(root, 'unu')}`,
-      wa:   `${s.pronouns.wa} ${rules.applySubjunctiveRule(root, 'wa')}`,
-    },
+    imperative: (() => {
+      const impForm = rules.applyImperativeRule(root, 'i');
+      return {
+        m:    `${s.pronouns.m} ${impForm}`,
+        i:    `${s.pronouns.i} ${impForm}`,
+        o:    `${s.pronouns.o} ${impForm}`,
+        anyi: `${s.pronouns.anyi} ${impForm}`,
+        unu:  `${s.pronouns.unu} ${impForm}`,
+        wa:   `${s.pronouns.wa} ${impForm}`,
+      };
+    })(),
 
     /**
      * Present perfect — singular pronouns (m/i/o) don't carry the perfective
@@ -165,7 +167,9 @@ export function generateConjugations(
       wa:   `${s.pronouns.wa} ${vowelPrefixLower} ${negPastStem}`,
     },
 
-    /** Negative future — "ma" replaces "ga", verb keeps no prefix. */
+    /** Negative future — "ma" replaces "ga", verb keeps no prefix. 1sg
+     *  keeps the bare 'm' pronoun at the front (Notion Future Rule 2:
+     *  "m ma gba ọsọ"). */
     negativeFuture: {
       m:    `${s.pronouns.m} ${s.particles.negativeFutureAux} ${negFutureStem}`,
       i:    `${s.pronouns.i} ${s.particles.negativeFutureAux} ${negFutureStem}`,
@@ -175,27 +179,31 @@ export function generateConjugations(
       wa:   `${s.pronouns.wa} ${s.particles.negativeFutureAux} ${negFutureStem}`,
     },
 
-    /** Negative imperative — only 2sg / 1pl / 2pl carry forms. */
-    negativeImperative: {
-      m:    rules.applyNegativeImperativeRule(root, 'm'),
-      i:    rules.applyNegativeImperativeRule(root, 'i'),
-      o:    rules.applyNegativeImperativeRule(root, 'o'),
-      anyi: rules.applyNegativeImperativeRule(root, 'anyi'),
-      unu:  rules.applyNegativeImperativeRule(root, 'unu'),
-      wa:   rules.applyNegativeImperativeRule(root, 'wa'),
-    },
+    /** Negative imperative — same surface form for every pronoun; the
+     *  frame prepends the pronoun (e.g. "Anyi ekwune"). */
+    negativeImperative: (() => {
+      const negImpForm = rules.applyNegativeImperativeRule(root, 'i');
+      return {
+        m:    `${s.pronouns.m} ${negImpForm}`,
+        i:    `${s.pronouns.i} ${negImpForm}`,
+        o:    `${s.pronouns.o} ${negImpForm}`,
+        anyi: `${s.pronouns.anyi} ${negImpForm}`,
+        unu:  `${s.pronouns.unu} ${negImpForm}`,
+        wa:   `${s.pronouns.wa} ${negImpForm}`,
+      };
+    })(),
 
     /**
      * Negative perfect — plural subjects conjugate "dika" (gets a harmony
      * prefix); singular pronouns do not.
      */
     negativePerfect: {
-      m:    `${vowelPrefix} ${dika} m ${vowelPrefixLower}${stem}`,
-      i:    `${s.pronouns.i} ${dika} ${vowelPrefixLower}${stem}`,
-      o:    `${s.pronouns.o} ${dika} ${vowelPrefixLower}${stem}`,
-      anyi: `${s.pronouns.anyi} ${vowelPrefixLower}${dika} ${vowelPrefixLower}${stem}`,
-      unu:  `${s.pronouns.unu} ${vowelPrefixLower}${dika} ${vowelPrefixLower}${stem}`,
-      wa:   `${s.pronouns.wa} ${vowelPrefixLower}${dika} ${vowelPrefixLower}${stem}`,
+      m:    `${vowelPrefix} ${dika} m ${stemLinker}${stem}`,
+      i:    `${s.pronouns.i} ${dika} ${stemLinker}${stem}`,
+      o:    `${s.pronouns.o} ${dika} ${stemLinker}${stem}`,
+      anyi: `${s.pronouns.anyi} ${vowelPrefixLower}${dika} ${stemLinker}${stem}`,
+      unu:  `${s.pronouns.unu} ${vowelPrefixLower}${dika} ${stemLinker}${stem}`,
+      wa:   `${s.pronouns.wa} ${vowelPrefixLower}${dika} ${stemLinker}${stem}`,
     },
 
     /**
@@ -224,7 +232,7 @@ export function generateConjugations(
      */
     finished: (() => {
       const finishedStem = rules.applyFinishedRule(root, 'i');
-      const finishedPerfect = `${vowelPrefixLower}${finishedStem}${perfectiveSuffix}`;
+      const finishedPerfect = `${stemLinker}${finishedStem}${perfectiveSuffix}`;
       return {
         m:    `${vowelPrefix} ${finishedStem} m`,
         i:    `${s.pronouns.i} ${finishedStem}`,
@@ -241,7 +249,7 @@ export function generateConjugations(
      */
     together: (() => {
       const togetherStem = rules.applyTogetherRule(root, 'i');
-      const togetherFrame = `${s.particles.futureAux} ${vowelPrefixLower}${togetherStem}`;
+      const togetherFrame = `${s.particles.futureAux} ${stemLinker}${togetherStem}`;
       return {
         m:    `${s.pronouns.m} ${togetherFrame}`,
         i:    `${s.pronouns.i} ${togetherFrame}`,

@@ -16,7 +16,6 @@ export type Tense =
   | 'past'
   | 'future'
   | 'imperative'
-  | 'subjunctive'
   // Perfective / aspect
   | 'presentPerfect'
   | 'habitualPresent'
@@ -53,10 +52,8 @@ export interface Conjugations {
   present: Record<Pronoun, string>;
   past: Record<Pronoun, string>;
   future: Record<Pronoun, string>;
-  /** Imperative — only 2sg, 1pl (inclusive), and 2pl slots produce actual forms; others return '—'. */
+  /** Imperative — uniform form across pronouns; frame prepends the pronoun. */
   imperative?: Record<Pronoun, string>;
-  /** Subjunctive. */
-  subjunctive?: Record<Pronoun, string>;
   /** Present perfect ("has/have done") — suffix -ga/ge/go. */
   presentPerfect?: Record<Pronoun, string>;
   /** Habitual present ("usually does") — suffix -kari on the present frame. */

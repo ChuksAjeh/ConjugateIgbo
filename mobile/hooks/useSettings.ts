@@ -84,7 +84,6 @@ const defaultSettings: AppSettings = {
     past: true,
     future: true,
     imperative: false,
-    subjunctive: false,
     presentPerfect: false,
     habitualPresent: false,
     negativePast: false,

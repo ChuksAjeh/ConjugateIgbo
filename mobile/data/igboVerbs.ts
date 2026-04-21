@@ -26,8 +26,8 @@ export const offlineVerbs: IgboVerb[] = [
   },
   {
     id: 'iri',
-    igbo: 'iri',
-    rootForm: 'ri',
+    igbo: 'irị',
+    rootForm: 'rị',
     english: 'to eat',
     type: 'regular',
     frequency: 'high',

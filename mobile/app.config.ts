@@ -43,7 +43,7 @@ export default {
         {
           image: './assets/images/icon.png',
           backgroundColor: '#AD1102',
-          imageWidth: 160,
+          imageWidth: 120,
           resizeMode: 'contain',
         },
       ],

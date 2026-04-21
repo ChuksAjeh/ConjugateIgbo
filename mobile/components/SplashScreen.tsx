@@ -238,11 +238,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   logoContainer: {
-    marginBottom: 0, // Removed margin to reduce space
+    marginBottom: 0,
+    padding: 24,
   },
   logo: {
-    width: 220,
-    height: 220,
+    width: 140,
+    height: 140,
   },
   textContainer: {
     alignItems: 'center',

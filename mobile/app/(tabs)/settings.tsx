@@ -106,22 +106,17 @@ export default function SettingsScreen() {
 
     const mailto = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 
+    // Android's Linking.canOpenURL returns false for mailto unless the app
+    // declares a package-visibility queries intent. Call openURL directly
+    // and surface the email address if the OS cannot resolve a handler.
     try {
-      const supported = await Linking.canOpenURL(mailto);
-      if (supported) {
-        await Linking.openURL(mailto);
-      } else {
-        Alert.alert(
-          'No Mail App Found',
-          `Please send an email to ${email} for support.`,
-          [{ text: 'OK' }],
-        );
-      }
+      await Linking.openURL(mailto);
     } catch (error: any) {
       Sentry.logger.error(error);
       Alert.alert(
-        'Error',
-        'An unexpected error occurred while trying to open the mail app.',
+        'No Mail App Found',
+        `Please send an email to ${email} for support.`,
+        [{ text: 'OK' }],
       );
     }
   };
@@ -812,7 +807,6 @@ export default function SettingsScreen() {
                 {
                   heading: 'Pro — Mood',
                   items: [
-                    { key: 'subjunctive', title: 'Subjunctive' },
                     { key: 'imperative', title: 'Imperative' },
                   ],
                   proLocked: true,
@@ -834,7 +828,6 @@ export default function SettingsScreen() {
                     { key: 'finished', title: 'Finished (-si)' },
                     { key: 'together', title: 'Together (-kota)' },
                     { key: 'first', title: 'First (-gode)' },
-                    { key: 'forSomeone', title: 'For Someone (-nye)' },
                     { key: 'polite', title: 'Polite (-nụ́)' },
                   ],
                   proLocked: true,

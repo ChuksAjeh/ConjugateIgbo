@@ -39,10 +39,18 @@ function lastChar(s: string): string {
 // Individual rule functions
 // ---------------------------------------------------------------------------
 
-/** Present stem: vowel-harmony prefix + stripped stem. e.g. "iri" → "eri". */
+/** True if the stem already opens with a vowel — the harmony prefix is
+ *  only applied to consonant-initial stems. */
+function startsWithVowel(stem: string): boolean {
+  return /^[aeiouọụịAEIOUỌỤỊ]/.test(stem);
+}
+
+/** Present stem: vowel-harmony prefix + stripped stem. e.g. "iri" → "eri".
+ *  Stems that already start with a vowel skip the prefix. */
 export function applyPresentRule(root: string, _pronoun: Pronoun): string {
   if (!root) return '';
   const stem = removePrefixI(root);
+  if (startsWithVowel(stem)) return stem;
   return `${getVowelHarmonyPrefix(stem)}${stem}`;
 }
 
@@ -61,36 +69,35 @@ export function applyFutureRule(root: string, pronoun: Pronoun): string {
 const IMPERATIVE_EXCEPTIONS = new Set(['bia', 'je', 'nodu']);
 
 /**
- * Imperative form per pronoun.
- * 2sg: heavy-vowel-ending stem → +'a'; light-vowel-ending → +'e'; exceptions bare.
- * 1pl: stem + 'nu' ; 2pl: stem + 'enu'; others '—'.
+ * 2sg imperative surface form, pronoun-free — used by derivational helpers
+ * (first/forSomeone/polite) that compose onto the imperative stem.
  */
-export function applyImperativeRule(root: string, pronoun: Pronoun): string {
-  if (!root) return '';
+function buildImperativeForm(root: string): string {
   const stem = removePrefixI(root);
-  switch (pronoun) {
-    case 'i': {
-      if (IMPERATIVE_EXCEPTIONS.has(stem)) return stem;
-      const last = lastChar(stem);
-      if ('aịọụ'.includes(last)) return stem + 'a';
-      return stem + 'e';
-    }
-    case 'anyi': return stem + 'nu';
-    case 'unu':  return stem + 'enu';
-    default:     return '—';
-  }
+  if (IMPERATIVE_EXCEPTIONS.has(stem)) return stem;
+  const last = lastChar(stem);
+  if ('aịọụ'.includes(last)) return stem + 'a';
+  return stem + 'e';
 }
 
-/** Subjunctive stem: stripped stem + 'e'. */
-export function applySubjunctiveRule(root: string, _pronoun: Pronoun): string {
+/**
+ * Imperative form (Notion: Delta Igbo Tenses: Imperatives).
+ *   - Rule 1:   stem ends in a/ị/ọ/ụ → stem + 'a'   (ta → taa, ri → ria)
+ *   - Rule 1.2: stem ends in e/i/o/u → stem + 'e'   (me → mee, yi → yie)
+ *   - Rule 1.3: exceptions (bia, je, nodu) keep the bare stem.
+ * The rule does not distinguish person/number — every pronoun gets the
+ * same surface form; the frame prepends the pronoun (e.g. "Anyi mee").
+ */
+export function applyImperativeRule(root: string, _pronoun: Pronoun): string {
   if (!root) return '';
-  return removePrefixI(root) + 'e';
+  return buildImperativeForm(root);
 }
 
 /** Habitual present stem: vowel-harmony prefix + stem + '-kari'. */
 export function applyHabitualPresentRule(root: string, _pronoun: Pronoun): string {
   if (!root) return '';
   const stem = removePrefixI(root);
+  if (startsWithVowel(stem)) return `${stem}kari`;
   return `${getVowelHarmonyPrefix(stem)}${stem}kari`;
 }
 
@@ -107,11 +114,16 @@ export function applyNegativeFutureRule(root: string, _pronoun: Pronoun): string
   return removePrefixI(root);
 }
 
-/** Negative imperative stem — only 2sg/1pl/2pl carry forms. */
-export function applyNegativeImperativeRule(root: string, pronoun: Pronoun): string {
+/**
+ * Negative imperative (Notion: Delta Igbo Tenses: Imperatives, Rule 2).
+ * Formula: <verbPrefix> + <stem> + na/ne. The rule does not distinguish
+ * person/number — every pronoun gets the same surface form; the frame
+ * prepends the pronoun.
+ */
+export function applyNegativeImperativeRule(root: string, _pronoun: Pronoun): string {
   if (!root) return '';
-  if (pronoun !== 'i' && pronoun !== 'unu' && pronoun !== 'anyi') return '—';
   const stem = removePrefixI(root);
+  if (startsWithVowel(stem)) return `${stem}${getNegationSuffix(stem)}`;
   return `${getVowelHarmonyPrefix(stem)}${stem}${getNegationSuffix(stem)}`;
 }
 
@@ -146,7 +158,7 @@ export function applyTogetherRule(root: string, _pronoun: Pronoun): string {
 export function applyFirstRule(root: string, pronoun: Pronoun): string {
   if (!root) return '';
   if (pronoun !== 'i' && pronoun !== 'anyi' && pronoun !== 'unu') return '—';
-  return applyImperativeRule(root, pronoun) + 'gode';
+  return buildImperativeForm(root) +'gode';
 }
 
 /**
@@ -157,7 +169,7 @@ export function applyFirstRule(root: string, pronoun: Pronoun): string {
 export function applyForSomeoneRule(root: string, pronoun: Pronoun): string {
   if (!root) return '';
   if (pronoun !== 'i' && pronoun !== 'anyi' && pronoun !== 'unu') return '—';
-  return applyImperativeRule(root, pronoun) + 'nye';
+  return buildImperativeForm(root) +'nye';
 }
 
 /**
@@ -167,7 +179,7 @@ export function applyForSomeoneRule(root: string, pronoun: Pronoun): string {
 export function applyPoliteRule(root: string, pronoun: Pronoun): string {
   if (!root) return '';
   if (pronoun !== 'i' && pronoun !== 'anyi' && pronoun !== 'unu') return '—';
-  return applyImperativeRule(root, pronoun) + 'nụ́';
+  return buildImperativeForm(root) +'nụ́';
 }
 
 // ---------------------------------------------------------------------------
@@ -179,7 +191,6 @@ export const sharedRules: DialectRules = {
   applyPastRule,
   applyFutureRule,
   applyImperativeRule,
-  applySubjunctiveRule,
   applyHabitualPresentRule,
   applyNegativePastRule,
   applyNegativeFutureRule,

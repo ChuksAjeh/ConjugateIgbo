@@ -20,7 +20,6 @@ export interface DialectRules {
   applyPastRule: RuleFn;
   applyFutureRule: RuleFn;
   applyImperativeRule: RuleFn;
-  applySubjunctiveRule: RuleFn;
   applyHabitualPresentRule: RuleFn;
   applyNegativePastRule: RuleFn;
   applyNegativeFutureRule: RuleFn;

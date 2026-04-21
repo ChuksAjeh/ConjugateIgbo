@@ -30,6 +30,8 @@ import { useFavorites } from '@/hooks/useFavorites';
 import {
   pronounLabels,
   pronouns,
+  tenseLabels,
+  tenseAnnotations,
 } from '@/models/interfaces';
 
 export default function FavoritesScreen() {
@@ -173,10 +175,9 @@ export default function FavoritesScreen() {
 // Tenses organized by tab - matching verbs.tsx
 const tensesByTab = {
   Indicative: ['present', 'past', 'future', 'presentPerfect', 'habitualPresent'] as Tense[],
-  Subjunctive: ['subjunctive'] as Tense[],
   Negation: ['negativePast', 'negativeFuture', 'negativeImperative', 'negativePerfect', 'neverPerfect'] as Tense[],
   Others: ['imperative'] as Tense[],
-  Extras: ['finished', 'together', 'first', 'forSomeone', 'polite'] as Tense[],
+  Extras: ['finished', 'together', 'first', 'polite'] as Tense[],
 };
 
 // VerbDetailContent matching the design from verbs.tsx
@@ -195,7 +196,7 @@ const VerbDetailContent = ({
   const { settings } = useSettings();
   const { isProUser, isLoading } = usePurchases();
   const [activeTab, setActiveTab] = useState<
-    'Indicative' | 'Subjunctive' | 'Negation' | 'Others' | 'Extras'
+    'Indicative' | 'Negation' | 'Others' | 'Extras'
   >('Indicative');
   const [expandedTenses, setExpandedTenses] = useState<Record<string, boolean>>({
     PRESENT: true,
@@ -249,11 +250,6 @@ const VerbDetailContent = ({
           text: `Same as present with 'ga' particle. Pronoun + ga + ${vowelPrefix}${stem}.`,
           formula: [verb.igbo, '→', `ga ${vowelPrefix}${stem}`],
         };
-      case 'subjunctive':
-        return {
-          text: `Remove 'i' prefix, add 'e' suffix. ${stem}e.`,
-          formula: [verb.igbo, '→', `${stem}e`],
-        };
       default:
         return {
           text: 'Follows the standard conjugation rule for this tense.',
@@ -290,7 +286,7 @@ const VerbDetailContent = ({
         contentContainerStyle={{ paddingBottom: 120 }}
       >
         <View style={styles.detailTabBar}>
-          {(['Indicative', 'Subjunctive', 'Negation', 'Others', 'Extras'] as const).map((tab) => (
+          {(['Indicative', 'Negation', 'Others', 'Extras'] as const).map((tab) => (
             <TouchableOpacity
               key={tab}
               onPress={() => setActiveTab(tab)}
@@ -314,7 +310,9 @@ const VerbDetailContent = ({
         <View style={styles.meaningSection}>
           <View style={styles.meaningRow}>
             <Text style={styles.flagEmoji}>🇬🇧</Text>
-            <Text style={styles.englishMeaningLabel}>To {verb.english}</Text>
+            <Text style={styles.englishMeaningLabel}>
+              {/^to\s/i.test(verb.english ?? '') ? verb.english : `To ${verb.english ?? ''}`}
+            </Text>
           </View>
           <View style={styles.enabledRow}>
             <Text style={styles.enabledLabel}>Enabled for practise</Text>
@@ -341,7 +339,14 @@ const VerbDetailContent = ({
                 style={styles.tenseHeader}
                 onPress={() => toggleTense(tenseUpper)}
               >
-                <Text style={styles.tenseHeaderText}>{tenseUpper}</Text>
+                <View style={styles.tenseHeaderLabelGroup}>
+                  <Text style={styles.tenseHeaderText}>{tenseLabels[tense].toUpperCase()}</Text>
+                  {!!tenseAnnotations[tense] && (
+                    <Text style={styles.tenseHeaderAnnotation}>
+                      {tenseAnnotations[tense]}
+                    </Text>
+                  )}
+                </View>
                 <ChevronDown
                   size={20}
                   color="#9ca3af"
@@ -670,11 +675,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 20,
   },
+  tenseHeaderLabelGroup: {
+    flex: 1,
+    flexDirection: 'column',
+  },
   tenseHeaderText: {
     fontSize: 16,
     color: '#333',
     fontFamily: 'Manjari-Bold',
     letterSpacing: 1,
+  },
+  tenseHeaderAnnotation: {
+    fontSize: 12,
+    color: '#9ca3af',
+    fontFamily: 'Manjari-Regular',
+    marginTop: 2,
   },
   tenseContent: {
     paddingHorizontal: 20,
