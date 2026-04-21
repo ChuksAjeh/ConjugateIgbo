@@ -18,7 +18,6 @@ import {
   FontFamily,
   FontSize,
   Radius,
-  Shadows,
   Spacing,
 } from '@/constants/theme';
 
@@ -66,6 +65,11 @@ export const createStyles = (theme: Theme, isDark: boolean) =>
       paddingHorizontal: 15,
       position: 'relative',
     },
+    headerInner: {
+      width: '100%',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
     backButton: {
       position: 'absolute',
       left: 15,
@@ -91,7 +95,12 @@ export const createStyles = (theme: Theme, isDark: boolean) =>
     // ----- Scrollable content -----
     content: {
       flex: 1,
-      paddingHorizontal: Spacing.xxxl,
+    },
+    contentContainer: {
+      alignItems: 'center',
+    },
+    contentInner: {
+      width: '100%',
     },
 
     // ----- Section groups -----

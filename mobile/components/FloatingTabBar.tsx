@@ -10,7 +10,7 @@
  */
 
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, useWindowDimensions } from 'react-native';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { Mic, List, Settings, Crown, Bookmark } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -53,8 +53,9 @@ function iconForRoute(routeName: string) {
  */
 export function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
-  const { theme, isDark } = useTheme();
+  const { isDark } = useTheme();
   const { isProUser, isLoading: purchasesLoading } = usePurchases();
+  const { width } = useWindowDimensions();
 
   const shouldHideProTab = !purchasesLoading && isProUser;
 
@@ -62,7 +63,9 @@ export function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarP
     (route) => !(route.name === 'pro' && shouldHideProTab),
   ).length;
 
-  const barWidth = visibleCount <= 4 ? BAR_WIDTH_SMALL : BAR_WIDTH_FULL;
+  const baseWidth = visibleCount <= 4 ? BAR_WIDTH_SMALL : BAR_WIDTH_FULL;
+  const barWidth =
+    width >= 1024 ? 640 : width >= 768 ? 460 : baseWidth;
 
   return (
     <View style={[styles.container, { bottom: insets.bottom + 10 }]}>

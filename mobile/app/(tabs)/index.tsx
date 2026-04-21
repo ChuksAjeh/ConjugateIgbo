@@ -12,7 +12,7 @@ import {
   ScrollView,
   Modal,
   StyleSheet,
-  Dimensions,
+  useWindowDimensions,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -34,11 +34,10 @@ import { usePurchases } from '@/hooks/usePurchases';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useTheme } from '@/components/ThemeProvider';
 import { WavePattern } from '@/components/SplashScreen';
+import { useResponsiveLayout } from '@/lib/responsive';
 import { pronounLabels, pronouns, tenses, tenseLabels } from '@/models/interfaces';
 
 import * as Sentry from '@sentry/react-native';
-
-const { width } = Dimensions.get('window');
 
 export default function PracticeScreen() {
   const { settings } = useSettings();
@@ -47,6 +46,24 @@ export default function PracticeScreen() {
   const { isFavorite, toggleFavorite } = useFavorites();
   const { theme, isDark } = useTheme();
   const insets = useSafeAreaInsets();
+  const { width: windowWidth } = useWindowDimensions();
+  const layout = useResponsiveLayout();
+  const isTabletLayout = layout.isTablet;
+  const cardMinHeight = layout.isLargeScreen ? 680 : isTabletLayout ? 600 : 400;
+  const cardContentPadding = layout.isLargeScreen ? 64 : isTabletLayout ? 52 : 30;
+  const englishFontSize = layout.isLargeScreen ? 34 : isTabletLayout ? 28 : 18;
+  const igboFontSize = layout.isLargeScreen ? 76 : isTabletLayout ? 62 : 36;
+  const pronounFontSize = layout.isLargeScreen ? 38 : isTabletLayout ? 32 : 20;
+  const answerFontSize = layout.isLargeScreen ? 68 : isTabletLayout ? 56 : 32;
+  const helperFontSize = layout.isLargeScreen ? 26 : isTabletLayout ? 22 : 14;
+  const badgeHorizontalPadding = layout.isLargeScreen ? 28 : isTabletLayout ? 22 : 15;
+  const badgeVerticalPadding = layout.isLargeScreen ? 12 : isTabletLayout ? 10 : 5;
+  const badgeTextSize = layout.isLargeScreen ? 24 : isTabletLayout ? 20 : 12;
+  const actionIconSize = layout.isLargeScreen ? 40 : isTabletLayout ? 34 : 28;
+  const actionBoxSize = layout.isLargeScreen ? 112 : isTabletLayout ? 96 : 60;
+  const actionLabelSize = layout.isLargeScreen ? 24 : isTabletLayout ? 20 : 12;
+  const actionBoxRadius = layout.isLargeScreen ? 28 : isTabletLayout ? 24 : 15;
+  const cardTopPadding = layout.isLargeScreen ? 96 : isTabletLayout ? 72 : 40;
 
   const availablePronouns: Pronoun[] = useMemo(() => {
     const list = pronouns.filter((p) => settings.enabledPronouns[p]);
@@ -273,16 +290,16 @@ export default function PracticeScreen() {
 
     // Slide animation for transition
     Animated.sequence([
-      Animated.timing(translateX, {
-        toValue: width,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-      Animated.timing(translateX, {
-        toValue: -width,
-        duration: 0,
-        useNativeDriver: true,
-      }),
+        Animated.timing(translateX, {
+          toValue: windowWidth,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+        Animated.timing(translateX, {
+          toValue: -windowWidth,
+          duration: 0,
+          useNativeDriver: true,
+        }),
       Animated.timing(translateX, {
         toValue: 0,
         duration: 200,
@@ -310,7 +327,7 @@ export default function PracticeScreen() {
       if (Math.abs(translationX) > 100) {
         // Swiped far enough
         Animated.timing(translateX, {
-          toValue: translationX > 0 ? width : -width,
+          toValue: translationX > 0 ? windowWidth : -windowWidth,
           duration: 200,
           useNativeDriver: true,
         }).start(() => {
@@ -371,7 +388,7 @@ export default function PracticeScreen() {
           { paddingTop: Math.max(insets.top, 20), backgroundColor: '#F3703E' },
         ]}
       >
-        <View style={localStyles.topBar}>
+        <View style={[localStyles.topBar, { maxWidth: layout.contentMaxWidth }]}>
           <Text style={localStyles.goalLabel}>Daily goal</Text>
           <Text style={localStyles.goalProgress}>
             {statistics.dailyGoalProgress}/{settings.dailyGoal}
@@ -389,126 +406,259 @@ export default function PracticeScreen() {
         </View>
 
         <ScrollView
-          contentContainerStyle={localStyles.scrollContent}
+          contentContainerStyle={[
+            localStyles.scrollContent,
+            {
+              paddingHorizontal: layout.screenPadding,
+              paddingTop: cardTopPadding,
+              paddingBottom: Math.max(insets.bottom + 120, 120),
+            },
+          ]}
           showsVerticalScrollIndicator={false}
         >
-          <Animated.View
-            style={[
-              localStyles.cardWrapper,
-              {
-                transform: [{ scale: cardScale }, { translateX: translateX }],
-              },
-            ]}
-          >
-            <PanGestureHandler
-              onGestureEvent={onGestureEvent}
-              onHandlerStateChange={onHandlerStateChange}
-              activeOffsetX={[-50, 50]}
+          <View style={[localStyles.contentColumn, { maxWidth: layout.contentMaxWidth }]}>
+            <Animated.View
+              style={[
+                localStyles.cardWrapper,
+                {
+                  maxWidth: layout.cardMaxWidth,
+                  transform: [{ scale: cardScale }, { translateX: translateX }],
+                },
+              ]}
             >
-              <TouchableOpacity
-                activeOpacity={1}
-                onPress={showAnswer ? handleNextVerb : handleRevealAnswer}
-                style={[localStyles.card, { backgroundColor: theme.colors.surface }]}
+              <PanGestureHandler
+                onGestureEvent={onGestureEvent}
+                onHandlerStateChange={onHandlerStateChange}
+                activeOffsetX={[-50, 50]}
               >
-                {/* Card Decorative Waves */}
-                <View style={localStyles.cardWaveLeft}>
-                  <WavePattern
-                    side="left"
-                    customHeight={400}
-                    variant="zigzag"
-                    color={isDark ? '#FFFFFF' : '#555'}
-                    opacity={isDark ? 0.3 : 0.8}
-                  />
-                </View>
-                <View style={localStyles.cardWaveRight}>
-                  <WavePattern
-                    side="right"
-                    customHeight={400}
-                    variant="zigzag"
-                    color={isDark ? '#FFFFFF' : '#555'}
-                    opacity={isDark ? 0.3 : 0.8}
-                  />
-                </View>
-
-                <View style={localStyles.cardContent}>
-                  <Text style={[localStyles.englishText, { color: isDark ? theme.colors.textSecondary : '#666' }]}>
-                    {currentVerb.english}
-                  </Text>
-                  <Text style={[localStyles.igboText, { color: theme.colors.text }]}>{currentVerb.igbo}</Text>
-
-                  <View style={localStyles.tenseBadge}>
-                    <Text style={localStyles.tenseText}>
-                      {tenseLabels[selectedTense]}
-                    </Text>
+                <TouchableOpacity
+                  activeOpacity={1}
+                  onPress={showAnswer ? handleNextVerb : handleRevealAnswer}
+                  style={[
+                    localStyles.card,
+                    {
+                      backgroundColor: theme.colors.surface,
+                      minHeight: cardMinHeight,
+                    },
+                  ]}
+                >
+                  {/* Card Decorative Waves */}
+                  <View style={localStyles.cardWaveLeft}>
+                    <WavePattern
+                      side="left"
+                      customHeight={cardMinHeight}
+                      variant="zigzag"
+                      color={isDark ? '#FFFFFF' : '#555'}
+                      opacity={isDark ? 0.3 : 0.8}
+                    />
+                  </View>
+                  <View style={localStyles.cardWaveRight}>
+                    <WavePattern
+                      side="right"
+                      customHeight={cardMinHeight}
+                      variant="zigzag"
+                      color={isDark ? '#FFFFFF' : '#555'}
+                      opacity={isDark ? 0.3 : 0.8}
+                    />
                   </View>
 
-                  <Text style={[localStyles.pronounText, { color: isDark ? theme.colors.textSecondary : '#666' }]}>
-                    {pronounLabels[selectedPronoun]}
-                  </Text>
-
-                  {showAnswer ? (
-                    <Animated.View
-                      style={{ opacity: fadeAnim, alignItems: 'center' }}
+                  <View
+                    style={[
+                      localStyles.cardContent,
+                      { paddingHorizontal: cardContentPadding },
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        localStyles.englishText,
+                        {
+                          color: isDark ? theme.colors.textSecondary : '#666',
+                          fontSize: englishFontSize,
+                          marginBottom: isTabletLayout ? 18 : 10,
+                        },
+                      ]}
                     >
-                      <Text style={[localStyles.conjugatedText, { color: theme.colors.text }]}>
-                        {correctAnswer}
-                      </Text>
-                      <Text style={localStyles.tapToContinue}>
-                        Tap to continue
-                      </Text>
-                    </Animated.View>
-                  ) : (
-                    <View style={localStyles.tapToShow}>
-                      <View style={localStyles.line} />
-                      <Text style={localStyles.tapToShowText}>
-                        Tap to show answer
+                      {currentVerb.english}
+                    </Text>
+                    <Text
+                      style={[
+                        localStyles.igboText,
+                        {
+                          color: theme.colors.text,
+                          fontSize: igboFontSize,
+                          marginBottom: isTabletLayout ? 32 : 20,
+                        },
+                      ]}
+                    >
+                      {currentVerb.igbo}
+                    </Text>
+
+                    <View
+                      style={[
+                        localStyles.tenseBadge,
+                        {
+                          paddingHorizontal: badgeHorizontalPadding,
+                          paddingVertical: badgeVerticalPadding,
+                          borderRadius: badgeHorizontalPadding,
+                          marginBottom: isTabletLayout ? 32 : 25,
+                        },
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          localStyles.tenseText,
+                          { fontSize: badgeTextSize },
+                        ]}
+                      >
+                        {tenseLabels[selectedTense]}
                       </Text>
                     </View>
+
+                    <Text
+                      style={[
+                        localStyles.pronounText,
+                        {
+                          color: isDark ? theme.colors.textSecondary : '#666',
+                          fontSize: pronounFontSize,
+                          marginBottom: isTabletLayout ? 22 : 15,
+                        },
+                      ]}
+                    >
+                      {pronounLabels[selectedPronoun]}
+                    </Text>
+
+                    {showAnswer ? (
+                      <Animated.View
+                        style={{ opacity: fadeAnim, alignItems: 'center' }}
+                      >
+                        <Text
+                          style={[
+                            localStyles.conjugatedText,
+                            {
+                              color: theme.colors.text,
+                              fontSize: answerFontSize,
+                              marginBottom: isTabletLayout ? 18 : 10,
+                            },
+                          ]}
+                        >
+                          {correctAnswer}
+                        </Text>
+                        <Text
+                          style={[
+                            localStyles.tapToContinue,
+                            { fontSize: helperFontSize },
+                          ]}
+                        >
+                          Tap to continue
+                        </Text>
+                      </Animated.View>
+                    ) : (
+                      <View style={localStyles.tapToShow}>
+                        <View
+                          style={[
+                            localStyles.line,
+                            {
+                              width: isTabletLayout ? 240 : 150,
+                              marginBottom: isTabletLayout ? 18 : 10,
+                            },
+                          ]}
+                        />
+                        <Text
+                          style={[
+                            localStyles.tapToShowText,
+                            { fontSize: helperFontSize },
+                          ]}
+                        >
+                          Tap to show answer
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+                </TouchableOpacity>
+              </PanGestureHandler>
+            </Animated.View>
+
+            {/* Action Buttons */}
+            <View
+              style={[
+                localStyles.actionRow,
+                { maxWidth: layout.cardMaxWidth },
+              ]}
+            >
+              <TouchableOpacity
+                style={[
+                  localStyles.actionButton,
+                  history.length <= 1 && { opacity: 0.3 },
+                ]}
+                onPress={handleBackVerb}
+                disabled={history.length <= 1}
+              >
+                <View
+                  style={[
+                    localStyles.actionIconBox,
+                    {
+                      backgroundColor: theme.colors.surface,
+                      borderColor: theme.colors.border,
+                      width: actionBoxSize,
+                      height: actionBoxSize,
+                      borderRadius: actionBoxRadius,
+                      marginBottom: isTabletLayout ? 14 : 8,
+                    },
+                  ]}
+                >
+                  <RotateCcw size={actionIconSize} color={isDark ? theme.colors.textSecondary : "#666"} />
+                </View>
+                <Text style={[localStyles.actionLabel, { fontSize: actionLabelSize }]}>Back</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={localStyles.actionButton}
+                onPress={handleShowVerbsList}
+              >
+                <View
+                  style={[
+                    localStyles.actionIconBox,
+                    {
+                      backgroundColor: theme.colors.surface,
+                      borderColor: theme.colors.border,
+                      width: actionBoxSize,
+                      height: actionBoxSize,
+                      borderRadius: actionBoxRadius,
+                      marginBottom: isTabletLayout ? 14 : 8,
+                    },
+                  ]}
+                >
+                  <Book size={actionIconSize} color={isDark ? theme.colors.textSecondary : "#666"} />
+                </View>
+                <Text style={[localStyles.actionLabel, { fontSize: actionLabelSize }]}>Library</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={localStyles.actionButton}
+                onPress={toggleSave}
+              >
+                <View
+                  style={[
+                    localStyles.actionIconBox,
+                    {
+                      backgroundColor: theme.colors.surface,
+                      borderColor: theme.colors.border,
+                      width: actionBoxSize,
+                      height: actionBoxSize,
+                      borderRadius: actionBoxRadius,
+                      marginBottom: isTabletLayout ? 14 : 8,
+                    },
+                  ]}
+                >
+                  {isFavorite(currentVerb.id) ? (
+                    <BookmarkCheck size={actionIconSize} color="#CE3B3B" />
+                  ) : (
+                    <Bookmark size={actionIconSize} color={isDark ? theme.colors.textSecondary : "#666"} />
                   )}
                 </View>
+                <Text style={[localStyles.actionLabel, { fontSize: actionLabelSize }]}>Save</Text>
               </TouchableOpacity>
-            </PanGestureHandler>
-          </Animated.View>
-
-          {/* Action Buttons */}
-          <View style={localStyles.actionRow}>
-            <TouchableOpacity
-              style={[
-                localStyles.actionButton,
-                history.length <= 1 && { opacity: 0.3 },
-              ]}
-              onPress={handleBackVerb}
-              disabled={history.length <= 1}
-            >
-              <View style={[localStyles.actionIconBox, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
-                <RotateCcw size={28} color={isDark ? theme.colors.textSecondary : "#666"} />
-              </View>
-              <Text style={localStyles.actionLabel}>Back</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={localStyles.actionButton}
-              onPress={handleShowVerbsList}
-            >
-              <View style={[localStyles.actionIconBox, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
-                <Book size={28} color={isDark ? theme.colors.textSecondary : "#666"} />
-              </View>
-              <Text style={localStyles.actionLabel}>Library</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={localStyles.actionButton}
-              onPress={toggleSave}
-            >
-              <View style={[localStyles.actionIconBox, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
-                {isFavorite(currentVerb.id) ? (
-                  <BookmarkCheck size={28} color="#CE3B3B" />
-                ) : (
-                  <Bookmark size={28} color={isDark ? theme.colors.textSecondary : "#666"} />
-                )}
-              </View>
-              <Text style={localStyles.actionLabel}>Save</Text>
-            </TouchableOpacity>
+            </View>
           </View>
         </ScrollView>
       </View>
@@ -544,6 +694,7 @@ const localStyles = StyleSheet.create({
     backgroundColor: '#F3703E',
   },
   topBar: {
+    width: '100%',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -582,19 +733,20 @@ const localStyles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
+  },
+  contentColumn: {
+    width: '100%',
+    alignSelf: 'center',
     alignItems: 'center',
-    paddingTop: 40,
-    paddingBottom: 120, // Space for floating tab bar
   },
   cardWrapper: {
-    width: width * 0.85,
-    maxWidth: 340,
+    width: '100%',
     marginBottom: 40,
   },
   card: {
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
-    height: 400,
+    minHeight: 400,
     overflow: 'hidden',
     borderWidth: 1.5,
     borderColor: '#D85A22',
@@ -686,11 +838,12 @@ const localStyles = StyleSheet.create({
   },
   actionRow: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    width: width * 0.85,
-    maxWidth: 320,
+    justifyContent: 'space-between',
+    width: '100%',
+    gap: 20,
   },
   actionButton: {
+    flex: 1,
     alignItems: 'center',
   },
   actionIconBox: {

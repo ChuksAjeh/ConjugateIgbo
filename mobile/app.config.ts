@@ -11,16 +11,28 @@ export default {
       policy: 'appVersion',
     },
 
-    orientation: 'portrait',
+    orientation: 'default',
     userInterfaceStyle: 'automatic',
 
-    icon: './assets/images/icon.png',
-    backgroundColor: '#AD1102',
+    icon: './assets/images/app-icon.png',
+    backgroundColor: '#8B0000',
+    splash: {
+      image: './assets/images/splash-icon.png',
+      resizeMode: 'contain',
+      backgroundColor: '#8B0000',
+    },
 
     newArchEnabled: true,
 
     ios: {
       bundleIdentifier: 'com.chuksajeh.conjugateigbo',
+      icon: './assets/images/app-icon.png',
+      splash: {
+        image: './assets/images/splash-icon.png',
+        resizeMode: 'contain',
+        backgroundColor: '#8B0000',
+        tabletImage: './assets/images/splash-icon.png',
+      },
       supportsTablet: true,
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false,
@@ -29,10 +41,11 @@ export default {
 
     android: {
       package: 'com.chuksajeh.conjugateigbo',
+      icon: './assets/images/app-icon.png',
       permissions: ['POST_NOTIFICATIONS'],
       adaptiveIcon: {
         foregroundImage: './assets/images/icon-adaptive-foreground.png',
-        backgroundColor: '#AD1102',
+        backgroundColor: '#8B0000',
       },
     },
 
@@ -44,17 +57,17 @@ export default {
       [
         'expo-splash-screen',
         {
-          image: './assets/images/icon.png',
-          backgroundColor: '#AD1102',
-          imageWidth: 120,
+          image: './assets/images/splash-icon.png',
+          backgroundColor: '#8B0000',
+          imageWidth: 88,
           resizeMode: 'contain',
         },
       ],
       [
         'expo-notifications',
         {
-          icon: './assets/images/icon.png',
-          color: '#AD1102',
+          icon: './assets/images/notification-icon.png',
+          color: '#8B0000',
         },
       ],
       [

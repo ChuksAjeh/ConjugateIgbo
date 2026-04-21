@@ -25,30 +25,10 @@ import StartPracticingScreen from '@/components/StartPracticingScreen';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import { PurchasesProvider } from '@/components/PurchasesProvider';
 import { configureRevenueCat } from '@/lib/revenuecat';
+import { initSentry, Sentry } from '@/lib/sentry';
 import { verbService } from '@/lib/verbService';
-import * as Sentry from '@sentry/react-native';
 
-Sentry.init({
-  dsn: 'https://7e72a03af7db7a5f56723457c152a612@o4510583564402688.ingest.de.sentry.io/4510583571808336',
-
-  // Adds more context data to events (IP address, cookies, user, etc.)
-  // For more information, visit: https://docs.sentry.io/platforms/react-native/data-management/data-collected/
-  sendDefaultPii: true,
-
-  // Enable Logs
-  enableLogs: true,
-
-  // Configure Session Replay
-  replaysSessionSampleRate: 0.1,
-  replaysOnErrorSampleRate: 1,
-  integrations: [
-    Sentry.mobileReplayIntegration(),
-    Sentry.feedbackIntegration(),
-  ],
-
-  // uncomment the line below to enable Spotlight (https://spotlightjs.com)
-  // spotlight: __DEV__,
-});
+initSentry();
 
 // Prevent the splash screen from auto-hiding
 SplashScreen.preventAutoHideAsync();
@@ -133,21 +113,21 @@ export default Sentry.wrap(function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <PurchasesProvider>
         <ThemeProvider>
-        {showCustomSplash ? (
-          <CustomSplashScreen onFinish={() => setShowCustomSplash(false)} />
-        ) : showIntro ? (
-          <IntroScreen onFinish={handleIntroNext} />
-        ) : showStartPracticing ? (
-          <StartPracticingScreen onFinish={handleStartPracticingFinish} />
-        ) : (
-          <>
-            <Stack screenOptions={{ headerShown: false, gestureEnabled: true }}>
-              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            </Stack>
-            <StatusBar style="auto" />
-          </>
-        )}
-      </ThemeProvider>
+          {showCustomSplash ? (
+            <CustomSplashScreen onFinish={() => setShowCustomSplash(false)} />
+          ) : showIntro ? (
+            <IntroScreen onFinish={handleIntroNext} />
+          ) : showStartPracticing ? (
+            <StartPracticingScreen onFinish={handleStartPracticingFinish} />
+          ) : (
+            <>
+              <Stack screenOptions={{ headerShown: false, gestureEnabled: true }}>
+                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              </Stack>
+              <StatusBar style="auto" />
+            </>
+          )}
+        </ThemeProvider>
       </PurchasesProvider>
     </GestureHandlerRootView>
   );

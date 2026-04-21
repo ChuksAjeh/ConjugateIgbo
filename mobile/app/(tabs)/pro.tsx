@@ -9,9 +9,9 @@ import {
   ActivityIndicator,
   Image,
   StyleSheet,
-  Dimensions,
   Animated,
   ScrollView,
+  useWindowDimensions,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -19,8 +19,7 @@ import { Check } from 'lucide-react-native';
 import Svg, { Path, Circle, G } from 'react-native-svg';
 import { usePurchases } from '@/hooks/usePurchases';
 import { ICON_IMAGE } from '@/components/SplashScreen';
-
-const { width, height } = Dimensions.get('window');
+import { useResponsiveLayout } from '@/lib/responsive';
 
 const SPACING_X = 120;
 const SPACING_Y = 140;
@@ -46,12 +45,15 @@ interface PatternElement {
 }
 
 // Generate pattern elements for a single large tile that covers screen + scroll area
-const generatePatternElements = (): PatternElement[] => {
+const generatePatternElements = (
+  windowWidth: number,
+  windowHeight: number,
+): PatternElement[] => {
   const elements: PatternElement[] = [];
 
   // Cover screen plus the area we scroll into
-  const numRows = Math.ceil((height + PERIOD_Y) / SPACING_Y) + 4;
-  const numCols = Math.ceil((width + PERIOD_X) / SPACING_X) + 4;
+  const numRows = Math.ceil((windowHeight + PERIOD_Y) / SPACING_Y) + 4;
+  const numCols = Math.ceil((windowWidth + PERIOD_X) / SPACING_X) + 4;
 
   for (let row = -2; row < numRows; row++) {
     for (let col = -2; col < numCols; col++) {
@@ -109,8 +111,12 @@ const generatePatternElements = (): PatternElement[] => {
 // Animated diagonal scrolling background pattern
 const AnimatedDiagonalPattern = () => {
   const scrollAnim = useRef(new Animated.Value(0)).current;
+  const { width, height } = useWindowDimensions();
 
-  const patternElements = useMemo(() => generatePatternElements(), []);
+  const patternElements = useMemo(
+    () => generatePatternElements(width, height),
+    [height, width],
+  );
 
   useEffect(() => {
     // Single animated value 0 -> 1 for both X and Y
@@ -278,6 +284,7 @@ export default function ProScreen() {
     usePurchases();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const layout = useResponsiveLayout();
   const [isPurchasing, setIsPurchasing] = React.useState(false);
 
   // Get the price string from RevenueCat offerings
@@ -394,23 +401,29 @@ export default function ProScreen() {
         <ScrollView
           contentContainerStyle={[
             styles.scrollContent,
-            { paddingBottom: insets.bottom + 100 },
+            {
+              paddingBottom: insets.bottom + 100,
+              paddingHorizontal: layout.screenPadding,
+            },
           ]}
           showsVerticalScrollIndicator={false}
         >
           {/* Card Container */}
-          <View style={styles.cardContainer}>
+          <View style={[styles.cardContainer, { maxWidth: layout.heroMaxWidth }]}>
             {/* Logo overlapping the card */}
             <View style={styles.logoContainer}>
               <Image
                 source={ICON_IMAGE}
-                style={styles.logo}
+                style={[
+                  styles.logo,
+                  layout.isTablet && styles.logoTablet,
+                ]}
                 resizeMode="contain"
               />
             </View>
 
             {/* Card */}
-            <View style={styles.card}>
+            <View style={[styles.card, layout.isTablet && styles.cardTablet]}>
               {/* Title */}
               <Text style={styles.cardTitle}>GO DEEPER WITH IGBO!</Text>
 
@@ -516,6 +529,10 @@ const styles = StyleSheet.create({
     width: 140,
     height: 140,
   },
+  logoTablet: {
+    width: 170,
+    height: 170,
+  },
   card: {
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
@@ -532,6 +549,11 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 16,
     elevation: 10,
+  },
+  cardTablet: {
+    paddingTop: 96,
+    paddingBottom: 40,
+    paddingHorizontal: 36,
   },
   cardTitle: {
     fontSize: 26,

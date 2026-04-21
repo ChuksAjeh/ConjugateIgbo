@@ -24,6 +24,7 @@ import {
 } from 'lucide-react-native';
 import { IgboVerb, Tense } from '@/models/verb';
 import { verbService } from '@/lib/verbService';
+import { useResponsiveLayout } from '@/lib/responsive';
 import { useTheme } from '@/components/ThemeProvider';
 import { getConjugatedForm } from '@/lib/conjugateVerbs';
 import { useSettings } from '@/hooks/useSettings';
@@ -39,6 +40,7 @@ import { WavePattern } from '@/components/SplashScreen';
 export default function VerbsScreen() {
   const { settings } = useSettings();
   const { theme, isDark } = useTheme();
+  const layout = useResponsiveLayout();
   const insets = useSafeAreaInsets();
   const { verbId, openDetails } = useLocalSearchParams<{
     verbId?: string;
@@ -48,6 +50,16 @@ export default function VerbsScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedVerb, setSelectedVerb] = useState<IgboVerb | null>(null);
+  const numColumns = layout.isLargeScreen ? 3 : layout.isTablet ? 2 : 1;
+  const listGap = layout.isTablet ? 24 : 0;
+  const gridWidth = Math.min(
+    layout.listMaxWidth,
+    layout.windowWidth - layout.screenPadding * 2,
+  );
+  const cardWidth =
+    numColumns === 1
+      ? gridWidth
+      : (gridWidth - listGap * (numColumns - 1)) / numColumns;
 
   // Load verbs on component mount
   useEffect(() => {
@@ -121,7 +133,14 @@ export default function VerbsScreen() {
 
   const renderVerbItem = ({ item }: { item: IgboVerb }) => (
     <TouchableOpacity
-      style={[styles.verbItem, { backgroundColor: theme.colors.surface }]}
+      style={[
+        styles.verbItem,
+        {
+          backgroundColor: theme.colors.surface,
+          width: cardWidth,
+          marginBottom: numColumns > 1 ? 0 : 12,
+        },
+      ]}
       onPress={() => setSelectedVerb(item)}
     >
       <View style={styles.verbItemContent}>
@@ -214,20 +233,25 @@ export default function VerbsScreen() {
       </View>
 
       <View style={[styles.orangeHeader, { paddingTop: Math.max(insets.top, 20) }]}>
-        <View style={styles.headerTop}>
-          <Text style={styles.headerTitleText}>Verbs</Text>
+        <View style={[styles.headerInner, { maxWidth: layout.listMaxWidth }]}>
+          <View style={styles.headerTop}>
+            <Text style={styles.headerTitleText}>Verbs</Text>
+          </View>
+          <Text style={styles.headerSubtitleText}>
+            {filteredAndSortedVerbs.length} verbs
+          </Text>
         </View>
-        <Text style={styles.headerSubtitleText}>
-          {filteredAndSortedVerbs.length} verbs
-        </Text>
       </View>
 
       {/* Search Bar */}
-      <View style={styles.searchContainer}>
+      <View style={[styles.searchContainer, { paddingHorizontal: layout.screenPadding }]}>
         <View
           style={[
             styles.searchInputContainer,
-            { backgroundColor: theme.colors.surface },
+            {
+              backgroundColor: theme.colors.surface,
+              maxWidth: layout.listMaxWidth,
+            },
           ]}
         >
           <Search size={20} color={isDark ? theme.colors.textSecondary : '#6b7280'} />
@@ -250,11 +274,22 @@ export default function VerbsScreen() {
         </View>
       ) : (
         <FlatList
+          key={numColumns}
           data={filteredAndSortedVerbs}
           renderItem={renderVerbItem}
           keyExtractor={(item) => item.id}
+          numColumns={numColumns}
           style={styles.verbsList}
-          contentContainerStyle={{ paddingBottom: 100 }}
+          contentContainerStyle={[
+            styles.listContent,
+            {
+              paddingBottom: 100,
+              paddingHorizontal: layout.screenPadding,
+            },
+          ]}
+          columnWrapperStyle={
+            numColumns > 1 ? { gap: listGap, marginBottom: listGap } : undefined
+          }
           showsVerticalScrollIndicator={false}
         />
       )}
@@ -699,6 +734,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     alignItems: 'center',
   },
+  headerInner: {
+    width: '100%',
+    alignItems: 'center',
+  },
   headerTop: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -718,14 +757,14 @@ const styles = StyleSheet.create({
     fontFamily: 'Manjari-Regular',
   },
   searchContainer: {
-    flexDirection: 'row',
+    width: '100%',
+    alignItems: 'center',
     paddingHorizontal: 20,
     paddingVertical: 16,
-    gap: 12,
     marginTop: -20, // Pull up over the orange header overlap
   },
   searchInputContainer: {
-    flex: 1,
+    width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
     borderRadius: 15,
@@ -748,12 +787,14 @@ const styles = StyleSheet.create({
   },
   verbsList: {
     flex: 1,
-    paddingHorizontal: 20,
+  },
+  listContent: {
+    alignItems: 'center',
+    paddingTop: 4,
   },
   verbItem: {
     backgroundColor: '#FFFFFF',
     borderRadius: 15,
-    marginBottom: 12,
     padding: 16,
     // Shadow
     shadowColor: '#000',

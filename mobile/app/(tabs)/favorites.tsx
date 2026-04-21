@@ -21,6 +21,7 @@ import {
 } from 'lucide-react-native';
 import { WavePattern } from '@/components/SplashScreen';
 import { IgboVerb, Tense } from '@/models/verb';
+import { useResponsiveLayout } from '@/lib/responsive';
 import { verbService } from '@/lib/verbService';
 import { useTheme } from '@/components/ThemeProvider';
 import { getConjugatedForm } from '@/lib/conjugateVerbs';
@@ -36,6 +37,7 @@ import {
 
 export default function FavoritesScreen() {
   const { theme, isDark } = useTheme();
+  const layout = useResponsiveLayout();
   const insets = useSafeAreaInsets();
   const {
     favorites,
@@ -45,6 +47,16 @@ export default function FavoritesScreen() {
   const [verbs, setVerbs] = useState<IgboVerb[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedVerb, setSelectedVerb] = useState<IgboVerb | null>(null);
+  const numColumns = layout.isLargeScreen ? 3 : layout.isTablet ? 2 : 1;
+  const listGap = layout.isTablet ? 24 : 0;
+  const gridWidth = Math.min(
+    layout.listMaxWidth,
+    layout.windowWidth - layout.screenPadding * 2,
+  );
+  const cardWidth =
+    numColumns === 1
+      ? gridWidth
+      : (gridWidth - listGap * (numColumns - 1)) / numColumns;
 
   const [hasInitiallyLoaded, setHasInitiallyLoaded] = useState(false);
 
@@ -84,7 +96,14 @@ export default function FavoritesScreen() {
 
   const renderVerbItem = ({ item }: { item: IgboVerb }) => (
     <TouchableOpacity
-      style={[styles.verbItem, { backgroundColor: theme.colors.surface }]}
+      style={[
+        styles.verbItem,
+        {
+          backgroundColor: theme.colors.surface,
+          width: cardWidth,
+          marginBottom: numColumns > 1 ? 0 : 12,
+        },
+      ]}
       onPress={() => setSelectedVerb(item)}
     >
       <View style={styles.verbItemContent}>
@@ -117,10 +136,12 @@ export default function FavoritesScreen() {
 
       {/* Orange Header */}
       <View style={[styles.orangeHeader, { paddingTop: Math.max(insets.top, 20) }]}>
-        <Text style={styles.headerTitleText}>Favourites</Text>
-        <Text style={styles.headerSubtitleText}>
-          {verbs.length} saved verbs
-        </Text>
+        <View style={[styles.headerInner, { maxWidth: layout.listMaxWidth }]}>
+          <Text style={styles.headerTitleText}>Favourites</Text>
+          <Text style={styles.headerSubtitleText}>
+            {verbs.length} saved verbs
+          </Text>
+        </View>
       </View>
 
       {isLoading || favoritesLoading ? (
@@ -140,11 +161,22 @@ export default function FavoritesScreen() {
         </View>
       ) : (
         <FlatList
+          key={numColumns}
           data={verbs}
           renderItem={renderVerbItem}
           keyExtractor={(item) => item.id}
+          numColumns={numColumns}
           style={styles.verbsList}
-          contentContainerStyle={{ paddingBottom: 100 }}
+          contentContainerStyle={[
+            styles.listContent,
+            {
+              paddingBottom: 100,
+              paddingHorizontal: layout.screenPadding,
+            },
+          ]}
+          columnWrapperStyle={
+            numColumns > 1 ? { gap: listGap, marginBottom: listGap } : undefined
+          }
           showsVerticalScrollIndicator={false}
         />
       )}
@@ -469,6 +501,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     alignItems: 'center',
   },
+  headerInner: {
+    width: '100%',
+    alignItems: 'center',
+  },
   headerTitleText: {
     fontSize: 24,
     color: '#FFFFFF',
@@ -483,13 +519,13 @@ const styles = StyleSheet.create({
   },
   verbsList: {
     flex: 1,
-    paddingHorizontal: 20,
     paddingTop: 16,
+  },
+  listContent: {
+    alignItems: 'center',
   },
   verbItem: {
     borderRadius: 15,
-    marginBottom: 12,
-    marginHorizontal: 20,
     padding: 20,
     backgroundColor: '#FFFFFF',
     shadowColor: '#000',

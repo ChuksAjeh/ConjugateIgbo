@@ -30,6 +30,7 @@ import { useTheme } from '@/components/ThemeProvider';
 import { useNotifications } from '@/hooks/useNotifications';
 import { createStyles } from '@/styles/settingsStyles';
 import { showCustomerCenter } from '@/lib/revenuecatUI';
+import { useResponsiveLayout } from '@/lib/responsive';
 import { WavePattern } from '@/components/SplashScreen';
 import * as Sentry from '@sentry/react-native';
 
@@ -46,6 +47,7 @@ export default function SettingsScreen() {
 
   const { theme, isDark } = useTheme();
   const { scheduleDailyReminder, cancelDailyReminder } = useNotifications();
+  const layout = useResponsiveLayout();
   const styles = createStyles(theme, isDark);
   const [showReminderModal, setShowReminderModal] = useState(false);
   const [showGoalModal, setShowGoalModal] = useState(false);
@@ -292,92 +294,102 @@ export default function SettingsScreen() {
       </View>
 
       <View style={[styles.header, { paddingTop: Math.max(insets.top, 20) }]}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => router.back()}
-        >
-          <ChevronLeft size={24} color="#FFFFFF" />
-          <Text style={styles.backButtonText}>Back</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Settings</Text>
+        <View style={[styles.headerInner, { maxWidth: layout.formMaxWidth }]}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => router.back()}
+          >
+            <ChevronLeft size={24} color="#FFFFFF" />
+            <Text style={styles.backButtonText}>Back</Text>
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Settings</Text>
+        </View>
       </View>
 
       <ScrollView
         style={styles.content}
-        contentContainerStyle={{ paddingBottom: 100 }}
+        contentContainerStyle={[
+          styles.contentContainer,
+          {
+            paddingBottom: 100,
+            paddingHorizontal: layout.screenPadding,
+          },
+        ]}
         showsVerticalScrollIndicator={false}
       >
-        {/* GENERAL */}
-        <SettingsSection title="GENERAL">
-          <SettingsItem
-            title="Choose region"
-            onPress={() => setShowDialectModal(true)}
-          />
+        <View style={[styles.contentInner, { maxWidth: layout.formMaxWidth }]}>
+          {/* GENERAL */}
+          <SettingsSection title="GENERAL">
+            <SettingsItem
+              title="Choose region"
+              onPress={() => setShowDialectModal(true)}
+            />
 
-          <SettingsItem
-            title="Appearance"
-            onPress={() => setShowAppearanceModal(true)}
-          />
+            <SettingsItem
+              title="Appearance"
+              onPress={() => setShowAppearanceModal(true)}
+            />
 
-          <SettingsItem
-            title="Daily reminder"
-            onPress={() => setShowReminderModal(true)}
-          />
-        </SettingsSection>
+            <SettingsItem
+              title="Daily reminder"
+              onPress={() => setShowReminderModal(true)}
+            />
+          </SettingsSection>
 
-        {/* PRACTISE */}
-        <SettingsSection title="PRACTISE">
-          <SettingsItem
-            title="Tenses"
-            onPress={() => setShowTensesModal(true)}
-          />
+          {/* PRACTISE */}
+          <SettingsSection title="PRACTISE">
+            <SettingsItem
+              title="Tenses"
+              onPress={() => setShowTensesModal(true)}
+            />
 
-          <SettingsItem
-            title="Translations & Infinitives"
-            onPress={() => setShowDisplayModal(true)}
-          />
+            <SettingsItem
+              title="Translations & Infinitives"
+              onPress={() => setShowDisplayModal(true)}
+            />
 
-          <SettingsItem
-            title="Answers"
-            onPress={() => setShowAnswersModal(true)}
-          />
+            <SettingsItem
+              title="Answers"
+              onPress={() => setShowAnswersModal(true)}
+            />
 
-          <SettingsItem
-            title="Verb filters"
-            onPress={() => router.push('/verb-filters')}
-          />
+            <SettingsItem
+              title="Verb filters"
+              onPress={() => router.push('/verb-filters')}
+            />
 
-        </SettingsSection>
+          </SettingsSection>
 
-        {/* Feedback */}
-        <SettingsSection title="Feedback">
-          <SettingsItem title="Contact us" onPress={handleContactUs} />
-        </SettingsSection>
+          {/* Feedback */}
+          <SettingsSection title="Feedback">
+            <SettingsItem title="Contact us" onPress={handleContactUs} />
+          </SettingsSection>
 
-        {/* Purchases - Keep for functionality but style consistent with new design */}
-        <SettingsSection title="Purchases">
-          <SettingsItem
-            title="Restore Purchases"
-            onPress={handleRestorePurchases}
-            rightElement={
-              isLoading ? (
-                <ActivityIndicator size="small" color="#6b7280" />
-              ) : null
-            }
-          />
-          <SettingsItem
-            title="Manage Purchases"
-            onPress={handleOpenCustomerCenter}
-          />
-        </SettingsSection>
+          {/* Purchases - Keep for functionality but style consistent with new design */}
+          <SettingsSection title="Purchases">
+            <SettingsItem
+              title="Restore Purchases"
+              onPress={handleRestorePurchases}
+              rightElement={
+                isLoading ? (
+                  <ActivityIndicator size="small" color="#6b7280" />
+                ) : null
+              }
+            />
+            <SettingsItem
+              title="Manage Purchases"
+              onPress={handleOpenCustomerCenter}
+            />
+          </SettingsSection>
 
-        {/* App Info */}
-        <View style={styles.appInfo}>
-          <Text style={styles.appInfoTitle}>ConjugateIgbo</Text>
-          <Text style={styles.appInfoVersion}>Version 1.0.0</Text>
-          <Text style={styles.appInfoDescription}>
-            Learn Igbo verb conjugations with interactive practice exercises.
-          </Text>
+          {/* App Info */}
+          <View style={styles.appInfo}>
+            <Text style={styles.appInfoTitle}>ConjugateIgbo</Text>
+            <Text style={styles.appInfoVersion}>Version 1.0.0</Text>
+            <Text style={styles.appInfoDescription}>
+              Learn Igbo verb conjugations with interactive practice exercises.
+            </Text>
+          </View>
         </View>
       </ScrollView>
 
