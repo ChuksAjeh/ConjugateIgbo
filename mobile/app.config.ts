@@ -22,6 +22,9 @@ export default {
     ios: {
       bundleIdentifier: 'com.chuksajeh.conjugateigbo',
       supportsTablet: true,
+      infoPlist: {
+        ITSAppUsesNonExemptEncryption: false,
+      },
     },
 
     android: {
