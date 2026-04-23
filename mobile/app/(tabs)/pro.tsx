@@ -19,6 +19,7 @@ import { Check } from 'lucide-react-native';
 import Svg, { Path, Circle, G } from 'react-native-svg';
 import { usePurchases } from '@/hooks/usePurchases';
 import { ICON_IMAGE } from '@/components/SplashScreen';
+import { findLifetimeProPackage } from '@/lib/purchaseProducts';
 import { useResponsiveLayout } from '@/lib/responsive';
 
 const SPACING_X = 120;
@@ -289,13 +290,7 @@ export default function ProScreen() {
 
   // Get the price string from RevenueCat offerings
   const priceString = React.useMemo(() => {
-    const proPackage = packages.find(
-      (p) =>
-        p.product.identifier === 'conjugate_igbo_pro' ||
-        p.packageType === 'LIFETIME' ||
-        p.identifier === 'lifetime' ||
-        p.identifier === 'pro',
-    );
+    const proPackage = findLifetimeProPackage(packages);
     return proPackage?.product?.priceString || null;
   }, [packages]);
 

@@ -12,6 +12,7 @@ export const logger = {
 
 export const captureException = noop;
 export const captureMessage = noop;
+export const addBreadcrumb = noop;
 export const init = noop;
 export const mobileReplayIntegration = noop;
 export const feedbackIntegration = noop;
@@ -21,6 +22,7 @@ export default {
   logger,
   captureException,
   captureMessage,
+  addBreadcrumb,
   init,
   mobileReplayIntegration,
   feedbackIntegration,

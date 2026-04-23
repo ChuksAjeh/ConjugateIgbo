@@ -32,7 +32,7 @@ import { createStyles } from '@/styles/settingsStyles';
 import { showCustomerCenter } from '@/lib/revenuecatUI';
 import { useResponsiveLayout } from '@/lib/responsive';
 import { WavePattern } from '@/components/SplashScreen';
-import * as Sentry from '@sentry/react-native';
+import { logger } from '@/lib/logger';
 
 export default function SettingsScreen() {
   const router = useRouter();
@@ -114,7 +114,10 @@ export default function SettingsScreen() {
     try {
       await Linking.openURL(mailto);
     } catch (error: any) {
-      Sentry.logger.error(error);
+      logger.error(error, 'Failed to open support email link', {
+        feature: 'settings',
+        component: 'SettingsScreen',
+      });
       Alert.alert(
         'No Mail App Found',
         `Please send an email to ${email} for support.`,

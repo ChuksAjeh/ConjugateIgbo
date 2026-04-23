@@ -1,19 +1,25 @@
 import React, { createContext, useContext, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Platform } from 'react-native';
-import * as Sentry from '@sentry/react-native';
 import Purchases, {
   CustomerInfo,
+  CustomerInfoUpdateListener,
   PurchasesError,
   PURCHASES_ERROR_CODE,
   PurchasesOfferings,
   PurchasesPackage,
 } from 'react-native-purchases';
-
-const ENTITLEMENT_ID = 'ConjugateIgbo Pro';
-const ENTITLEMENT_ID_ALT = 'pro'; // Common alternative
-const PRODUCT_ID = 'conjugate_igbo_pro';
+import { logger } from '@/lib/logger';
+import {
+  findLifetimeProPackage,
+  hasActiveProEntitlement,
+} from '@/lib/purchaseProducts';
+import { configureRevenueCat, isRevenueCatConfigured } from '@/lib/revenuecat';
 
 const isNative = Platform.OS === 'ios' || Platform.OS === 'android';
+
+const ensureRevenueCatReady = (): boolean => {
+  return isRevenueCatConfigured() || configureRevenueCat();
+};
 
 interface PurchasesContextType {
   isProUser: boolean;
@@ -44,10 +50,7 @@ export const PurchasesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [offerings, setOfferings] = useState<PurchasesOfferings | null>(null);
 
   const isProUser = useMemo(() => {
-    return (
-      !!customerInfo?.entitlements?.active?.[ENTITLEMENT_ID] ||
-      !!customerInfo?.entitlements?.active?.[ENTITLEMENT_ID_ALT]
-    );
+    return customerInfo ? hasActiveProEntitlement(customerInfo) : false;
   }, [customerInfo]);
 
   const packages = useMemo(() => {
@@ -66,6 +69,12 @@ export const PurchasesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       return;
     }
 
+    if (!ensureRevenueCatReady()) {
+      setHasLoaded(true);
+      setIsLoading(false);
+      return;
+    }
+
     try {
       setIsLoading(true);
       const [info, offs] = await Promise.all([
@@ -75,13 +84,10 @@ export const PurchasesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       setCustomerInfo(info);
       setOfferings(offs);
     } catch (e: any) {
-      Sentry.logger.warn(
-        `[PurchasesProvider] RevenueCat initialization failed: ${e?.message || e}`,
-        {
-          tags: { feature: 'purchases', component: 'PurchasesProvider' },
-          extra: { error: e },
-        }
-      );
+      logger.error(e, '[PurchasesProvider] RevenueCat initialization failed', {
+        feature: 'purchases',
+        component: 'PurchasesProvider',
+      });
     } finally {
       // Always flip hasLoaded: failure to reach RevenueCat shouldn't trap
       // the pro screen on a spinner. Gated UI can still render (without
@@ -95,29 +101,37 @@ export const PurchasesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     load();
 
     if (!isNative) return;
+    if (!ensureRevenueCatReady()) return;
 
-    const listener = Purchases.addCustomerInfoUpdateListener((info) => {
+    const listener: CustomerInfoUpdateListener = (info) => {
       setCustomerInfoRef.current(info);
-    });
+    };
+
+    try {
+      Purchases.addCustomerInfoUpdateListener(listener);
+    } catch (e) {
+      logger.error(e, 'Registering RevenueCat customer info listener failed', {
+        feature: 'purchases',
+        component: 'PurchasesProvider',
+        extra: { context: 'Registering customer info listener failed' },
+      });
+    }
 
     return () => {
       try {
-        // @ts-ignore
-        listener?.remove?.();
+        Purchases.removeCustomerInfoUpdateListener(listener);
       } catch {}
     };
   }, [load]);
 
   const purchasePackage = useCallback(async (pkg: PurchasesPackage) => {
     if (!isNative) return false;
+    if (!ensureRevenueCatReady()) return false;
     try {
       setIsLoading(true);
       const { customerInfo: info } = await Purchases.purchasePackage(pkg);
       setCustomerInfo(info);
-      return (
-        !!info.entitlements?.active?.[ENTITLEMENT_ID] ||
-        !!info.entitlements?.active?.[ENTITLEMENT_ID_ALT]
-      );
+      return hasActiveProEntitlement(info);
     } catch (e) {
       const err = e as PurchasesError;
       
@@ -133,12 +147,12 @@ export const PurchasesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
            const restoredInfo = await Purchases.restorePurchases();
            setCustomerInfo(restoredInfo);
            
-           const hasPro = !!restoredInfo.entitlements?.active?.[ENTITLEMENT_ID] ||
-                          !!restoredInfo.entitlements?.active?.[ENTITLEMENT_ID_ALT];
+           const hasPro = hasActiveProEntitlement(restoredInfo);
            
            if (!hasPro) {
-             Sentry.captureMessage('User already owned product but no matching active entitlement found after restore', {
-               level: 'warning',
+             logger.warn('User already owned product but no matching active entitlement found after restore', {
+               feature: 'purchases',
+               component: 'PurchasesProvider',
                extra: { 
                  activeEntitlements: Object.keys(restoredInfo.entitlements?.active || {}),
                  errorCode: err?.code,
@@ -157,8 +171,9 @@ export const PurchasesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         return false;
       }
       
-      Sentry.captureException(err, {
-        tags: { feature: 'purchases', component: 'PurchasesProvider' },
+      logger.error(err, 'Purchase failed', {
+        feature: 'purchases',
+        component: 'PurchasesProvider',
         extra: { context: 'Purchase failed', errorCode: err?.code },
       });
       return false;
@@ -168,19 +183,9 @@ export const PurchasesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   }, []);
 
   const purchasePro = useCallback(async (): Promise<boolean> => {
-    const proPackage = packages.find(
-      (p) =>
-        p.product.identifier === PRODUCT_ID ||
-        p.packageType === 'LIFETIME' ||
-        p.identifier === 'lifetime' ||
-        p.identifier === 'pro'
-    );
+    const proPackage = findLifetimeProPackage(packages);
 
     if (!proPackage) {
-      Sentry.logger.warn('No Pro package found', {
-        tags: { feature: 'purchases', component: 'PurchasesProvider' },
-        extra: { availablePackages: packages.map((p) => p.identifier) },
-      });
       return false;
     }
 
@@ -189,17 +194,16 @@ export const PurchasesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   const restorePurchases = useCallback(async (): Promise<boolean> => {
     if (!isNative) return false;
+    if (!ensureRevenueCatReady()) return false;
     try {
       setIsLoading(true);
       const info = await Purchases.restorePurchases();
       setCustomerInfo(info);
-      return (
-        !!info.entitlements?.active?.[ENTITLEMENT_ID] ||
-        !!info.entitlements?.active?.[ENTITLEMENT_ID_ALT]
-      );
+      return hasActiveProEntitlement(info);
     } catch (e: any) {
-      Sentry.captureException(e, {
-        tags: { feature: 'purchases', component: 'PurchasesProvider' },
+      logger.error(e, 'Restore purchases failed', {
+        feature: 'purchases',
+        component: 'PurchasesProvider',
         extra: { context: 'Restore failed' },
       });
       return false;

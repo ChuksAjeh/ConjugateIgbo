@@ -24,8 +24,8 @@ import IntroScreen from '@/components/IntroScreen';
 import StartPracticingScreen from '@/components/StartPracticingScreen';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import { PurchasesProvider } from '@/components/PurchasesProvider';
-import { configureRevenueCat } from '@/lib/revenuecat';
 import { initSentry, Sentry } from '@/lib/sentry';
+import { logger } from '@/lib/logger';
 import { verbService } from '@/lib/verbService';
 
 initSentry();
@@ -64,7 +64,10 @@ export default Sentry.wrap(function RootLayout() {
         setShowIntro(true);
       }
     } catch (e) {
-      console.error('Failed to check intro status', e);
+      logger.error(e, 'Failed to check intro status', {
+        feature: 'onboarding',
+        component: 'RootLayout',
+      });
     }
   };
 
@@ -78,28 +81,27 @@ export default Sentry.wrap(function RootLayout() {
       await AsyncStorage.setItem('has_seen_intro', 'true');
       setShowStartPracticing(false);
     } catch (e) {
-      console.error('Failed to save intro status', e);
+      logger.error(e, 'Failed to save intro status', {
+        feature: 'onboarding',
+        component: 'RootLayout',
+      });
       setShowStartPracticing(false);
     }
   };
-
-  // Initialize RevenueCat once on app start
-  useEffect(() => {
-    configureRevenueCat();
-  }, []);
 
   // Preload verbs on app start so all screens have data available
   useEffect(() => {
     (async () => {
       try {
         await Promise.all([verbService.preload('delta')]);
-        Sentry.logger.info('[AppInit] Verbs preloaded');
+        logger.info('[AppInit] Verbs preloaded', {
+          feature: 'app-init',
+          component: 'RootLayout',
+        });
       } catch (error) {
-        Sentry.captureException(error, {
-          tags: {
-            feature: 'app-init',
-            service: 'verb-preload',
-          },
+        logger.error(error, 'Failed to preload verbs', {
+          feature: 'app-init',
+          component: 'verb-preload',
         });
       }
     })();
