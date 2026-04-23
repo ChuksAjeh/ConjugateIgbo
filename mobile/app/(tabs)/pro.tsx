@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useMemo } from 'react';
+import React, { useCallback, useEffect, useRef, useMemo, useState } from 'react';
 import * as Sentry from '@sentry/react-native';
 import {
   View,
@@ -114,9 +114,17 @@ const AnimatedDiagonalPattern = () => {
   const scrollAnim = useRef(new Animated.Value(0)).current;
   const { width, height } = useWindowDimensions();
 
+  // Debounce dimension changes so iPad rotation / split-view resizing
+  // doesn't trigger hundreds of SVG-path recalculations per second.
+  const [debouncedSize, setDebouncedSize] = useState({ width, height });
+  useEffect(() => {
+    const handle = setTimeout(() => setDebouncedSize({ width, height }), 150);
+    return () => clearTimeout(handle);
+  }, [width, height]);
+
   const patternElements = useMemo(
-    () => generatePatternElements(width, height),
-    [height, width],
+    () => generatePatternElements(debouncedSize.width, debouncedSize.height),
+    [debouncedSize.width, debouncedSize.height],
   );
 
   useEffect(() => {
@@ -221,9 +229,9 @@ const AnimatedDiagonalPattern = () => {
     const stepY = 70; // PERIOD_Y (840) is multiple of 70
 
     // Cover the visible area plus the scroll buffer
-    for (let x = -SPACING_X; x < width + PERIOD_X; x += SPACING_X) {
+    for (let x = -SPACING_X; x < debouncedSize.width + PERIOD_X; x += SPACING_X) {
       let path = `M ${x} ${-PERIOD_Y}`;
-      for (let y = -PERIOD_Y; y < height + PERIOD_Y; y += stepY) {
+      for (let y = -PERIOD_Y; y < debouncedSize.height + PERIOD_Y; y += stepY) {
         const xOffset = (Math.abs(Math.floor(y / stepY)) % 2) * stepX;
         path += ` L ${x + xOffset} ${y}`;
       }
@@ -248,7 +256,10 @@ const AnimatedDiagonalPattern = () => {
           transform: [{ translateX }, { translateY }],
         }}
       >
-        <Svg height={height + PERIOD_Y + 100} width={width + PERIOD_X + 100}>
+        <Svg
+          height={debouncedSize.height + PERIOD_Y + 100}
+          width={debouncedSize.width + PERIOD_X + 100}
+        >
           {renderZigZags()}
           {patternElements.map((element, index) => {
             const { type, x, y, size, rotation } = element;

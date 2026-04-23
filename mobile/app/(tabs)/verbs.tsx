@@ -49,6 +49,12 @@ export default function VerbsScreen() {
   const [verbs, setVerbs] = useState<IgboVerb[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
+
+  useEffect(() => {
+    const handle = setTimeout(() => setDebouncedSearchQuery(searchQuery), 200);
+    return () => clearTimeout(handle);
+  }, [searchQuery]);
   const [selectedVerb, setSelectedVerb] = useState<IgboVerb | null>(null);
   const numColumns = layout.isLargeScreen ? 3 : layout.isTablet ? 2 : 1;
   const listGap = layout.isTablet ? 24 : 0;
@@ -126,15 +132,21 @@ export default function VerbsScreen() {
     }, [verbId, openDetails, verbs, selectedVerb]),
   );
 
+  const sortedVerbs = useMemo(() => {
+    return [...verbs].sort((a, b) =>
+      (a.igbo ?? '').localeCompare(b.igbo ?? ''),
+    );
+  }, [verbs]);
+
   const filteredAndSortedVerbs = useMemo(() => {
-    const q = searchQuery.toLowerCase();
-    return verbs
-      .filter((verb) =>
+    const q = debouncedSearchQuery.toLowerCase();
+    if (!q) return sortedVerbs;
+    return sortedVerbs.filter(
+      (verb) =>
         (verb.igbo ?? '').toLowerCase().includes(q) ||
         (verb.english ?? '').toLowerCase().includes(q),
-      )
-      .sort((a, b) => (a.igbo ?? '').localeCompare(b.igbo ?? ''));
-  }, [searchQuery, verbs]);
+    );
+  }, [debouncedSearchQuery, sortedVerbs]);
 
   const renderVerbItem = ({ item }: { item: IgboVerb }) => (
     <TouchableOpacity
