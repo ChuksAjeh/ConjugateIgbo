@@ -27,6 +27,7 @@ import { PurchasesProvider } from '@/components/PurchasesProvider';
 import { initSentry, Sentry } from '@/lib/sentry';
 import { logger } from '@/lib/logger';
 import { verbService } from '@/lib/verbService';
+import { useSettings } from '@/hooks/useSettings';
 
 initSentry();
 
@@ -89,23 +90,32 @@ export default Sentry.wrap(function RootLayout() {
     }
   };
 
-  // Preload verbs on app start so all screens have data available
+  // Preload verbs for the current dialect so screens render without a
+  // data-fetch flash. Re-runs when the user switches dialect from Settings.
+  const { settings } = useSettings();
   useEffect(() => {
+    let cancelled = false;
     (async () => {
       try {
-        await Promise.all([verbService.preload('delta')]);
+        await verbService.preload(settings.dialect);
+        if (cancelled) return;
         logger.info('[AppInit] Verbs preloaded', {
           feature: 'app-init',
           component: 'RootLayout',
+          tags: { dialect: settings.dialect },
         });
       } catch (error) {
         logger.error(error, 'Failed to preload verbs', {
           feature: 'app-init',
           component: 'verb-preload',
+          tags: { dialect: settings.dialect },
         });
       }
     })();
-  }, []);
+    return () => {
+      cancelled = true;
+    };
+  }, [settings.dialect]);
 
   if (!fontsLoaded) {
     return null;

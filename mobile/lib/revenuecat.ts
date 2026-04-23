@@ -30,9 +30,8 @@ export function configureRevenueCat(): boolean {
     return true;
   }
 
-  const apiKey = __DEV__
-    ? REVENUECAT_API_KEY_ANDROID
-    : Platform.OS === 'ios'
+  const apiKey =
+    Platform.OS === 'ios'
       ? REVENUECAT_API_KEY_IOS
       : REVENUECAT_API_KEY_ANDROID;
 

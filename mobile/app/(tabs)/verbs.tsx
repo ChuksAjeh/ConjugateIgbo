@@ -114,7 +114,12 @@ export default function VerbsScreen() {
           // Clear the flag once handled so Verbs tab doesn't auto-open on future visits
           try {
             router.setParams({ openDetails: undefined });
-          } catch {}
+          } catch (error) {
+            Sentry.captureException(error, {
+              tags: { feature: 'verbs', screen: 'VerbsScreen' },
+              extra: { context: 'Clearing openDetails flag on focus' },
+            });
+          }
         }
       }
       return () => {};
