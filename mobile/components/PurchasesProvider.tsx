@@ -13,6 +13,7 @@ import { logger } from '@/lib/logger';
 import {
   findLifetimeProPackage,
   hasActiveProEntitlement,
+  isAlreadyPurchasedError,
 } from '@/lib/purchaseProducts';
 import { configureRevenueCat, isRevenueCatConfigured } from '@/lib/revenuecat';
 
@@ -53,6 +54,16 @@ export const PurchasesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const isProUser = useMemo(() => {
     return customerInfo ? hasActiveProEntitlement(customerInfo) : false;
   }, [customerInfo]);
+
+  // Surface the anonymous RevenueCat user id + entitlement state to Sentry so
+  // issues can be filtered by Pro vs Free and correlated across a session.
+  // `originalAppUserId` is RevenueCat's anonymous install identifier — no PII.
+  useEffect(() => {
+    Sentry.setTag('isPro', String(isProUser));
+    if (customerInfo?.originalAppUserId) {
+      Sentry.setUser({ id: customerInfo.originalAppUserId });
+    }
+  }, [isProUser, customerInfo]);
 
   const packages = useMemo(() => {
     return offerings?.current?.availablePackages ?? [];
@@ -153,14 +164,8 @@ export const PurchasesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         } catch (e) {
           const err = e as PurchasesError;
 
-          // If user already owns it but it didn't sync, try to restore
-          // @ts-ignore - Some versions might use different naming
-          if (err?.code === PURCHASES_ERROR_CODE.PRODUCT_ALREADY_PURCHASED_ERROR ||
-              // @ts-ignore
-              err?.code === PURCHASES_ERROR_CODE.ProductAlreadyPurchasedError ||
-              err?.code === (2 as any) ||
-              err?.message?.toLowerCase().includes('already active') ||
-              err?.message?.toLowerCase().includes('already owned')) {
+          // If user already owns it but it didn't sync, try to restore.
+          if (isAlreadyPurchasedError(err)) {
             try {
               const restoredInfo = await Purchases.restorePurchases();
               setCustomerInfo(restoredInfo);

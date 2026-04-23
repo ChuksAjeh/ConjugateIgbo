@@ -2,6 +2,8 @@ import {
   PACKAGE_TYPE,
   PRODUCT_CATEGORY,
   PRODUCT_TYPE,
+  PURCHASES_ERROR_CODE,
+  PurchasesError,
   PurchasesPackage,
 } from 'react-native-purchases';
 import { logger } from '@/lib/logger';
@@ -39,6 +41,24 @@ export function hasActiveProEntitlement(customerInfo: {
     !!customerInfo.entitlements?.active?.[PRO_ENTITLEMENT_ID] ||
     !!customerInfo.entitlements?.active?.[PRO_ENTITLEMENT_ID_ALT]
   );
+}
+
+/**
+ * RevenueCat's error-code enum shape has varied across SDK versions
+ * (SCREAMING_SNAKE vs PascalCase, occasionally a raw int). This helper
+ * normalises the "user already owns this non-consumable" signal so the
+ * call site doesn't need a ladder of @ts-ignore comparisons.
+ */
+export function isAlreadyPurchasedError(err: PurchasesError | undefined): boolean {
+  if (!err) return false;
+  const codeCandidates: unknown[] = [
+    PURCHASES_ERROR_CODE.PRODUCT_ALREADY_PURCHASED_ERROR,
+    (PURCHASES_ERROR_CODE as Record<string, unknown>).ProductAlreadyPurchasedError,
+    2, // legacy numeric code
+  ];
+  if (codeCandidates.includes(err.code)) return true;
+  const message = err.message?.toLowerCase() ?? '';
+  return message.includes('already active') || message.includes('already owned');
 }
 
 export function isLifetimeProPackage(pkg: PurchasesPackage): boolean {
