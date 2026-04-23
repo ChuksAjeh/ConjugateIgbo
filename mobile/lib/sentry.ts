@@ -5,6 +5,24 @@ import { installConsoleLogging } from '@/lib/logger';
 
 let hasInitializedSentry = false;
 
+const SENSITIVE_KEY_PATTERN =
+  /(receipt|token|apiKey|api_key|authorization|password|secret|entitlements?|customerInfo|originalAppUserId|productIdentifier|originalPurchaseDate|latestExpirationDate)/i;
+
+const redactValue = (value: unknown, depth = 0): unknown => {
+  if (depth > 4 || value == null) return value;
+  if (Array.isArray(value)) return value.map((v) => redactValue(v, depth + 1));
+  if (typeof value === 'object') {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+      out[k] = SENSITIVE_KEY_PATTERN.test(k)
+        ? '[redacted]'
+        : redactValue(v, depth + 1);
+    }
+    return out;
+  }
+  return value;
+};
+
 const appVersion = Constants.expoConfig?.version ?? 'unknown';
 const appSlug = Constants.expoConfig?.slug ?? 'conjugate-igbo';
 const iosBuildNumber = Constants.expoConfig?.ios?.buildNumber;
@@ -31,7 +49,7 @@ export function initSentry(): void {
     release: `${appSlug}@${appVersion}`,
     dist: nativeBuild,
     environment,
-    sendDefaultPii: true,
+    sendDefaultPii: false,
     attachStacktrace: true,
     enableLogs: true,
     enableNative: true,
@@ -46,6 +64,24 @@ export function initSentry(): void {
     enableCaptureFailedRequests: true,
     attachScreenshot: !__DEV__,
     attachViewHierarchy: !__DEV__,
+    beforeSend(event) {
+      if (event.extra) event.extra = redactValue(event.extra) as typeof event.extra;
+      if (event.contexts) {
+        event.contexts = redactValue(event.contexts) as typeof event.contexts;
+      }
+      if (event.breadcrumbs) {
+        event.breadcrumbs = event.breadcrumbs.map((b) =>
+          b.data ? { ...b, data: redactValue(b.data) as typeof b.data } : b,
+        );
+      }
+      return event;
+    },
+    beforeBreadcrumb(breadcrumb) {
+      if (breadcrumb.data) {
+        breadcrumb.data = redactValue(breadcrumb.data) as typeof breadcrumb.data;
+      }
+      return breadcrumb;
+    },
     tracesSampleRate: __DEV__ ? 1 : 0.2,
     profilesSampleRate: __DEV__ ? 0 : 0.1,
     replaysSessionSampleRate: 0.1,

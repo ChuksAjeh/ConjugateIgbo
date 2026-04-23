@@ -2,6 +2,11 @@ import { Platform } from 'react-native';
 import Purchases, { LOG_LEVEL } from 'react-native-purchases';
 import { logger } from '@/lib/logger';
 
+// RevenueCat "public" SDK keys are intentionally embedded in the client — they
+// are scoped to read offerings and make purchases on the signed-in user's
+// behalf, and cannot be used for admin/server operations. Server-side work
+// (entitlement audits, overrides) must use a separate REST API secret key that
+// MUST NOT be shipped in the bundle.
 const REVENUECAT_API_KEY_IOS = process.env.EXPO_PUBLIC_REVENUECAT_API_IOS_KEY;
 const REVENUECAT_API_KEY_ANDROID = process.env.EXPO_PUBLIC_REVENUECAT_API_KEY;
 
