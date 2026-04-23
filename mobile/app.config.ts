@@ -16,23 +16,12 @@ export default {
 
     icon: './assets/images/app-icon.png',
     backgroundColor: '#8B0000',
-    splash: {
-      image: './assets/images/splash-icon.png',
-      resizeMode: 'contain',
-      backgroundColor: '#8B0000',
-    },
 
     newArchEnabled: true,
 
     ios: {
       bundleIdentifier: 'com.chuksajeh.conjugateigbo',
       icon: './assets/images/app-icon.png',
-      splash: {
-        image: './assets/images/splash-icon.png',
-        resizeMode: 'contain',
-        backgroundColor: '#8B0000',
-        tabletImage: './assets/images/splash-icon.png',
-      },
       supportsTablet: true,
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false,
@@ -59,8 +48,16 @@ export default {
         {
           image: './assets/images/splash-icon.png',
           backgroundColor: '#8B0000',
-          imageWidth: 88,
+          imageWidth: 200,
           resizeMode: 'contain',
+          ios: {
+            image: './assets/images/splash-icon.png',
+            backgroundColor: '#8B0000',
+            imageWidth: 200,
+            resizeMode: 'contain',
+            tabletImage: './assets/images/splash-icon.png',
+            tabletImageWidth: 300,
+          },
         },
       ],
       [
