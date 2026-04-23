@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Platform } from 'react-native';
+import * as Sentry from '@sentry/react-native';
 import Purchases, {
   CustomerInfo,
   CustomerInfoUpdateListener,
@@ -120,66 +121,89 @@ export const PurchasesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     return () => {
       try {
         Purchases.removeCustomerInfoUpdateListener(listener);
-      } catch {}
+      } catch (err) {
+        logger.warn('Removing RevenueCat customer info listener failed', {
+          feature: 'purchases',
+          component: 'PurchasesProvider',
+          extra: { error: String(err) },
+        });
+      }
     };
   }, [load]);
 
   const purchasePackage = useCallback(async (pkg: PurchasesPackage) => {
     if (!isNative) return false;
     if (!ensureRevenueCatReady()) return false;
-    try {
-      setIsLoading(true);
-      const { customerInfo: info } = await Purchases.purchasePackage(pkg);
-      setCustomerInfo(info);
-      return hasActiveProEntitlement(info);
-    } catch (e) {
-      const err = e as PurchasesError;
-      
-      // If user already owns it but it didn't sync, try to restore
-      // @ts-ignore - Some versions might use different naming
-      if (err?.code === PURCHASES_ERROR_CODE.PRODUCT_ALREADY_PURCHASED_ERROR || 
-          // @ts-ignore
-          err?.code === PURCHASES_ERROR_CODE.ProductAlreadyPurchasedError ||
-          err?.code === (2 as any) ||
-          err?.message?.toLowerCase().includes('already active') ||
-          err?.message?.toLowerCase().includes('already owned')) {
-         try {
-           const restoredInfo = await Purchases.restorePurchases();
-           setCustomerInfo(restoredInfo);
-           
-           const hasPro = hasActiveProEntitlement(restoredInfo);
-           
-           if (!hasPro) {
-             logger.warn('User already owned product but no matching active entitlement found after restore', {
-               feature: 'purchases',
-               component: 'PurchasesProvider',
-               extra: { 
-                 activeEntitlements: Object.keys(restoredInfo.entitlements?.active || {}),
-                 errorCode: err?.code,
-                 errorMessage: err?.message
-               }
-             });
-           }
-           
-           return hasPro;
-         } catch {
-           // fallback to regular error handling
-         }
-      }
+    return Sentry.startSpan(
+      {
+        name: 'purchasePackage',
+        op: 'purchase',
+        attributes: {
+          'purchase.packageIdentifier': pkg.identifier,
+          'purchase.productType': pkg.product.productType,
+          'purchase.packageType': pkg.packageType,
+        },
+      },
+      async () => {
+        try {
+          setIsLoading(true);
+          const { customerInfo: info } = await Purchases.purchasePackage(pkg);
+          setCustomerInfo(info);
+          return hasActiveProEntitlement(info);
+        } catch (e) {
+          const err = e as PurchasesError;
 
-      if (err?.code === PURCHASES_ERROR_CODE.PURCHASE_CANCELLED_ERROR) {
-        return false;
-      }
-      
-      logger.error(err, 'Purchase failed', {
-        feature: 'purchases',
-        component: 'PurchasesProvider',
-        extra: { context: 'Purchase failed', errorCode: err?.code },
-      });
-      return false;
-    } finally {
-      setIsLoading(false);
-    }
+          // If user already owns it but it didn't sync, try to restore
+          // @ts-ignore - Some versions might use different naming
+          if (err?.code === PURCHASES_ERROR_CODE.PRODUCT_ALREADY_PURCHASED_ERROR ||
+              // @ts-ignore
+              err?.code === PURCHASES_ERROR_CODE.ProductAlreadyPurchasedError ||
+              err?.code === (2 as any) ||
+              err?.message?.toLowerCase().includes('already active') ||
+              err?.message?.toLowerCase().includes('already owned')) {
+            try {
+              const restoredInfo = await Purchases.restorePurchases();
+              setCustomerInfo(restoredInfo);
+
+              const hasPro = hasActiveProEntitlement(restoredInfo);
+
+              if (!hasPro) {
+                logger.warn('User already owned product but no matching active entitlement found after restore', {
+                  feature: 'purchases',
+                  component: 'PurchasesProvider',
+                  extra: {
+                    activeEntitlementCount: Object.keys(restoredInfo.entitlements?.active || {}).length,
+                    errorCode: err?.code,
+                  },
+                });
+              }
+
+              return hasPro;
+            } catch (restoreErr) {
+              logger.error(restoreErr, 'Restore after PRODUCT_ALREADY_PURCHASED failed', {
+                feature: 'purchases',
+                component: 'PurchasesProvider',
+                extra: { originalErrorCode: err?.code },
+              });
+              // fallthrough to regular error handling below
+            }
+          }
+
+          if (err?.code === PURCHASES_ERROR_CODE.PURCHASE_CANCELLED_ERROR) {
+            return false;
+          }
+
+          logger.error(err, 'Purchase failed', {
+            feature: 'purchases',
+            component: 'PurchasesProvider',
+            extra: { context: 'Purchase failed', errorCode: err?.code },
+          });
+          return false;
+        } finally {
+          setIsLoading(false);
+        }
+      },
+    );
   }, []);
 
   const purchasePro = useCallback(async (): Promise<boolean> => {
@@ -195,21 +219,26 @@ export const PurchasesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const restorePurchases = useCallback(async (): Promise<boolean> => {
     if (!isNative) return false;
     if (!ensureRevenueCatReady()) return false;
-    try {
-      setIsLoading(true);
-      const info = await Purchases.restorePurchases();
-      setCustomerInfo(info);
-      return hasActiveProEntitlement(info);
-    } catch (e: any) {
-      logger.error(e, 'Restore purchases failed', {
-        feature: 'purchases',
-        component: 'PurchasesProvider',
-        extra: { context: 'Restore failed' },
-      });
-      return false;
-    } finally {
-      setIsLoading(false);
-    }
+    return Sentry.startSpan(
+      { name: 'restorePurchases', op: 'purchase' },
+      async () => {
+        try {
+          setIsLoading(true);
+          const info = await Purchases.restorePurchases();
+          setCustomerInfo(info);
+          return hasActiveProEntitlement(info);
+        } catch (e: any) {
+          logger.error(e, 'Restore purchases failed', {
+            feature: 'purchases',
+            component: 'PurchasesProvider',
+            extra: { context: 'Restore failed' },
+          });
+          return false;
+        } finally {
+          setIsLoading(false);
+        }
+      },
+    );
   }, []);
 
   const value = useMemo(() => ({

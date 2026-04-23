@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ProgressStatistics } from '@/hooks/models/hooksInterfaces';
 import { getItem, setItem } from '@/lib/storage';
+import { logger } from '@/lib/logger';
 
 const STATISTICS_STORAGE_KEY = 'igbo_verb_statistics';
 
@@ -64,8 +65,12 @@ export const useProgress = () => {
         setStatistics(initialStats);
         await setItem(STATISTICS_STORAGE_KEY, JSON.stringify(initialStats));
       }
-    } catch {
-      // Fail gracefully and use default state
+    } catch (error) {
+      logger.error(error, 'Failed to load progress statistics', {
+        feature: 'progress',
+        component: 'useProgress',
+        extra: { context: 'loadProgress' },
+      });
     } finally {
       setIsLoading(false);
     }
@@ -85,8 +90,12 @@ export const useProgress = () => {
 
       setStatistics(updatedStatistics);
       await setItem(STATISTICS_STORAGE_KEY, JSON.stringify(updatedStatistics));
-    } catch {
-      // Fail gracefully
+    } catch (error) {
+      logger.error(error, 'Failed to persist progress update', {
+        feature: 'progress',
+        component: 'useProgress',
+        extra: { context: 'updateProgress' },
+      });
     }
   };
 

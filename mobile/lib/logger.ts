@@ -146,6 +146,22 @@ export const logger = {
 };
 
 /**
+ * Noisy console messages from RN/Expo/third-party libraries that should not
+ * be forwarded to Sentry. Keep these specific — anything too broad risks
+ * swallowing real bugs.
+ */
+const CONSOLE_BRIDGE_IGNORE_PATTERNS: RegExp[] = [
+  /Running "/, // Metro bundler boot banner
+  /Download:|Downloading|\[Fast Refresh\]/i,
+  /\[expo-modules-core\]/i,
+  /Non-serializable values were found in the navigation state/i,
+  /VirtualizedLists should never be nested/i,
+];
+
+const shouldSkipConsoleBridge = (message: string): boolean =>
+  CONSOLE_BRIDGE_IGNORE_PATTERNS.some((re) => re.test(message));
+
+/**
  * Bridges accidental console usage into Sentry. This is intentionally small:
  * `warn` and `error` become Sentry logs/events, while lower-severity console
  * calls are breadcrumbs so they provide context without flooding issues.
@@ -167,7 +183,7 @@ export function installConsoleLogging(): void {
       original?.(...args);
 
       const message = formatMessage(args);
-      if (!message) {
+      if (!message || shouldSkipConsoleBridge(message)) {
         return;
       }
 
