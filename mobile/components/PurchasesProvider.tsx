@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Platform } from 'react-native';
+import { InteractionManager, Platform } from 'react-native';
 import * as Sentry from '@sentry/react-native';
 import Purchases, {
   CustomerInfo,
@@ -110,34 +110,52 @@ export const PurchasesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   }, []);
 
   useEffect(() => {
-    load();
+    // Defer SDK init off the launch frame. RevenueCat reads
+    // [NSBundle appStoreReceiptURL] during configure, which on iPadOS 26
+    // does an XPC roundtrip into LaunchServices that has crashed during
+    // launch (App Review rejection). Running after interactions guarantees
+    // the first paint completes before we touch the SDK.
+    const interaction = InteractionManager.runAfterInteractions(() => {
+      load();
+    });
 
-    if (!isNative) return;
-    if (!ensureRevenueCatReady()) return;
-
-    const listener: CustomerInfoUpdateListener = (info) => {
-      setCustomerInfoRef.current(info);
-    };
-
-    try {
-      Purchases.addCustomerInfoUpdateListener(listener);
-    } catch (e) {
-      logger.error(e, 'Registering RevenueCat customer info listener failed', {
-        feature: 'purchases',
-        component: 'PurchasesProvider',
-        extra: { context: 'Registering customer info listener failed' },
-      });
+    if (!isNative) {
+      return () => interaction.cancel();
     }
 
-    return () => {
+    let listener: CustomerInfoUpdateListener | null = null;
+
+    const registerListener = () => {
+      if (!ensureRevenueCatReady()) return;
+      listener = (info) => {
+        setCustomerInfoRef.current(info);
+      };
       try {
-        Purchases.removeCustomerInfoUpdateListener(listener);
-      } catch (err) {
-        logger.warn('Removing RevenueCat customer info listener failed', {
+        Purchases.addCustomerInfoUpdateListener(listener);
+      } catch (e) {
+        logger.error(e, 'Registering RevenueCat customer info listener failed', {
           feature: 'purchases',
           component: 'PurchasesProvider',
-          extra: { error: String(err) },
+          extra: { context: 'Registering customer info listener failed' },
         });
+      }
+    };
+
+    const listenerInteraction = InteractionManager.runAfterInteractions(registerListener);
+
+    return () => {
+      interaction.cancel();
+      listenerInteraction.cancel();
+      if (listener) {
+        try {
+          Purchases.removeCustomerInfoUpdateListener(listener);
+        } catch (err) {
+          logger.warn('Removing RevenueCat customer info listener failed', {
+            feature: 'purchases',
+            component: 'PurchasesProvider',
+            extra: { error: String(err) },
+          });
+        }
       }
     };
   }, [load]);
