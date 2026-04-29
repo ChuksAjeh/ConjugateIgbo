@@ -62,8 +62,13 @@ export function initSentry(): void {
     enableNativeFramesTracking: true,
     enableStallTracking: true,
     enableCaptureFailedRequests: true,
-    attachScreenshot: !__DEV__,
-    attachViewHierarchy: !__DEV__,
+    // Screenshot/view-hierarchy capture and session replay all flow through
+    // [UIView drawViewHierarchyInRect:afterScreenUpdates:] in the Sentry iOS
+    // SDK. On iOS/iPadOS 26.4.2 that path crashes inside UIKit's
+    // _snapshotDisplaySystemIdentifier (App Review rejection, build 4).
+    // Keep them disabled until Sentry ships a fix verified on iOS 26.
+    attachScreenshot: false,
+    attachViewHierarchy: false,
     beforeSend(event) {
       if (event.extra) event.extra = redactValue(event.extra) as typeof event.extra;
       if (event.contexts) {
@@ -84,12 +89,9 @@ export function initSentry(): void {
     },
     tracesSampleRate: __DEV__ ? 1 : 0.2,
     profilesSampleRate: __DEV__ ? 0 : 0.1,
-    replaysSessionSampleRate: 0.1,
-    replaysOnErrorSampleRate: 1,
-    integrations: [
-      Sentry.mobileReplayIntegration(),
-      Sentry.feedbackIntegration(),
-    ],
+    // Mobile replay disabled — same UIKit snapshot path as attachScreenshot
+    // crashes on iOS/iPadOS 26.4.2.
+    integrations: [Sentry.feedbackIntegration()],
     initialScope: {
       tags: {
         app: appSlug,
