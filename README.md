@@ -1,4 +1,4 @@
-# ConjugateIgbo — Language Curation Platform
+# ConjugateIgbo
 
 A full-stack Igbo language learning platform. Learners practice verb conjugation across multiple Igbo dialects on a React Native mobile app backed by a Spring Boot REST API and PostgreSQL database.
 
