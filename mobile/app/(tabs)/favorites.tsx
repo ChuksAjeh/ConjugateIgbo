@@ -49,14 +49,16 @@ export default function FavoritesScreen() {
   const [selectedVerb, setSelectedVerb] = useState<IgboVerb | null>(null);
   const numColumns = layout.isLargeScreen ? 3 : layout.isTablet ? 2 : 1;
   const listGap = layout.isTablet ? 24 : 0;
-  const gridWidth = Math.min(
-    layout.listMaxWidth,
-    layout.windowWidth - layout.screenPadding * 2,
+  const gridWidth = Math.max(
+    Math.min(layout.listMaxWidth, layout.windowWidth - layout.screenPadding * 2),
+    0,
   );
-  const cardWidth =
+  const cardWidth = Math.max(
     numColumns === 1
       ? gridWidth
-      : (gridWidth - listGap * (numColumns - 1)) / numColumns;
+      : (gridWidth - listGap * (numColumns - 1)) / numColumns,
+    0,
+  );
 
   const [hasInitiallyLoaded, setHasInitiallyLoaded] = useState(false);
 
@@ -261,26 +263,26 @@ const VerbDetailContent = ({
   };
 
   const getRuleData = (tense: Tense) => {
-    const stem = verb.igbo.startsWith('i') || verb.igbo.startsWith('ị')
-      ? verb.igbo.substring(1)
-      : verb.igbo;
+    const igbo = typeof verb.igbo === 'string' ? verb.igbo : '';
+    const stem =
+      igbo.startsWith('i') || igbo.startsWith('ị') ? igbo.substring(1) : igbo;
     const vowelPrefix = /[aọụịỌỤỊ]/.test(stem) ? 'a' : 'e';
 
     switch (tense) {
       case 'present':
         return {
           text: `Remove 'i' prefix, add vowel harmony prefix '${vowelPrefix}'. Pronoun + na + ${vowelPrefix}${stem}.`,
-          formula: [verb.igbo, '→', `${vowelPrefix}${stem}`],
+          formula: [igbo, '→', `${vowelPrefix}${stem}`],
         };
       case 'past':
         return {
           text: `Remove 'i' prefix to form past stem. Pronoun + ${stem}.`,
-          formula: [verb.igbo, '→', stem],
+          formula: [igbo, '→', stem],
         };
       case 'future':
         return {
           text: `Same as present with 'ga' particle. Pronoun + ga + ${vowelPrefix}${stem}.`,
-          formula: [verb.igbo, '→', `ga ${vowelPrefix}${stem}`],
+          formula: [igbo, '→', `ga ${vowelPrefix}${stem}`],
         };
       default:
         return {

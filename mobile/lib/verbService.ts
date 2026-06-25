@@ -41,8 +41,12 @@ function cacheKeyForDialect(d: Dialect) {
 function mapDtoToVerb(dto: VerbDTO): IgboVerb {
   return {
     id: String(dto.id),
-    igbo: dto.igbo,
-    english: dto.english,
+    // Coerce to strings at the data boundary so a malformed API payload can
+    // never put a non-string igbo/english into the model — screens call string
+    // methods on these during render.
+    igbo: typeof dto.igbo === 'string' ? dto.igbo : String(dto.igbo ?? ''),
+    english:
+      typeof dto.english === 'string' ? dto.english : String(dto.english ?? ''),
     freqRank: dto.freqRank ?? undefined,
   };
 }
@@ -90,17 +94,25 @@ class VerbService {
    */
   private migrateV1ToV2 = (arr: any[], dialect: Dialect): IgboVerb[] => {
     let migratedCount = 0;
-    const migrated = arr.map((v: any) => {
-      // If already aligned, return as-is
-      if (v && typeof v === 'object' && 'igbo' in v && 'english' in v) {
-        return { ...v, id: String(v.id ?? v.igbo) } as IgboVerb;
+    const migrated = arr.map((v: any): IgboVerb | null => {
+      // Drop null/primitive junk rows instead of throwing on property access.
+      if (!v || typeof v !== 'object') return null;
+      // If already aligned, return as-is (coercing igbo/english to strings).
+      if ('igbo' in v && 'english' in v) {
+        return {
+          ...v,
+          id: String(v.id ?? v.igbo ?? ''),
+          igbo: typeof v.igbo === 'string' ? v.igbo : String(v.igbo ?? ''),
+          english:
+            typeof v.english === 'string' ? v.english : String(v.english ?? ''),
+        } as IgboVerb;
       }
       // Legacy shape with infinitive/meaning
       migratedCount++;
       return {
         id: String(v.id ?? v.infinitive ?? ''),
-        igbo: v.infinitive ?? '',
-        english: v.meaning ?? '',
+        igbo: String(v.infinitive ?? ''),
+        english: String(v.meaning ?? ''),
         // carry over optional legacy fields
         type: v.type,
         difficulty: v.difficulty,
@@ -122,7 +134,7 @@ class VerbService {
       );
     }
 
-    return migrated;
+    return migrated.filter((v): v is IgboVerb => v !== null);
   };
 
   /**
@@ -388,7 +400,7 @@ class VerbService {
     // Drop verbs missing an English translation — they have nothing to show on
     // the practice feed or verb list and surface as blank cards otherwise.
     let verbs = [...(this.cacheByDialect[dialectUsed] || [])].filter(
-      (v) => !!v.english && v.english.trim().length > 0,
+      (v) => typeof v?.english === 'string' && v.english.trim().length > 0,
     );
 
     if (limit) {
@@ -425,7 +437,7 @@ class VerbService {
   async getRandomVerbForDialect(
     dialect: Dialect,
     limit?: number,
-  ): Promise<{ verb: IgboVerb; fellBackToDelta: boolean }> {
+  ): Promise<{ verb: IgboVerb | null; fellBackToDelta: boolean }> {
     const { verbs, fellBackToDelta } =
       await this.getAllVerbsForDialect(dialect, limit);
 
@@ -437,9 +449,13 @@ class VerbService {
           tags: { feature: 'verb-service' },
         },
       );
+      // Return null instead of verbs[0] (which would be undefined): the type now
+      // tells the truth so callers handle the empty case rather than crashing on
+      // a later property access.
+      return { verb: null, fellBackToDelta };
     }
 
-    const idx = Math.floor(Math.random() * Math.max(1, verbs.length));
+    const idx = Math.floor(Math.random() * verbs.length);
     return { verb: verbs[idx], fellBackToDelta };
   }
 
@@ -458,7 +474,7 @@ class VerbService {
    * @deprecated Use getRandomVerbForDialect instead if dialect-specific verbs are needed.
    * @returns {Promise<IgboVerb>} - A random verb.
    */
-  async getRandomVerb(): Promise<IgboVerb> {
+  async getRandomVerb(): Promise<IgboVerb | null> {
     const { verb } = await this.getRandomVerbForDialect('delta');
     return verb;
   }

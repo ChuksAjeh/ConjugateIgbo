@@ -35,9 +35,12 @@ export type { Dialect };
 // Local helpers (frame-assembly only; morphology lives in sharedRules)
 // ---------------------------------------------------------------------------
 
-/** Resolves the conjugation root for a verb. */
+/** Resolves the conjugation root for a verb. Coerces to a string so a
+ *  malformed verb (non-string igbo/rootForm, or no verb at all) can never make
+ *  the downstream string ops throw. */
 function getRoot(verb: IgboVerb): string {
-  return (verb.rootForm || verb.igbo || '').trim();
+  const raw = verb?.rootForm || verb?.igbo || '';
+  return (typeof raw === 'string' ? raw : String(raw)).trim();
 }
 
 /** Removes a leading infinitive prefix ('i' or 'ị') — duplicated here for
@@ -298,27 +301,37 @@ export function getConjugatedForm(
   pronoun: Pronoun,
   dialect: Dialect = 'delta',
 ): string {
-  const precomputed = verb.conjugations?.[tense]?.[pronoun];
-  // Treat '-' and '—' as "missing" placeholders in legacy data so the engine
-  // can fill them in. An empty string is also not usable.
-  if (precomputed && precomputed !== '-' && precomputed !== '—') {
-    return precomputed;
-  }
+  try {
+    const precomputed = verb.conjugations?.[tense]?.[pronoun];
+    // Treat '-' and '—' as "missing" placeholders in legacy data so the engine
+    // can fill them in. An empty string is also not usable.
+    if (precomputed && precomputed !== '-' && precomputed !== '—') {
+      return precomputed;
+    }
 
-  const conj = generateConjugations(verb, dialect);
+    const conj = generateConjugations(verb, dialect);
 
-  if (!conj[tense]) {
-    Sentry.logger.warn(
-      `[conjugateVerbs] Tense "${tense}" not yet implemented for verb: ${verb.igbo}`,
-      {
-        tags: { feature: 'conjugation' },
-        extra: { verbId: verb.id, igbo: verb.igbo, tense },
-      },
-    );
+    if (!conj[tense]) {
+      Sentry.logger.warn(
+        `[conjugateVerbs] Tense "${tense}" not yet implemented for verb: ${verb.igbo}`,
+        {
+          tags: { feature: 'conjugation' },
+          extra: { verbId: verb.id, igbo: verb.igbo, tense },
+        },
+      );
+      return '';
+    }
+
+    return conj[tense]![pronoun] ?? '';
+  } catch (error) {
+    // The practice screen calls this during render — never let a malformed verb
+    // or unexpected tense/pronoun take down the screen.
+    Sentry.captureException(error, {
+      tags: { feature: 'conjugation' },
+      extra: { verbId: verb?.id, tense, pronoun, dialect },
+    });
     return '';
   }
-
-  return conj[tense]![pronoun];
 }
 
 /**

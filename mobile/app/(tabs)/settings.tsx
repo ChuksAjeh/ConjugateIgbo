@@ -138,9 +138,15 @@ export default function SettingsScreen() {
 
   // Convert tempTime string ("HH:MM") to Date object for the picker
   const getTimeAsDate = (): Date => {
-    const [hours, minutes] = tempTime.split(':').map(Number);
+    const safeTime = typeof tempTime === 'string' ? tempTime : '19:00';
+    const [hours, minutes] = safeTime.split(':').map(Number);
     const date = new Date();
-    date.setHours(hours || 0, minutes || 0, 0, 0);
+    date.setHours(
+      Number.isFinite(hours) ? hours : 19,
+      Number.isFinite(minutes) ? minutes : 0,
+      0,
+      0,
+    );
     return date;
   };
 
@@ -161,7 +167,10 @@ export default function SettingsScreen() {
 
   // Format time for display (e.g., "09:30" -> "9:30 AM")
   const formatTimeForDisplay = (time: string): string => {
-    const [hours, minutes] = time.split(':').map(Number);
+    const safeTime = typeof time === 'string' ? time : '19:00';
+    const [rawH, rawM] = safeTime.split(':').map(Number);
+    const hours = Number.isFinite(rawH) ? ((rawH % 24) + 24) % 24 : 19;
+    const minutes = Number.isFinite(rawM) ? ((rawM % 60) + 60) % 60 : 0;
     const period = hours >= 12 ? 'PM' : 'AM';
     const displayHours = hours % 12 || 12;
     return `${displayHours}:${minutes.toString().padStart(2, '0')} ${period}`;

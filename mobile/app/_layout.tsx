@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -24,20 +24,28 @@ import IntroScreen from '@/components/IntroScreen';
 import StartPracticingScreen from '@/components/StartPracticingScreen';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import { PurchasesProvider } from '@/components/PurchasesProvider';
+import { AppErrorBoundary } from '@/components/AppErrorBoundary';
 import { initSentry, Sentry } from '@/lib/sentry';
 import { logger } from '@/lib/logger';
 import { verbService } from '@/lib/verbService';
 import { useSettings } from '@/hooks/useSettings';
 
-initSentry();
+try {
+  // Observability init must never block app launch — a synchronous throw here
+  // would abort module evaluation of the root layout and crash on the launch
+  // frame before anything renders.
+  initSentry();
+} catch {
+  // Intentionally ignored: the app must launch even if Sentry cannot.
+}
 
-// Prevent the splash screen from auto-hiding
-SplashScreen.preventAutoHideAsync();
+// Prevent the splash screen from auto-hiding until the app is ready to render.
+SplashScreen.preventAutoHideAsync().catch(() => {});
 
 export default Sentry.wrap(function RootLayout() {
   useFrameworkReady();
 
-  const [fontsLoaded] = useFonts({
+  const [fontsLoaded, fontError] = useFonts({
     'Inter-Regular': Inter_400Regular,
     'Inter-SemiBold': Inter_600SemiBold,
     'Inter-Bold': Inter_700Bold,
@@ -50,13 +58,34 @@ export default Sentry.wrap(function RootLayout() {
   const [showCustomSplash, setShowCustomSplash] = useState(true);
   const [showIntro, setShowIntro] = useState(false);
   const [showStartPracticing, setShowStartPracticing] = useState(false);
+  // Defense-in-depth: never let a stuck font load (or any unsettled launch
+  // await) keep the native splash up forever — App Review reads a hung/blank
+  // launch as a failure (Guideline 2.1(a)).
+  const [forceReady, setForceReady] = useState(false);
+  const hasBootstrapped = useRef(false);
+
+  // Fonts are bundled assets and normally resolve, but a registration failure
+  // must not block launch: treat an error as terminal and render with system
+  // fonts. The timeout is a hard backstop if neither flag ever flips.
+  const isReady = fontsLoaded || !!fontError || forceReady;
 
   useEffect(() => {
-    if (fontsLoaded) {
-      SplashScreen.hideAsync();
-      checkIntro();
+    const timeout = setTimeout(() => setForceReady(true), 5000);
+    return () => clearTimeout(timeout);
+  }, []);
+
+  useEffect(() => {
+    if (!isReady || hasBootstrapped.current) return;
+    hasBootstrapped.current = true;
+    if (fontError) {
+      logger.error(fontError, 'Font load failed; continuing with system fonts', {
+        feature: 'app-init',
+        component: 'RootLayout',
+      });
     }
-  }, [fontsLoaded]);
+    SplashScreen.hideAsync().catch(() => {});
+    checkIntro();
+  }, [isReady, fontError]);
 
   const checkIntro = async () => {
     try {
@@ -117,30 +146,32 @@ export default Sentry.wrap(function RootLayout() {
     };
   }, [settings.dialect]);
 
-  if (!fontsLoaded) {
+  if (!isReady) {
     return null;
   }
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <PurchasesProvider>
-        <ThemeProvider>
-          {showCustomSplash ? (
-            <CustomSplashScreen onFinish={() => setShowCustomSplash(false)} />
-          ) : showIntro ? (
-            <IntroScreen onFinish={handleIntroNext} />
-          ) : showStartPracticing ? (
-            <StartPracticingScreen onFinish={handleStartPracticingFinish} />
-          ) : (
-            <>
-              <Stack screenOptions={{ headerShown: false, gestureEnabled: true }}>
-                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-              </Stack>
-              <StatusBar style="auto" />
-            </>
-          )}
-        </ThemeProvider>
-      </PurchasesProvider>
+      <AppErrorBoundary>
+        <PurchasesProvider>
+          <ThemeProvider>
+            {showCustomSplash ? (
+              <CustomSplashScreen onFinish={() => setShowCustomSplash(false)} />
+            ) : showIntro ? (
+              <IntroScreen onFinish={handleIntroNext} />
+            ) : showStartPracticing ? (
+              <StartPracticingScreen onFinish={handleStartPracticingFinish} />
+            ) : (
+              <>
+                <Stack screenOptions={{ headerShown: false, gestureEnabled: true }}>
+                  <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                </Stack>
+                <StatusBar style="auto" />
+              </>
+            )}
+          </ThemeProvider>
+        </PurchasesProvider>
+      </AppErrorBoundary>
     </GestureHandlerRootView>
   );
 });

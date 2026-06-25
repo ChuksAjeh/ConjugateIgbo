@@ -4,12 +4,11 @@ import {
   Text,
   StyleSheet,
   Animated,
-  Dimensions,
+  useWindowDimensions,
   Image,
 } from 'react-native';
 import Svg, { Path, Circle } from 'react-native-svg';
 
-const { height } = Dimensions.get('window');
 export const ICON_IMAGE = require('../assets/images/icon.png');
 export const LOGO_IMAGE = require('../assets/images/logo.png');
 
@@ -78,6 +77,9 @@ export const WavePattern = ({
   color?: string;
   opacity?: number;
 }) => {
+  // Read live window dimensions instead of capturing them once at module-eval,
+  // so the decorative waves react to iPad Stage Manager / split-view resizes.
+  const { height } = useWindowDimensions();
   const waves = [];
   const waveHeight = variant === 'zigzag' ? 40 : 60;
   const displayHeight = customHeight || height;

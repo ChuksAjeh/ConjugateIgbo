@@ -113,6 +113,23 @@ export const useNotifications = () => {
 
       const [hours, minutes] = time.split(':').map(Number);
 
+      // Reject malformed times (NaN / out-of-range) so we never hand
+      // scheduleNotificationAsync an invalid trigger.
+      if (
+        !Number.isInteger(hours) ||
+        !Number.isInteger(minutes) ||
+        hours < 0 ||
+        hours > 23 ||
+        minutes < 0 ||
+        minutes > 59
+      ) {
+        Sentry.logger.warn('[useNotifications] Invalid reminder time; skipping', {
+          tags: { feature: 'notifications', hook: 'useNotifications' },
+          extra: { time },
+        });
+        return;
+      }
+
       await Notifications.scheduleNotificationAsync({
         content: {
           title: 'Time to practice conjugating Igbo!',

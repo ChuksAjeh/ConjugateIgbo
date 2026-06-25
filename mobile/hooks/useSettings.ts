@@ -27,6 +27,7 @@
 
 import { useState, useEffect } from 'react';
 import * as Sentry from '@sentry/react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Dialect, Pronoun, Tense } from '@/models/verb';
 
 /** A map from every `Tense` key to an enabled/disabled boolean. */
@@ -123,39 +124,34 @@ let initialized = false;
 const settingsListeners = new Set<(s: AppSettings) => void>();
 
 /**
- * Lightweight cross-platform storage shim.
- * Prefers `localStorage` (web) and falls back to an in-memory map.
- * The real AsyncStorage is imported separately in native builds; this shim
- * exists only for web and test environments where AsyncStorage is unavailable.
+ * Merges a persisted (possibly partial, legacy, or corrupt) snapshot onto the
+ * current defaults. Nested objects are merged key-by-key so a saved blob that
+ * predates a newly added tense / pronoun / notification key cannot leave a
+ * nested value `undefined` — which downstream screens index into.
  */
-const memoryStorage: Record<string, string> = {};
-
-const AsyncStorage = {
-  getItem: async (key: string): Promise<string | null> => {
-    try {
-      if (typeof localStorage !== 'undefined') return localStorage.getItem(key);
-      return memoryStorage[key] ?? null;
-    } catch {
-      return memoryStorage[key] ?? null;
-    }
-  },
-  setItem: async (key: string, value: string): Promise<void> => {
-    try {
-      if (typeof localStorage !== 'undefined') localStorage.setItem(key, value);
-      memoryStorage[key] = value;
-    } catch {
-      memoryStorage[key] = value;
-    }
-  },
-  removeItem: async (key: string): Promise<void> => {
-    try {
-      if (typeof localStorage !== 'undefined') localStorage.removeItem(key);
-      delete memoryStorage[key];
-    } catch {
-      delete memoryStorage[key];
-    }
-  },
-};
+function mergeSettings(saved: unknown): AppSettings {
+  const p =
+    saved && typeof saved === 'object' ? (saved as Partial<AppSettings>) : {};
+  const notifications = {
+    ...defaultSettings.notifications,
+    ...(p.notifications ?? {}),
+  };
+  // Reminder time must be HH:MM — fall back to the default if a persisted blob
+  // holds a malformed value, so downstream split/format/scheduling can't break.
+  if (!/^\d{1,2}:\d{2}$/.test(String(notifications.reminderTime))) {
+    notifications.reminderTime = defaultSettings.notifications.reminderTime;
+  }
+  return {
+    ...defaultSettings,
+    ...p,
+    enabledTenses: { ...defaultSettings.enabledTenses, ...(p.enabledTenses ?? {}) },
+    enabledPronouns: {
+      ...defaultSettings.enabledPronouns,
+      ...(p.enabledPronouns ?? {}),
+    },
+    notifications,
+  } as AppSettings;
+}
 
 /**
  * Loads persisted settings from storage exactly once per app session.
@@ -168,8 +164,7 @@ async function loadFromStorageOnce() {
   try {
     const saved = await AsyncStorage.getItem(SETTINGS_STORAGE_KEY);
     if (saved) {
-      const parsed = JSON.parse(saved);
-      currentSettings = { ...defaultSettings, ...parsed } as AppSettings;
+      currentSettings = mergeSettings(JSON.parse(saved));
     } else {
       await AsyncStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(currentSettings));
     }

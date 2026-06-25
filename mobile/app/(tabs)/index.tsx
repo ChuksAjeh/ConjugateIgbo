@@ -113,7 +113,7 @@ export default function PracticeScreen() {
       try {
         setFallbackModalVisible(false);
 
-        let verb: IgboVerb;
+        let verb: IgboVerb | null = null;
         let newTense: Tense;
         let newPronoun: Pronoun;
 
@@ -153,6 +153,12 @@ export default function PracticeScreen() {
             setFallbackModalVisible(true);
           }
 
+          // No verb available (empty pool / offline first run): keep the
+          // loading view instead of pushing a null entry into history.
+          if (!verb) {
+            return;
+          }
+
           newTense = availableTenses[
             Math.floor(Math.random() * availableTenses.length)
           ] as Tense;
@@ -161,10 +167,12 @@ export default function PracticeScreen() {
             Math.floor(Math.random() * availablePronouns.length)
           ] as Pronoun;
 
-          // Add to history
+          // Add to history. `verb` is non-null here (guarded above); capture it
+          // in a const so TS keeps the narrowing inside the closure.
+          const fetchedVerb = verb;
           setHistory((prev) => {
             const newHistory = prev.slice(0, historyIndex + 1);
-            return [...newHistory, { verb, tense: newTense, pronoun: newPronoun }];
+            return [...newHistory, { verb: fetchedVerb, tense: newTense, pronoun: newPronoun }];
           });
           setHistoryIndex((prev) => prev + 1);
         }

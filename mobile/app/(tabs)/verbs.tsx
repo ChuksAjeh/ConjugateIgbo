@@ -58,14 +58,16 @@ export default function VerbsScreen() {
   const [selectedVerb, setSelectedVerb] = useState<IgboVerb | null>(null);
   const numColumns = layout.isLargeScreen ? 3 : layout.isTablet ? 2 : 1;
   const listGap = layout.isTablet ? 24 : 0;
-  const gridWidth = Math.min(
-    layout.listMaxWidth,
-    layout.windowWidth - layout.screenPadding * 2,
+  const gridWidth = Math.max(
+    Math.min(layout.listMaxWidth, layout.windowWidth - layout.screenPadding * 2),
+    0,
   );
-  const cardWidth =
+  const cardWidth = Math.max(
     numColumns === 1
       ? gridWidth
-      : (gridWidth - listGap * (numColumns - 1)) / numColumns;
+      : (gridWidth - listGap * (numColumns - 1)) / numColumns,
+    0,
+  );
 
   // Load verbs on component mount
   useEffect(() => {
@@ -394,9 +396,9 @@ const VerbDetailContent = ({
   const getRuleData = (tense: Tense): { source: string; parts: string[]; text: string } => {
     // Mirrors lib/conjugateVerbs.ts. Keep surface particles aligned with the
     // active dialect profile so the worked example matches the output cell.
-    const stem = verb.igbo.startsWith('i') || verb.igbo.startsWith('ị')
-      ? verb.igbo.substring(1)
-      : verb.igbo;
+    const igbo = typeof verb.igbo === 'string' ? verb.igbo : '';
+    const stem =
+      igbo.startsWith('i') || igbo.startsWith('ị') ? igbo.substring(1) : igbo;
     const isHeavy = /[aọụịỌỤỊ]/.test(stem);
     const vowelPrefix = isHeavy ? 'a' : 'e';
     // Negative past (Notion Rule 5) uses the accented '-ná/né' suffix,
@@ -405,7 +407,7 @@ const VerbDetailContent = ({
     // both — flagged as a known divergence from the Notion grammar.
     const negPastSuffix = isHeavy ? 'ná' : 'né';
     const negImpSuffix = isHeavy ? 'na' : 'ne';
-    const source = verb.igbo;
+    const source = igbo;
 
     const imperativeExceptions = new Set(['bia', 'je', 'nodu']);
     const lastChar = stem.length ? stem[stem.length - 1] : '';

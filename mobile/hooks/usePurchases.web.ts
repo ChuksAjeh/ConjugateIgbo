@@ -7,6 +7,9 @@ export const usePurchases = () => {
   return {
     isProUser: false as boolean,
     isLoading: false as boolean,
+    // Match the native provider contract so the web Pro screen does not hang on
+    // its loading branch (`if (!hasLoaded) return <spinner>`).
+    hasLoaded: true as boolean,
     packages: [] as PurchasesPackage[],
     offerings: null as any,
     customerInfo: null as any,

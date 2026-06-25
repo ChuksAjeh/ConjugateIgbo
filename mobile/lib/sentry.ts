@@ -12,13 +12,21 @@ const redactValue = (value: unknown, depth = 0): unknown => {
   if (depth > 4 || value == null) return value;
   if (Array.isArray(value)) return value.map((v) => redactValue(v, depth + 1));
   if (typeof value === 'object') {
-    const out: Record<string, unknown> = {};
-    for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
-      out[k] = SENSITIVE_KEY_PATTERN.test(k)
-        ? '[redacted]'
-        : redactValue(v, depth + 1);
+    // A redaction helper feeding beforeSend/beforeBreadcrumb must never throw —
+    // Object.entries triggers getters that could throw, and Sentry calls these
+    // hooks inside a try/finally (not a catch), so it would escape to the
+    // logger call site.
+    try {
+      const out: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+        out[k] = SENSITIVE_KEY_PATTERN.test(k)
+          ? '[redacted]'
+          : redactValue(v, depth + 1);
+      }
+      return out;
+    } catch {
+      return '[unserializable]';
     }
-    return out;
   }
   return value;
 };
@@ -52,15 +60,26 @@ export function initSentry(): void {
     sendDefaultPii: false,
     attachStacktrace: true,
     enableLogs: true,
+    // Crash reporting stays ON: the native SDK still initialises and captures
+    // crashes/ANRs. We only disable the optional native *observers* below.
     enableNative: true,
     enableNativeCrashHandling: true,
     autoInitializeNativeSdk: true,
     enableAutoSessionTracking: true,
-    enableWatchdogTerminationTracking: true,
-    enableAppHangTracking: true,
-    enableAppStartTracking: true,
-    enableNativeFramesTracking: true,
-    enableStallTracking: true,
+    // iOS/iPadOS 26 launch-crash mitigation. Each of these installs a native
+    // observer on the LAUNCH FRAME during initNativeSdk — an app-hang watchdog
+    // thread, watchdog-termination state I/O, a CADisplayLink frames tracker,
+    // stall sampling, and app-start tracing. @sentry/react-native 7.13 predates
+    // iPadOS 26, and the previous two fixes (screenshot/view-hierarchy/replay)
+    // left this whole stack armed. It is the only native, module-eval,
+    // launch-frame surface left after those fixes — disable it until the SDK is
+    // upgraded and verified on a physical iOS 26 device, then re-enable one at
+    // a time.
+    enableWatchdogTerminationTracking: false,
+    enableAppHangTracking: false,
+    enableAppStartTracking: false,
+    enableNativeFramesTracking: false,
+    enableStallTracking: false,
     enableCaptureFailedRequests: true,
     // Screenshot/view-hierarchy capture and session replay all flow through
     // [UIView drawViewHierarchyInRect:afterScreenUpdates:] in the Sentry iOS
@@ -87,8 +106,15 @@ export function initSentry(): void {
       }
       return breadcrumb;
     },
-    tracesSampleRate: __DEV__ ? 1 : 0.2,
-    profilesSampleRate: __DEV__ ? 0 : 0.1,
+    // Performance tracing disabled in production: a *sampled* app-start
+    // transaction is what pulls in the appStart / nativeFrames / stall native
+    // integrations on the launch frame. Keep it on in dev only.
+    tracesSampleRate: __DEV__ ? 1 : 0,
+    // `profilesSampleRate` is intentionally OMITTED in production. Passing a
+    // number — even 0 — makes the SDK install hermesProfilingIntegration, which
+    // can start the native Hermes sampling profiler at app start. Omitting the
+    // key entirely is what drops the integration.
+    ...(__DEV__ ? { profilesSampleRate: 0 } : {}),
     // Mobile replay disabled — same UIKit snapshot path as attachScreenshot
     // crashes on iOS/iPadOS 26.4.2.
     integrations: [Sentry.feedbackIntegration()],

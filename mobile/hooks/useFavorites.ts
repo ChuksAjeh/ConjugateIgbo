@@ -57,7 +57,12 @@ export function useFavorites() {
       }
       const stored = await AsyncStorage.getItem(FAVORITES_KEY);
       if (stored) {
-        setFavorites(JSON.parse(stored));
+        const parsed = JSON.parse(stored);
+        // Guard against a corrupt/non-array persisted blob — otherwise
+        // favorites.includes/filter/map would throw during render.
+        if (Array.isArray(parsed)) {
+          setFavorites(parsed.filter((id): id is string => typeof id === 'string'));
+        }
       }
     } catch (error) {
       Sentry.captureException(error, { tags: { feature: 'favorites' } });
