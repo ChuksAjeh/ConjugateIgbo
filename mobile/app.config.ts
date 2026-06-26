@@ -5,6 +5,12 @@ export default {
     owner: 'chuksajeh',
     name: 'Conjugate Igbo',
     slug: 'conjugate-igbo',
+    // Required: expo-linking/expo-router call Linking.createURL() at launch and
+    // throw "Cannot make a deep link into a standalone app with no custom scheme
+    // defined" in release builds when this is unset — a fatal launch crash under
+    // the New Architecture (the JS error is reported via a void TurboModule
+    // method whose NSException is rethrown and aborts the app on iOS 26).
+    scheme: 'conjugateigbo',
     version: '1.0.0',
 
     runtimeVersion: {
