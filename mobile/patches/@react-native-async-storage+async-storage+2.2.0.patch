@@ -1,0 +1,156 @@
+diff --git a/node_modules/@react-native-async-storage/async-storage/ios/RNCAsyncStorage.mm b/node_modules/@react-native-async-storage/async-storage/ios/RNCAsyncStorage.mm
+index fa3bb04..8c7c1ac 100644
+--- a/node_modules/@react-native-async-storage/async-storage/ios/RNCAsyncStorage.mm
++++ b/node_modules/@react-native-async-storage/async-storage/ios/RNCAsyncStorage.mm
+@@ -248,7 +248,15 @@ static dispatch_queue_t RCTGetMethodQueue()
+ static NSDictionary *RCTDeleteStorageDirectory()
+ {
+     NSError *error;
+-    [[NSFileManager defaultManager] removeItemAtPath:RCTGetStorageDirectory() error:&error];
++    // iOS 26 (swift-foundation) NSFileManager can raise an NSException instead of
++    // returning an NSError; under the New Architecture an uncaught raise on the
++    // TurboModule queue aborts the app (SIGABRT). Catch and degrade gracefully.
++    @try {
++        [[NSFileManager defaultManager] removeItemAtPath:RCTGetStorageDirectory() error:&error];
++    } @catch (NSException *exception) {
++        RCTLogWarn(@"AsyncStorage: delete storage directory raised: %@", exception);
++        return RCTMakeError(@"Failed to delete storage directory (exception).", nil, nil);
++    }
+     RCTHasCreatedStorageDirectory = NO;
+     if (error && error.code != NSFileNoSuchFileError) {
+         return RCTMakeError(@"Failed to delete storage directory.", error, nil);
+@@ -282,10 +290,24 @@ static void RCTStorageDirectoryCleanupOld(NSString *oldDirectoryPath)
+ 
+ static void _createStorageDirectory(NSString *storageDirectory, NSError **error)
+ {
+-    [[NSFileManager defaultManager] createDirectoryAtPath:storageDirectory
+-                              withIntermediateDirectories:YES
+-                                               attributes:nil
+-                                                    error:error];
++    @try {
++        [[NSFileManager defaultManager] createDirectoryAtPath:storageDirectory
++                                  withIntermediateDirectories:YES
++                                                   attributes:nil
++                                                        error:error];
++    } @catch (NSException *exception) {
++        // iOS 26 swift-foundation NSFileManager may raise instead of returning an
++        // NSError; an uncaught raise aborts the app under the New Architecture.
++        RCTLogWarn(@"AsyncStorage: createDirectory raised: %@", exception);
++        if (error) {
++            *error = [NSError errorWithDomain:@"RNCAsyncStorage"
++                                         code:-1
++                                     userInfo:@{
++                                         NSLocalizedDescriptionKey :
++                                             exception.reason ?: @"createDirectory raised"
++                                     }];
++        }
++    }
+ }
+ 
+ static void RCTStorageDirectoryMigrate(NSString *oldDirectoryPath,
+@@ -331,6 +353,7 @@ static void RCTStorageDirectoryMigrate(NSString *oldDirectoryPath,
+  */
+ static NSString *RCTGetStoragePathForMigration()
+ {
++  @try {
+     BOOL isDir;
+     NSString *oldStoragePath = RCTCreateStorageDirectoryPath_deprecated(RCTOldStorageDirectory);
+     NSString *expoStoragePath = RCTCreateStorageDirectoryPath_deprecated(RCTExpoStorageDirectory);
+@@ -360,6 +383,10 @@ static void RCTStorageDirectoryMigrate(NSString *oldDirectoryPath,
+     } else {
+         return nil;
+     }
++  } @catch (NSException *exception) {
++    RCTLogWarn(@"AsyncStorage: storage path migration scan raised: %@", exception);
++    return nil;
++  }
+ }
+ 
+ /**
+@@ -375,6 +402,7 @@ static void RCTStorageDirectoryMigrate(NSString *oldDirectoryPath,
+                                   NSString *toStorageDirectory,
+                                   BOOL shouldCleanupOldDirectoryAndOverwriteNewDirectory)
+ {
++  @try {
+     NSError *error;
+     BOOL isDir;
+     NSFileManager *fileManager = [NSFileManager defaultManager];
+@@ -409,6 +437,9 @@ static void RCTStorageDirectoryMigrate(NSString *oldDirectoryPath,
+                                        shouldCleanupOldDirectoryAndOverwriteNewDirectory);
+         }
+     }
++  } @catch (NSException *exception) {
++    RCTLogWarn(@"AsyncStorage: storage directory migration raised: %@", exception);
++  }
+ }
+ 
+ #pragma mark - RNCAsyncStorage
+@@ -563,10 +594,21 @@ - (NSDictionary *)_writeManifest:(NSMutableArray<NSDictionary *> *__autoreleasin
+ {
+     NSError *error;
+     NSString *serialized = RCTJSONStringify(_manifest, &error);
+-    [serialized writeToFile:RCTCreateStorageDirectoryPath(RCTGetManifestFilePath())
+-                 atomically:YES
+-                   encoding:NSUTF8StringEncoding
+-                      error:&error];
++    // iOS 26: writeToFile:atomically: does an internal moveItem that can raise an
++    // NSException; convert it to the NSError path so it can't abort the app.
++    @try {
++        [serialized writeToFile:RCTCreateStorageDirectoryPath(RCTGetManifestFilePath())
++                     atomically:YES
++                       encoding:NSUTF8StringEncoding
++                          error:&error];
++    } @catch (NSException *exception) {
++        error = [NSError errorWithDomain:@"RNCAsyncStorage"
++                                    code:-1
++                                userInfo:@{
++                                    NSLocalizedDescriptionKey :
++                                        exception.reason ?: @"writeToFile raised"
++                                }];
++    }
+     NSDictionary *errorOut;
+     if (error) {
+         errorOut = RCTMakeError(@"Failed to write manifest file.", error, nil);
+@@ -625,14 +667,27 @@ - (NSDictionary *)_writeEntry:(NSArray<NSString *> *)entry changedManifest:(BOOL
+     if (value.length <= RCTInlineValueThreshold) {
+         if (_manifest[key] == (id)kCFNull) {
+             // If the value already existed but wasn't inlined, remove the old file.
+-            [[NSFileManager defaultManager] removeItemAtPath:filePath error:nil];
++            @try {
++                [[NSFileManager defaultManager] removeItemAtPath:filePath error:nil];
++            } @catch (NSException *exception) {
++                RCTLogWarn(@"AsyncStorage: removeItem raised in _writeEntry: %@", exception);
++            }
+             [RCTGetCache() removeObjectForKey:key];
+         }
+         *changedManifest = YES;
+         _manifest[key] = value;
+         return nil;
+     }
+-    [value writeToFile:filePath atomically:YES encoding:NSUTF8StringEncoding error:&error];
++    @try {
++        [value writeToFile:filePath atomically:YES encoding:NSUTF8StringEncoding error:&error];
++    } @catch (NSException *exception) {
++        error = [NSError errorWithDomain:@"RNCAsyncStorage"
++                                    code:-1
++                                userInfo:@{
++                                    NSLocalizedDescriptionKey :
++                                        exception.reason ?: @"writeToFile raised"
++                                }];
++    }
+     [RCTGetCache() setObject:value forKey:key cost:value.length];
+     if (error) {
+         errorOut = RCTMakeError(@"Failed to write value.", error, @{@"key": key});
+@@ -839,7 +894,11 @@ - (BOOL)_passthroughDelegate
+         if (!keyError) {
+             if (_manifest[key] == (id)kCFNull) {
+                 NSString *filePath = [self _filePathForKey:key];
+-                [[NSFileManager defaultManager] removeItemAtPath:filePath error:nil];
++                @try {
++                    [[NSFileManager defaultManager] removeItemAtPath:filePath error:nil];
++                } @catch (NSException *exception) {
++                    RCTLogWarn(@"AsyncStorage: removeItem raised in multiRemove: %@", exception);
++                }
+                 [RCTGetCache() removeObjectForKey:key];
+             }
+             if (_manifest[key]) {
