@@ -5,6 +5,7 @@ import type { Dialect } from '@/models/verb';
 import { offlineVerbs } from '@/data/igboVerbs';
 import { getItem, setItem } from '@/lib/storage';
 import Constants from 'expo-constants';
+import { getDialectProfile } from '@/lib/dialects';
 
 const BASE_URL =
   Constants.expoConfig?.extra?.EXPO_PUBLIC_API_URL ??
@@ -12,17 +13,6 @@ const BASE_URL =
   '';
 const BASE = BASE_URL ? BASE_URL.replace(/\/$/, '') : '';
 const VERBS_CACHE_KEY_V2 = 'VERBS_CACHE_V2';
-/**
- * Formats a dialect enum into its corresponding slug used in API endpoints.
- * @type {Record<Dialect, string>}
- */
-const DIALECT_SLUG: Record<Dialect, string> = {
-  delta: 'delta-igbo',
-  central: 'central-igbo',
-  anambra: 'anambra-igbo',
-  imo: 'imo-igbo',
-  abia: 'abia-igbo',
-};
 
 /**
  * Generates a unique cache key for a specific dialect.
@@ -185,8 +175,20 @@ class VerbService {
       return;
     }
 
+    // Dialects the backend has no verb table for carry no apiSlug. Requesting
+    // one anyway returns a 404 that the catch below reports to Sentry as an
+    // error, so a user on a scaffolded dialect generated noise on every launch.
+    const apiSlug = getDialectProfile(dialect).apiSlug;
+    if (!apiSlug) {
+      Sentry.logger.info(
+        `[verbService] ${dialect} is not served by the API; using the local fallback`,
+        { tags: { feature: 'verb-service' } },
+      );
+      return;
+    }
+
     const key = cacheKeyForDialect(dialect);
-    const endpoint = `${BASE}/${DIALECT_SLUG[dialect]}/verbs/all`;
+    const endpoint = `${BASE}/${apiSlug}/verbs/all`;
     Sentry.logger.info(
       `[verbService] Fetching verbs from endpoint: ${endpoint}`,
       {

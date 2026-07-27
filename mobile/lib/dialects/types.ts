@@ -99,6 +99,15 @@ export interface DialectProfile {
   /** Short note shown under the label (e.g. "COMING SOON"). */
   description: string;
   /**
+   * Slug this dialect is served under by the backend API, matching the
+   * `Dialect` enum's `slug()` in the Spring service.
+   *
+   * Undefined when the backend has no verb table for the dialect — the verb
+   * service then skips the network call instead of requesting a route that
+   * is guaranteed to 404.
+   */
+  apiSlug?: string;
+  /**
    * Whether the dialect has verified grammar data and may be selected.
    * Unsupported dialects are listed but disabled in the picker.
    */

@@ -1,5 +1,7 @@
 package org.conjugateigbo.core.service;
 
+import org.conjugateigbo.core.model.dto.ImportResult;
+
 import java.io.IOException;
 
 /**
@@ -28,10 +30,10 @@ public interface ExcelVerbImportService {
      * {@code ON CONFLICT (igbo) DO NOTHING}.
      *
      * @param filePath absolute or relative path to the {@code .xlsx} file.
-     * @return an {@link ExcelVerbImportServiceImpl.ImportResult} summarising
-     *         how many rows were processed, inserted, and skipped.
+     * @return an {@link ImportResult} summarising how many rows were
+     *         processed, inserted, and skipped.
      * @throws IOException if the file does not exist, cannot be read, or the
      *         workbook has no sheets / no recognisable header row.
      */
-    ExcelVerbImportServiceImpl.ImportResult importDeltaFromExcel(String filePath) throws IOException;
+    ImportResult importDeltaFromExcel(String filePath) throws IOException;
 }

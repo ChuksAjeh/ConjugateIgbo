@@ -5,6 +5,7 @@ import org.conjugateigbo.core.model.dto.AudioDTO;
 import org.conjugateigbo.core.model.dto.VerbDTO;
 import org.conjugateigbo.core.model.enums.Dialect;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -23,11 +24,24 @@ import static org.conjugateigbo.core.repository.verb.Tables.VERB_TABLE;
  *
  * <p>Table names are resolved at runtime from {@link Tables#VERB_TABLE} using
  * the supplied {@link Dialect}, so the same query logic serves every dialect
- * without code duplication.
+ * without code duplication. The dialect is an enum constant, never user input,
+ * so the interpolated table name cannot carry an injection.
  */
 @Repository
 @RequiredArgsConstructor
 public class JdbcVerbRepository implements VerbRepository {
+
+    /** Sentinel ordering so rows without a frequency rank sort last, not first. */
+    private static final String RANK_ORDER = "coalesce(freq_rank, 2147483647), igbo";
+
+    private static final String VERB_COLUMNS = "id, igbo, english, freq_rank";
+
+    /** Maps a verb result row to its DTO. Shared by every verb query. */
+    private static final RowMapper<VerbDTO> VERB_MAPPER = (rs, i) -> new VerbDTO(
+            rs.getLong("id"),
+            rs.getString("igbo"),
+            rs.getString("english"),
+            rs.getObject("freq_rank", Integer.class));
 
     private final NamedParameterJdbcTemplate jdbc;
 
@@ -41,31 +55,30 @@ public class JdbcVerbRepository implements VerbRepository {
     @Override
     public List<VerbDTO> list(Dialect dialect, int limit, String search) {
         final String table = tableFor(dialect);
-        var params = new MapSqlParameterSource("limit", limit);
+        var params = new MapSqlParameterSource("limit", clampLimit(limit));
 
         final String sql;
         if (search == null || search.isBlank()) {
-            sql = "select id, igbo, english, freq_rank " +
-                    "from " + table + " " +
-                    "order by coalesce(freq_rank, 2147483647), igbo " +
-                    "limit :limit";
+            sql = "select " + VERB_COLUMNS + " from " + table +
+                    " order by " + RANK_ORDER + " limit :limit";
         } else {
-            sql = "select id, igbo, english, freq_rank " +
-                    "from " + table + " " +
-                    "where igbo ilike :q or english ilike :q " +
-                    "order by coalesce(freq_rank, 2147483647), igbo " +
-                    "limit :limit";
+            sql = "select " + VERB_COLUMNS + " from " + table +
+                    " where igbo ilike :q or english ilike :q" +
+                    " order by " + RANK_ORDER + " limit :limit";
             params.addValue("q", "%" + search + "%");
         }
 
-        return jdbc.query(sql, params, (rs, i) ->
-                new VerbDTO(
-                        rs.getLong("id"),
-                        rs.getString("igbo"),
-                        rs.getString("english"),
-                        (Integer) rs.getObject("freq_rank")
-                )
-        );
+        return jdbc.query(sql, params, VERB_MAPPER);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<VerbDTO> listAll(Dialect dialect) {
+        final String sql = "select " + VERB_COLUMNS + " from " + tableFor(dialect) +
+                " order by " + RANK_ORDER;
+        return jdbc.query(sql, new MapSqlParameterSource(), VERB_MAPPER);
     }
 
     /**
@@ -77,19 +90,11 @@ public class JdbcVerbRepository implements VerbRepository {
      */
     @Override
     public Optional<VerbDTO> findOne(Dialect dialect, long id) {
-        final String table = tableFor(dialect);
-        final String sql = "select id, igbo, english, freq_rank " +
-                "from " + table + " where id = :id";
+        final String sql = "select " + VERB_COLUMNS + " from " + tableFor(dialect) +
+                " where id = :id";
         try {
-            var dto = jdbc.queryForObject(sql, new MapSqlParameterSource("id", id), (rs, i) ->
-                    new VerbDTO(
-                            rs.getLong("id"),
-                            rs.getString("igbo"),
-                            rs.getString("english"),
-                            (Integer) rs.getObject("freq_rank")
-                    )
-            );
-            return Optional.ofNullable(dto);
+            return Optional.ofNullable(
+                    jdbc.queryForObject(sql, new MapSqlParameterSource("id", id), VERB_MAPPER));
         } catch (EmptyResultDataAccessException e) {
             return Optional.empty();
         }
@@ -110,7 +115,7 @@ public class JdbcVerbRepository implements VerbRepository {
                         "order by created_at desc limit 1";
 
         var params = new MapSqlParameterSource()
-                .addValue("dialect", dialect.name().toLowerCase())
+                .addValue("dialect", dialect.slug())
                 .addValue("verbId", verbId);
 
         try {
@@ -118,14 +123,24 @@ public class JdbcVerbRepository implements VerbRepository {
                     new AudioDTO(
                             rs.getString("object_key"),
                             rs.getString("content_type"),
-                            (Integer) rs.getObject("duration_ms"),
-                            (Long) rs.getObject("bytes")
+                            rs.getObject("duration_ms", Integer.class),
+                            rs.getObject("bytes", Long.class)
                     )
             );
             return Optional.ofNullable(dto);
         } catch (EmptyResultDataAccessException e) {
             return Optional.empty();
         }
+    }
+
+    /**
+     * Constrains a requested page size to a sane range.
+     *
+     * @param limit the caller-supplied limit.
+     * @return {@code limit} clamped to {@code 1..}{@link #MAX_LIMIT}.
+     */
+    private static int clampLimit(int limit) {
+        return Math.max(1, Math.min(limit, MAX_LIMIT));
     }
 
     /**

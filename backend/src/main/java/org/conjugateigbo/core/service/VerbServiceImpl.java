@@ -6,13 +6,13 @@ import org.conjugateigbo.core.model.dto.VerbDTO;
 import org.conjugateigbo.core.model.enums.Dialect;
 import org.conjugateigbo.core.repository.verb.VerbRepository;
 import org.springframework.http.HttpStatus;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
@@ -22,49 +22,35 @@ import java.util.Optional;
  * Primary implementation of {@link VerbService}.
  *
  * <p>Handles verb retrieval, single-verb lookup, Excel-based bulk import, and
- * audio URL generation. All database interactions are delegated to
- * {@link VerbRepository} (read-only queries) and
- * {@link ExcelVerbImportServiceImpl} (bulk writes).
+ * audio URL generation.
  *
- * <p>The {@code TABLE} constant maps each {@link Dialect} to its PostgreSQL
- * table name for inline SQL queries that bypass the repository (e.g.
- * {@link #list} and {@link #listAll}).
+ * <p>All reads go through {@link VerbRepository}. An earlier revision kept its
+ * own {@code Dialect -> table} map and issued inline SQL that duplicated the
+ * repository's queries, which meant the two could (and did) diverge — the
+ * service used a different {@code freq_rank} sentinel from the repository, so
+ * identical requests could order unranked verbs differently depending on which
+ * path served them. The service now owns no SQL at all.
  */
 @Service
 @RequiredArgsConstructor
 public class VerbServiceImpl implements VerbService {
 
-    /** Dialect-to-table-name mapping used by inline SQL queries. */
-    private static final Map<Dialect, String> TABLE = Map.of(
-            Dialect.DELTA_IGBO,   "verbs_delta_igbo",
-            Dialect.CENTRAL_IGBO, "verbs_central_igbo"
-    );
+    /**
+     * Filename used when {@code importVerbs} is called with neither an upload
+     * nor an explicit path — the historical location of the verb workbook in
+     * the server's working directory.
+     */
+    static final String DEFAULT_IMPORT_FILENAME = "All Igbo Verbs.xlsx";
 
     private final VerbRepository repo;
-    private final NamedParameterJdbcTemplate jdbc;
-    private final ExcelVerbImportServiceImpl excelImportService;
+    private final ExcelVerbImportService excelImportService;
 
     /**
      * {@inheritDoc}
-     *
-     * <p>Builds the SQL query inline so that optional search filtering can be
-     * toggled without a runtime {@code if} in the middle of a query builder chain.
      */
     @Override
     public List<VerbDTO> list(Dialect d, int limit, String search) {
-        var table = TABLE.get(d);
-        var sql = (search == null || search.isBlank())
-                ? "select id, igbo, english, freq_rank from " + table +
-                  " order by coalesce(freq_rank, 999999), igbo limit :limit"
-                : "select id, igbo, english, freq_rank from " + table +
-                  " where igbo ilike :q or english ilike :q" +
-                  " order by coalesce(freq_rank, 999999), igbo limit :limit";
-        var params = Map.of("limit", limit, "q", "%" + search + "%");
-        return jdbc.query(sql, params, (rs, i) -> new VerbDTO(
-                rs.getLong("id"),
-                rs.getString("igbo"),
-                rs.getString("english"),
-                rs.getObject("freq_rank", Integer.class)));
+        return repo.list(d, limit, search);
     }
 
     /**
@@ -72,33 +58,21 @@ public class VerbServiceImpl implements VerbService {
      */
     @Override
     public List<VerbDTO> listAll(Dialect d) {
-        var table = TABLE.get(d);
-        var sql = "select id, igbo, english, freq_rank from " + table +
-                  " order by coalesce(freq_rank, 999999), igbo";
-        return jdbc.query(sql, Map.of(), (rs, i) -> new VerbDTO(
-                rs.getLong("id"),
-                rs.getString("igbo"),
-                rs.getString("english"),
-                rs.getObject("freq_rank", Integer.class)));
+        return repo.listAll(d);
     }
 
     /**
      * {@inheritDoc}
      *
-     * @throws ResponseStatusException with HTTP 500 if the JDBC query returns
-     *         no result (should not happen in normal operation).
+     * @throws ResponseStatusException with HTTP 404 when no verb has that ID in
+     *         the dialect's table. Previously an unknown ID escaped as an
+     *         {@code EmptyResultDataAccessException} and surfaced to clients as
+     *         a 500.
      */
     @Override
     public VerbDTO one(Dialect d, long id) {
-        var table = TABLE.get(d);
-        return jdbc.queryForObject(
-                "select id, igbo, english, freq_rank from " + table + " where id=:id",
-                Map.of("id", id),
-                (rs, i) -> new VerbDTO(
-                        rs.getLong("id"),
-                        rs.getString("igbo"),
-                        rs.getString("english"),
-                        rs.getObject("freq_rank", Integer.class)));
+        return repo.findOne(d, id).orElseThrow(() -> new ResponseStatusException(
+                HttpStatus.NOT_FOUND, "No verb with id " + id + " in " + d.slug()));
     }
 
     /**
@@ -129,7 +103,7 @@ public class VerbServiceImpl implements VerbService {
      * <p>If a multipart {@code file} is provided it is written to a temporary
      * file and deleted after import completes (or on error). If only a
      * {@code filePath} is provided the file at that path is used directly
-     * without deletion. Falls back to {@code "All Igbo Verbs.xlsx"} in the
+     * without deletion. Falls back to {@link #DEFAULT_IMPORT_FILENAME} in the
      * working directory when neither argument is present.
      *
      * @throws ResponseStatusException with HTTP 400 if the dialect is not
@@ -140,7 +114,7 @@ public class VerbServiceImpl implements VerbService {
         if (d != Dialect.DELTA_IGBO) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
-                    "Import currently supported only for delta-igbo");
+                    "Import currently supported only for " + Dialect.DELTA_IGBO.slug());
         }
 
         Path pathToUse;
@@ -149,7 +123,7 @@ public class VerbServiceImpl implements VerbService {
         if (file != null && !file.isEmpty()) {
             Path tmp = Files.createTempFile("verbs-upload-", ".xlsx");
             try {
-                Files.copy(file.getInputStream(), tmp, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                Files.copy(file.getInputStream(), tmp, StandardCopyOption.REPLACE_EXISTING);
             } catch (Exception e) {
                 try { Files.deleteIfExists(tmp); } catch (Exception ignore) { }
                 throw e;
@@ -159,14 +133,14 @@ public class VerbServiceImpl implements VerbService {
         } else if (filePath != null && !filePath.isBlank()) {
             pathToUse = Path.of(filePath);
         } else {
-            pathToUse = Path.of("All Igbo Verbs.xlsx");
+            pathToUse = Path.of(DEFAULT_IMPORT_FILENAME);
         }
 
         try {
             var result = excelImportService.importDeltaFromExcel(pathToUse.toString());
             return Map.of(
                     "file",      pathToUse.toString(),
-                    "dialect",   "delta-igbo",
+                    "dialect",   d.slug(),
                     "totalRows", result.totalRows(),
                     "inserted",  result.inserted(),
                     "skipped",   result.skipped()

@@ -3,7 +3,7 @@ package org.conjugateigbo.core.controller;
 import lombok.RequiredArgsConstructor;
 import org.conjugateigbo.core.model.dto.VerbDTO;
 import org.conjugateigbo.core.model.enums.Dialect;
-import org.conjugateigbo.core.service.VerbServiceImpl;
+import org.conjugateigbo.core.service.VerbService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -27,17 +27,16 @@ import java.util.Map;
  * <pre>{@code /api}</pre>
  *
  * <h2>Supported dialect slugs</h2>
- * <ul>
- *   <li>{@code delta-igbo} / {@code delta_igbo} / {@code deltaigbo}</li>
- *   <li>{@code central-igbo} / {@code central_igbo} / {@code centraligbo}</li>
- * </ul>
+ * <p>Every slug declared on {@link Dialect}, matched case-insensitively with
+ * hyphens, underscores or neither — currently {@code delta-igbo} and
+ * {@code central-igbo}.
  */
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
 class VerbController {
 
-    private final VerbServiceImpl service;
+    private final VerbService service;
 
     /**
      * Returns a paginated, optionally filtered verb list for the given dialect.
@@ -122,15 +121,15 @@ class VerbController {
     /**
      * Resolves a dialect path-variable string to the corresponding {@link Dialect} enum constant.
      *
+     * <p>Slug matching lives on the enum itself, so adding a dialect needs no
+     * change here.
+     *
      * @param s the raw path-variable value (case-insensitive; hyphens/underscores tolerated).
      * @return the matching {@link Dialect}.
      * @throws ResponseStatusException with HTTP 404 if no matching dialect exists.
      */
     private Dialect dialectEnum(String s) {
-        return switch (s.toLowerCase()) {
-            case "delta-igbo", "delta_igbo", "deltaigbo" -> Dialect.DELTA_IGBO;
-            case "central-igbo", "central_igbo", "centraligbo" -> Dialect.CENTRAL_IGBO;
-            default -> throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Unknown dialect");
-        };
+        return Dialect.fromSlug(s).orElseThrow(() ->
+                new ResponseStatusException(HttpStatus.NOT_FOUND, "Unknown dialect: " + s));
     }
 }

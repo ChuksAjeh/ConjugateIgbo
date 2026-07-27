@@ -13,23 +13,40 @@ import java.util.Optional;
  * <p>The primary implementation is {@link JdbcVerbRepository}, which uses
  * {@code NamedParameterJdbcTemplate} to query the dialect-specific verb tables.
  *
- * <p>All methods are read-only; write operations (bulk import) go through
- * {@code ExcelVerbImportServiceImpl} directly.
+ * <p>All methods here are read-only. Bulk writes go through the import
+ * services ({@code ExcelVerbImportService}, {@code NotionVerbImportService}).
  */
 public interface VerbRepository {
+
+    /** Upper bound applied to {@link #list}'s {@code limit} argument. */
+    int MAX_LIMIT = 1000;
 
     /**
      * Returns a paginated list of verbs for the given dialect, ordered by
      * frequency rank (ascending) and then alphabetically.
      *
      * @param dialect dialect whose table to query.
-     * @param limit   maximum number of rows to return.
+     * @param limit   maximum number of rows to return. Values outside
+     *                {@code 1..}{@link #MAX_LIMIT} are clamped into range, so a
+     *                caller cannot request a negative page or pull an unbounded
+     *                result set by passing {@code Integer.MAX_VALUE}.
      * @param search  optional search string matched case-insensitively against
      *                both the {@code igbo} and {@code english} columns.
      *                Pass {@code null} or blank to disable filtering.
      * @return list of matching {@link VerbDTO}s, never {@code null}.
      */
     List<VerbDTO> list(Dialect dialect, int limit, String search);
+
+    /**
+     * Returns every verb for the given dialect, unpaginated.
+     *
+     * <p>Used by the mobile app to populate its offline cache on first launch.
+     *
+     * @param dialect dialect whose table to query.
+     * @return the complete verb list ordered by frequency rank then
+     *         alphabetically, never {@code null}.
+     */
+    List<VerbDTO> listAll(Dialect dialect);
 
     /**
      * Looks up a single verb by its numeric ID.

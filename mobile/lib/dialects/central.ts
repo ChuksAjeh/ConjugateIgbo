@@ -15,6 +15,7 @@ export const centralProfile: DialectProfile = {
   key: 'central',
   label: 'Central Igbo',
   description: 'COMING SOON',
+  apiSlug: 'central-igbo',
   supported: false,
   rules: deltaProfile.rules,
   surfaces: {

@@ -17,6 +17,7 @@ export const deltaProfile: DialectProfile = {
   key: 'delta',
   label: 'Delta Igbo',
   description: '',
+  apiSlug: 'delta-igbo',
   supported: true,
   rules: sharedRules,
   surfaces: {
