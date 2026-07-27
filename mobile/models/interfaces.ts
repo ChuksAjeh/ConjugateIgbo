@@ -17,6 +17,7 @@ export const tenses: Tense[] = [
   'together',
   'first',
   'polite',
+  'benefactive',
 ];
 
 /** Human-readable labels for each tense. */
@@ -36,6 +37,7 @@ export const tenseLabels: Record<Tense, string> = {
   together: 'Together (-kota)',
   first: 'First (-gode)',
   polite: 'Polite (-nụ́)',
+  benefactive: 'Benefactive (-ye)',
 };
 
 /** Igbo particle + English gloss shown alongside each tense header so the
@@ -56,6 +58,7 @@ export const tenseAnnotations: Record<Tense, string> = {
   together: '-kota (together)',
   first: '-gode (first of all)',
   polite: '-nụ́ (please)',
+  benefactive: '-ye (do it for me)',
 };
 
 /** Tenses available on the free tier. Everything else requires Pro. */

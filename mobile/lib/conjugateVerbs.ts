@@ -1,14 +1,20 @@
 /**
  * @fileoverview Rule-based Igbo verb conjugation engine.
  *
- * The engine is split into three layers:
- *  1. **Morphological rules** — per-tense stem builders. See
+ * The engine is split into four layers:
+ *  1. **Morphological primitives** — harmony, phrase splitting, affix
+ *     attachment. See `lib/dialects/morphology.ts`.
+ *  2. **Morphological rules** — per-tense stem builders. See
  *     `lib/dialects/sharedRules.ts` for the default set; individual dialects
  *     may override in their own profile module.
- *  2. **Dialect surfaces** — pronoun spellings and grammatical particles,
+ *  3. **Dialect surfaces** — pronoun spellings and grammatical particles,
  *     defined in `lib/dialects/<dialect>.ts`.
- *  3. **Frame assembly** — this file. Combines rules + surfaces + pronouns
+ *  4. **Frame assembly** — this file. Combines rules + surfaces + pronouns
  *     into the final conjugation table.
+ *
+ * Nothing outside layers 1–2 implements morphology. UI rule explanations are
+ * generated from the same profile (see `lib/grammarRules.ts`) so an
+ * explanation can never drift from the form it describes.
  *
  * ## Adding a new dialect
  * 1. Add the dialect key to the `Dialect` union in `@/models/verb`.
@@ -21,106 +27,114 @@
  * 3. Add an `apply<TenseName>Rule` entry to `DialectRules`
  *    (`lib/dialects/types.ts`) and implement it in `sharedRules.ts`.
  * 4. Add the frame block in `generateConjugations()` below.
- * 5. Add the tense to `tenses` / `tenseLabels` in `@/models/interfaces`.
+ * 5. Add the tense to `tenses` / `tenseLabels` in `@/models/interfaces` and
+ *    a rule card in `lib/grammarRules.ts`.
  */
 
 import * as Sentry from '@sentry/react-native';
 import { Conjugations, Dialect, IgboVerb, Pronoun, Tense } from '@/models/verb';
-import { dialectProfiles } from '@/lib/dialects';
+import { getDialectProfile } from '@/lib/dialects';
+import {
+  attachPrefix,
+  attachSuffix,
+  harmonyPrefix,
+  harmonyPronoun,
+  stripInfinitivePrefix,
+  toNfc,
+} from '@/lib/dialects/morphology';
 
 // Re-export for backward compatibility — prefer importing Dialect from @/models/verb directly.
 export type { Dialect };
 
-// ---------------------------------------------------------------------------
-// Local helpers (frame-assembly only; morphology lives in sharedRules)
-// ---------------------------------------------------------------------------
-
-/** Resolves the conjugation root for a verb. Coerces to a string so a
- *  malformed verb (non-string igbo/rootForm, or no verb at all) can never make
- *  the downstream string ops throw. */
+/**
+ * Resolves the conjugation root for a verb.
+ *
+ * Coerces to a string so a malformed verb (non-string `igbo`/`rootForm`, or
+ * no verb at all) can never make the downstream string ops throw.
+ *
+ * @param verb the verb to read; may be `undefined` or malformed.
+ * @returns the trimmed, NFC-normalised citation form, or `''`.
+ */
 function getRoot(verb: IgboVerb): string {
   const raw = verb?.rootForm || verb?.igbo || '';
-  return (typeof raw === 'string' ? raw : String(raw)).trim();
+  return toNfc(typeof raw === 'string' ? raw : String(raw)).trim();
 }
-
-/** Removes a leading infinitive prefix ('i' or 'ị') — duplicated here for
- *  the 1sg harmony pronoun calculation; shared with `sharedRules`. */
-function removePrefixI(root: string): string {
-  return root.startsWith('i') || root.startsWith('ị') ? root.substring(1) : root;
-}
-
-/** Uppercase harmony pronoun ('A' / 'E') used in 1sg frames. */
-function getVowelHarmonyPronoun(stem: string): 'A' | 'E' {
-  return /[aọụịỌỤỊ]/.test(stem) ? 'A' : 'E';
-}
-
-/** Lowercase harmony particle ('a' / 'e') used as the subject-verb linker
- *  in negation/perfect frames. */
-function getVowelHarmonyPrefix(stem: string): 'a' | 'e' {
-  return /[aọụịỌỤỊ]/.test(stem) ? 'a' : 'e';
-}
-
-/** True when the stem already opens with a vowel — in that case the
- *  harmony prefix is not prepended to the bare stem. */
-function stemStartsWithVowel(stem: string): boolean {
-  return /^[aeiouọụịAEIOUỌỤỊ]/.test(stem);
-}
-
-// ---------------------------------------------------------------------------
-// Public API
-// ---------------------------------------------------------------------------
 
 /**
  * Generates the full conjugation table for a verb in the specified dialect.
+ *
+ * @param verb    the verb to conjugate.
+ * @param dialect the dialect whose profile supplies rules and surfaces;
+ *                unknown keys fall back to the default dialect.
+ * @returns a `Conjugations` table keyed by tense then pronoun.
  */
 export function generateConjugations(
   verb: IgboVerb,
   dialect: Dialect = 'delta',
 ): Conjugations {
-  const profile = dialectProfiles[dialect] ?? dialectProfiles.delta;
-  const { rules, surfaces: s } = profile;
+  const { rules, surfaces: s } = getDialectProfile(dialect);
+  const p = s.particles;
 
   const root = getRoot(verb);
-  const stem = removePrefixI(root);
-  const vowelPrefix = getVowelHarmonyPronoun(stem);
-  const vowelPrefixLower = getVowelHarmonyPrefix(stem);
+  const stem = stripInfinitivePrefix(root);
+  const vowelPrefix = harmonyPronoun(stem);
+  const vowelPrefixLower = harmonyPrefix(stem);
 
   // Pre-compute reusable stems.
   const presentStem = rules.applyPresentRule(root, 'i');
   const pastStem = rules.applyPastRule(root, 'i');
-  const perfectiveSuffix = s.particles.perfectSuffix;
-  const stemLinker = stemStartsWithVowel(stem) ? '' : vowelPrefixLower;
-  const perfectedStem = `${stemLinker}${stem}${perfectiveSuffix}`;
   const habStem = rules.applyHabitualPresentRule(root, 'i');
   const negPastStem = rules.applyNegativePastRule(root, 'i');
   const negFutureStem = rules.applyNegativeFutureRule(root, 'i');
   const neverStem = rules.applyNeverPerfectRule(root, 'i');
-  const dika = s.particles.negativePerfectPrefix;
+  const dika = p.negativePerfectPrefix;
+
+  // Present-perfect stem. The suffix attaches to the verb head, not the end of
+  // a verb phrase (Notion Present Perfect Rule 1.3: "lahu ula" + "ga" →
+  // "lahuga ula"), then the harmony prefix goes on the front for plural
+  // subjects (Rule 1.4: "Nne m abiaga").
+  const perfectedStem = attachPrefix(
+    attachSuffix(stem, p.perfectSuffix(stem)),
+    vowelPrefixLower,
+  );
+  // Bare stem with the plural-subject harmony linker, used by the negative
+  // perfect ("Anyi adika abia").
+  const linkedStem = attachPrefix(stem, vowelPrefixLower);
+
+  /**
+   * Places the 1sg `m` clitic directly after the verb head.
+   *
+   * Notion Past Rule 1 is "A gba m ọsọ" — the clitic sits between the verb
+   * and its object, not at the end of the phrase.
+   */
+  const withMe = (tenseStem: string) => attachSuffix(tenseStem, ' m');
 
   return {
     present: {
-      m:    `${vowelPrefix} ${s.particles.presentLink} m ${presentStem}`,
-      i:    `${s.pronouns.i} ${s.particles.presentLink} ${presentStem}`,
-      o:    `${s.pronouns.o} ${s.particles.presentLink} ${presentStem}`,
-      anyi: `${s.pronouns.anyi} ${s.particles.presentLink} ${presentStem}`,
-      unu:  `${s.pronouns.unu} ${s.particles.presentLink} ${presentStem}`,
-      wa:   `${s.pronouns.wa} ${s.particles.presentLink} ${presentStem}`,
+      m:    `${vowelPrefix} ${p.presentLink} m ${presentStem}`,
+      i:    `${s.pronouns.i} ${p.presentLink} ${presentStem}`,
+      o:    `${s.pronouns.o} ${p.presentLink} ${presentStem}`,
+      anyi: `${s.pronouns.anyi} ${p.presentLink} ${presentStem}`,
+      unu:  `${s.pronouns.unu} ${p.presentLink} ${presentStem}`,
+      wa:   `${s.pronouns.wa} ${p.presentLink} ${presentStem}`,
     },
     past: {
-      m:    `${vowelPrefix} ${pastStem} m`,
+      m:    `${vowelPrefix} ${withMe(pastStem)}`,
       i:    `${s.pronouns.i} ${pastStem}`,
       o:    `${s.pronouns.o} ${pastStem}`,
       anyi: `${s.pronouns.anyi} ${pastStem}`,
       unu:  `${s.pronouns.unu} ${pastStem}`,
       wa:   `${s.pronouns.wa} ${pastStem}`,
     },
+    /** Future — 1sg pronoun leads the frame (Notion Future Rule 1:
+     *  "m ga-agba ọsọ"). */
     future: {
-      m:    `${s.pronouns.m} ${s.particles.futureAux} ${presentStem}`,
-      i:    `${s.pronouns.i} ${s.particles.futureAux} ${presentStem}`,
-      o:    `${s.pronouns.o} ${s.particles.futureAux} ${presentStem}`,
-      anyi: `${s.pronouns.anyi} ${s.particles.futureAux} ${presentStem}`,
-      unu:  `${s.pronouns.unu} ${s.particles.futureAux} ${presentStem}`,
-      wa:   `${s.pronouns.wa} ${s.particles.futureAux} ${presentStem}`,
+      m:    `${s.pronouns.m} ${p.futureAux} ${presentStem}`,
+      i:    `${s.pronouns.i} ${p.futureAux} ${presentStem}`,
+      o:    `${s.pronouns.o} ${p.futureAux} ${presentStem}`,
+      anyi: `${s.pronouns.anyi} ${p.futureAux} ${presentStem}`,
+      unu:  `${s.pronouns.unu} ${p.futureAux} ${presentStem}`,
+      wa:   `${s.pronouns.wa} ${p.futureAux} ${presentStem}`,
     },
     imperative: (() => {
       const impForm = rules.applyImperativeRule(root, 'i');
@@ -136,11 +150,11 @@ export function generateConjugations(
 
     /**
      * Present perfect — singular pronouns (m/i/o) don't carry the perfective
-     * suffix or vowel prefix (per Delta Igbo rule "Ọ̀ bia", not "Ọ̀ biaga").
-     * Plural pronouns and nouns take the full `<harmony><stem><suffix>` form.
+     * suffix or vowel prefix (Notion Rule 1.2: "Ọ̀ bia", not "Ọ̀ biaga").
+     * Plural pronouns and nouns take the full form (Rule 1.4: "Wa abiaga").
      */
     presentPerfect: {
-      m:    `${vowelPrefix} ${pastStem} m`,
+      m:    `${vowelPrefix} ${withMe(pastStem)}`,
       i:    `${s.pronouns.i} ${pastStem}`,
       o:    `${s.pronouns.o} ${pastStem}`,
       anyi: `${s.pronouns.anyi} ${perfectedStem}`,
@@ -149,20 +163,21 @@ export function generateConjugations(
     },
 
     habitualPresent: {
-      m:    `${vowelPrefix} ${s.particles.presentLink} m ${habStem}`,
-      i:    `${s.pronouns.i} ${s.particles.presentLink} ${habStem}`,
-      o:    `${s.pronouns.o} ${s.particles.presentLink} ${habStem}`,
-      anyi: `${s.pronouns.anyi} ${s.particles.presentLink} ${habStem}`,
-      unu:  `${s.pronouns.unu} ${s.particles.presentLink} ${habStem}`,
-      wa:   `${s.pronouns.wa} ${s.particles.presentLink} ${habStem}`,
+      m:    `${vowelPrefix} ${p.presentLink} m ${habStem}`,
+      i:    `${s.pronouns.i} ${p.presentLink} ${habStem}`,
+      o:    `${s.pronouns.o} ${p.presentLink} ${habStem}`,
+      anyi: `${s.pronouns.anyi} ${p.presentLink} ${habStem}`,
+      unu:  `${s.pronouns.unu} ${p.presentLink} ${habStem}`,
+      wa:   `${s.pronouns.wa} ${p.presentLink} ${habStem}`,
     },
 
     /**
      * Negative past — plural pronouns / nouns insert the harmony particle
-     * between subject and verb ("Anyi e liné"); singular pronouns don't.
+     * between subject and verb (Notion Rule 5.2: "Anyi eliné"); singular
+     * pronouns don't (Rule 5.3: "O liné nni").
      */
     negativePast: {
-      m:    `${vowelPrefix} ${negPastStem} m`,
+      m:    `${vowelPrefix} ${withMe(negPastStem)}`,
       i:    `${s.pronouns.i} ${negPastStem}`,
       o:    `${s.pronouns.o} ${negPastStem}`,
       anyi: `${s.pronouns.anyi} ${vowelPrefixLower} ${negPastStem}`,
@@ -174,12 +189,12 @@ export function generateConjugations(
      *  keeps the bare 'm' pronoun at the front (Notion Future Rule 2:
      *  "m ma gba ọsọ"). */
     negativeFuture: {
-      m:    `${s.pronouns.m} ${s.particles.negativeFutureAux} ${negFutureStem}`,
-      i:    `${s.pronouns.i} ${s.particles.negativeFutureAux} ${negFutureStem}`,
-      o:    `${s.pronouns.o} ${s.particles.negativeFutureAux} ${negFutureStem}`,
-      anyi: `${s.pronouns.anyi} ${s.particles.negativeFutureAux} ${negFutureStem}`,
-      unu:  `${s.pronouns.unu} ${s.particles.negativeFutureAux} ${negFutureStem}`,
-      wa:   `${s.pronouns.wa} ${s.particles.negativeFutureAux} ${negFutureStem}`,
+      m:    `${s.pronouns.m} ${p.negativeFutureAux} ${negFutureStem}`,
+      i:    `${s.pronouns.i} ${p.negativeFutureAux} ${negFutureStem}`,
+      o:    `${s.pronouns.o} ${p.negativeFutureAux} ${negFutureStem}`,
+      anyi: `${s.pronouns.anyi} ${p.negativeFutureAux} ${negFutureStem}`,
+      unu:  `${s.pronouns.unu} ${p.negativeFutureAux} ${negFutureStem}`,
+      wa:   `${s.pronouns.wa} ${p.negativeFutureAux} ${negFutureStem}`,
     },
 
     /** Negative imperative — same surface form for every pronoun; the
@@ -197,16 +212,17 @@ export function generateConjugations(
     })(),
 
     /**
-     * Negative perfect — plural subjects conjugate "dika" (gets a harmony
-     * prefix); singular pronouns do not.
+     * Negative perfect — plural subjects conjugate "dika" as well as the verb
+     * (Notion Rule 4.2: "Anyi adika abia"); singular pronouns leave "dika"
+     * bare (Rule 4.3: "A dika m abia", "O dika ede").
      */
     negativePerfect: {
-      m:    `${vowelPrefix} ${dika} m ${stemLinker}${stem}`,
-      i:    `${s.pronouns.i} ${dika} ${stemLinker}${stem}`,
-      o:    `${s.pronouns.o} ${dika} ${stemLinker}${stem}`,
-      anyi: `${s.pronouns.anyi} ${vowelPrefixLower}${dika} ${stemLinker}${stem}`,
-      unu:  `${s.pronouns.unu} ${vowelPrefixLower}${dika} ${stemLinker}${stem}`,
-      wa:   `${s.pronouns.wa} ${vowelPrefixLower}${dika} ${stemLinker}${stem}`,
+      m:    `${vowelPrefix} ${dika} m ${linkedStem}`,
+      i:    `${s.pronouns.i} ${dika} ${linkedStem}`,
+      o:    `${s.pronouns.o} ${dika} ${linkedStem}`,
+      anyi: `${s.pronouns.anyi} ${vowelPrefixLower}${dika} ${linkedStem}`,
+      unu:  `${s.pronouns.unu} ${vowelPrefixLower}${dika} ${linkedStem}`,
+      wa:   `${s.pronouns.wa} ${vowelPrefixLower}${dika} ${linkedStem}`,
     },
 
     /**
@@ -216,7 +232,7 @@ export function generateConjugations(
      * calls for it. Keep the same bare shape for singular and plural.
      */
     neverPerfect: {
-      m:    `${vowelPrefix} ${neverStem} m`,
+      m:    `${vowelPrefix} ${withMe(neverStem)}`,
       i:    `${s.pronouns.i} ${neverStem}`,
       o:    `${s.pronouns.o} ${neverStem}`,
       anyi: `${s.pronouns.anyi} ${neverStem}`,
@@ -230,14 +246,17 @@ export function generateConjugations(
 
     /**
      * Finished ('-si', Notion Rule 2.3) — present-perfect frame. Plural
-     * subjects take the '-ga' perfective suffix; singular pronouns use
-     * the bare derived stem (mirrors presentPerfect).
+     * subjects take the perfective suffix; singular pronouns use the bare
+     * derived stem (mirrors presentPerfect).
      */
     finished: (() => {
       const finishedStem = rules.applyFinishedRule(root, 'i');
-      const finishedPerfect = `${stemLinker}${finishedStem}${perfectiveSuffix}`;
+      const finishedPerfect = attachPrefix(
+        attachSuffix(finishedStem, p.perfectSuffix(finishedStem)),
+        vowelPrefixLower,
+      );
       return {
-        m:    `${vowelPrefix} ${finishedStem} m`,
+        m:    `${vowelPrefix} ${withMe(finishedStem)}`,
         i:    `${s.pronouns.i} ${finishedStem}`,
         o:    `${s.pronouns.o} ${finishedStem}`,
         anyi: `${s.pronouns.anyi} ${finishedPerfect}`,
@@ -252,7 +271,7 @@ export function generateConjugations(
      */
     together: (() => {
       const togetherStem = rules.applyTogetherRule(root, 'i');
-      const togetherFrame = `${s.particles.futureAux} ${stemLinker}${togetherStem}`;
+      const togetherFrame = `${p.futureAux} ${attachPrefix(togetherStem, vowelPrefixLower)}`;
       return {
         m:    `${s.pronouns.m} ${togetherFrame}`,
         i:    `${s.pronouns.i} ${togetherFrame}`,
@@ -263,37 +282,65 @@ export function generateConjugations(
       };
     })(),
 
-    /**
-     * First ('-gode', Notion Rule 8) — imperative frame; only 2sg/1pl/2pl
-     * carry forms.
-     */
-    first: {
-      m:    rules.applyFirstRule(root, 'm'),
-      i:    rules.applyFirstRule(root, 'i'),
-      o:    rules.applyFirstRule(root, 'o'),
-      anyi: rules.applyFirstRule(root, 'anyi'),
-      unu:  rules.applyFirstRule(root, 'unu'),
-      wa:   rules.applyFirstRule(root, 'wa'),
-    },
+    /** First ('-gode', Notion Rule 8) — imperative frame; only 2sg/1pl/2pl
+     *  carry forms. */
+    first: buildImperativeFrame(root, s.pronouns, rules.applyFirstRule),
 
-    /**
-     * Polite intensifier ('-nụ́', Notion Rule 6 "please") — imperative frame.
-     */
-    polite: {
-      m:    rules.applyPoliteRule(root, 'm'),
-      i:    rules.applyPoliteRule(root, 'i'),
-      o:    rules.applyPoliteRule(root, 'o'),
-      anyi: rules.applyPoliteRule(root, 'anyi'),
-      unu:  rules.applyPoliteRule(root, 'unu'),
-      wa:   rules.applyPoliteRule(root, 'wa'),
-    },
+    /** Polite intensifier ('-nụ́', Notion Rule 6 "please") — imperative
+     *  frame; only 2sg/1pl/2pl carry forms. */
+    polite: buildImperativeFrame(root, s.pronouns, rules.applyPoliteRule),
+
+    /** Benefactive ('-ye', Notion Rule 9 "do it for me") — imperative
+     *  frame; only 2sg/1pl/2pl carry forms. */
+    benefactive: buildImperativeFrame(root, s.pronouns, rules.applyBenefactiveRule),
+  };
+}
+
+/** Placeholder emitted by rules for pronoun cells they do not license. */
+const NO_FORM = '—';
+
+/**
+ * Builds an imperative-style frame for a derivational rule that only licenses
+ * some pronouns.
+ *
+ * Licensed cells get `<pronoun> <form>`; unlicensed cells stay as the
+ * placeholder so the UI renders an em dash rather than a bare pronoun.
+ *
+ * @param root     the verb's citation form.
+ * @param pronouns the active dialect's pronoun spellings.
+ * @param rule     the derivational rule to apply per pronoun.
+ */
+function buildImperativeFrame(
+  root: string,
+  pronouns: Record<Pronoun, string>,
+  rule: (root: string, pronoun: Pronoun) => string,
+): Record<Pronoun, string> {
+  const cell = (pronoun: Pronoun): string => {
+    const form = rule(root, pronoun);
+    if (!form || form === NO_FORM) return NO_FORM;
+    return `${pronouns[pronoun]} ${form}`;
+  };
+  return {
+    m: cell('m'),
+    i: cell('i'),
+    o: cell('o'),
+    anyi: cell('anyi'),
+    unu: cell('unu'),
+    wa: cell('wa'),
   };
 }
 
 /**
  * Returns the conjugated form for a specific tense and pronoun.
+ *
  * Prefers pre-computed conjugations on the verb object (legacy data), then
  * falls back to the rule-based engine.
+ *
+ * @param verb    the verb to conjugate.
+ * @param tense   the tense to read.
+ * @param pronoun the pronoun to read.
+ * @param dialect the active dialect.
+ * @returns the conjugated string, or `''` if the tense/pronoun has no form.
  */
 export function getConjugatedForm(
   verb: IgboVerb,
@@ -305,7 +352,7 @@ export function getConjugatedForm(
     const precomputed = verb.conjugations?.[tense]?.[pronoun];
     // Treat '-' and '—' as "missing" placeholders in legacy data so the engine
     // can fill them in. An empty string is also not usable.
-    if (precomputed && precomputed !== '-' && precomputed !== '—') {
+    if (precomputed && precomputed !== '-' && precomputed !== NO_FORM) {
       return precomputed;
     }
 
@@ -336,12 +383,19 @@ export function getConjugatedForm(
 
 /**
  * Normalizes and compares a user's answer to the correct conjugation.
- * Case-insensitive; tolerates extra/collapsed whitespace.
+ *
+ * Case-insensitive; tolerates extra/collapsed whitespace and mixed Unicode
+ * normalisation forms (a keyboard-composed `ị` must match a Notion-sourced one).
+ *
+ * @param userAnswer    what the learner typed.
+ * @param correctAnswer the expected form.
+ * @returns `true` when the two match after normalisation.
  */
 export function checkConjugation(
   userAnswer: string,
   correctAnswer: string,
 ): boolean {
-  const normalize = (s: string) => s.trim().toLowerCase().replace(/\s+/g, ' ');
+  const normalize = (value: string) =>
+    toNfc(value ?? '').trim().toLowerCase().replace(/\s+/g, ' ');
   return normalize(userAnswer) === normalize(correctAnswer);
 }

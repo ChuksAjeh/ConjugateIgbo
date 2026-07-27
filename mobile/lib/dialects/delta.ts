@@ -14,6 +14,10 @@ import { sharedRules } from './sharedRules';
  * references for each.
  */
 export const deltaProfile: DialectProfile = {
+  key: 'delta',
+  label: 'Delta Igbo',
+  description: '',
+  supported: true,
   rules: sharedRules,
   surfaces: {
     pronouns: {
@@ -24,12 +28,26 @@ export const deltaProfile: DialectProfile = {
       unu: 'Unu',
       wa: 'Wa',
     },
+    // 1sg is a discontinuous frame ("A gba m ọsọ"), so the picker shows the
+    // frame rather than the bare pronoun.
+    pronounDisplay: {
+      m: 'A/E… m',
+    },
     particles: {
       presentLink: 'na',
       futureAux: 'ga',
       negativeFutureAux: 'ma',
       negativePerfectPrefix: 'dika',
-      perfectSuffix: 'ga',
+      habitualSuffix: 'kari',
+      neverSuffix: 'nene',
+      finishedSuffix: 'si',
+      togetherSuffix: 'kota',
+      firstSuffix: 'gode',
+      politeSuffix: 'nụ́',
+      benefactiveSuffix: 'ye',
+      // Constant until the -ga/ge/go conditioning is confirmed — see
+      // PerfectSuffixFn in ./types for the Notion examples that disagree.
+      perfectSuffix: () => 'ga',
     },
   },
 };
