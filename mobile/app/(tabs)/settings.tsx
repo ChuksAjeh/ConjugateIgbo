@@ -33,6 +33,7 @@ import { showCustomerCenter } from '@/lib/revenuecatUI';
 import { useResponsiveLayout } from '@/lib/responsive';
 import { WavePattern } from '@/components/SplashScreen';
 import { logger } from '@/lib/logger';
+import { dialectProfileList, getDialectProfile } from '@/lib/dialects';
 
 export default function SettingsScreen() {
   const router = useRouter();
@@ -334,6 +335,7 @@ export default function SettingsScreen() {
           <SettingsSection title="GENERAL">
             <SettingsItem
               title="Choose region"
+              subtitle={getDialectProfile(settings.dialect).label}
               onPress={() => setShowDialectModal(true)}
             />
 
@@ -708,51 +710,21 @@ export default function SettingsScreen() {
             style={styles.modalContent}
             showsVerticalScrollIndicator={false}
           >
-            {[
-              {
-                key: 'delta',
-                label: 'Delta Igbo',
-                description: '',
-                disabled: false,
-              },
-              {
-                key: 'central',
-                label: 'Central Igbo',
-                description: 'COMING SOON',
-                disabled: true,
-              },
-              {
-                key: 'anambra',
-                label: 'Anambra Igbo',
-                description: 'COMING SOON',
-                disabled: true,
-              },
-              {
-                key: 'imo',
-                label: 'Imo Igbo',
-                description: 'COMING SOON',
-                disabled: true,
-              },
-              {
-                key: 'abia',
-                label: 'Abia Igbo',
-                description: 'COMING SOON',
-                disabled: true,
-              },
-            ].map((dialect) => {
+            {dialectProfileList.map((dialect) => {
               const isSelected = settings.dialect === dialect.key;
+              const disabled = !dialect.supported;
               return (
                 <TouchableOpacity
                   key={dialect.key}
-                  disabled={dialect.disabled}
+                  disabled={disabled}
                   style={[
                     styles.dialectOption,
                     isSelected && styles.selectedDialectOption,
-                    dialect.disabled && { opacity: 0.4 },
+                    disabled && { opacity: 0.4 },
                   ]}
                   onPress={() => {
-                    if (dialect.disabled) return;
-                    updateSettings({ dialect: dialect.key as any });
+                    if (disabled) return;
+                    updateSettings({ dialect: dialect.key });
                     setShowDialectModal(false);
                   }}
                 >

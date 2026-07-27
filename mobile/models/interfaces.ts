@@ -1,4 +1,4 @@
-import { Dialect, Pronoun, Tense } from '@/models/verb';
+import { Pronoun, Tense } from '@/models/verb';
 
 /** All supported tenses, in display order. */
 export const tenses: Tense[] = [
@@ -40,50 +40,16 @@ export const tenseLabels: Record<Tense, string> = {
   benefactive: 'Benefactive (-ye)',
 };
 
-/** Igbo particle + English gloss shown alongside each tense header so the
- *  user can see which word the frame hangs off. Empty string = no annotation. */
-export const tenseAnnotations: Record<Tense, string> = {
-  present: 'na (does / is doing)',
-  past: '',
-  future: 'ga (will)',
-  imperative: '(do!)',
-  presentPerfect: '-ga (has / have done)',
-  habitualPresent: '-kari (usually)',
-  negativePast: '-ná / -né (did not)',
-  negativeFuture: 'ma (will not)',
-  negativeImperative: '-na / -ne (do not)',
-  negativePerfect: 'dika (have not / has not)',
-  neverPerfect: '-nene (has never)',
-  finished: '-si (finished)',
-  together: '-kota (together)',
-  first: '-gode (first of all)',
-  polite: '-nụ́ (please)',
-  benefactive: '-ye (do it for me)',
-};
-
 /** Tenses available on the free tier. Everything else requires Pro. */
 export const freeTierTenses: Tense[] = ['present', 'past', 'future'];
 
 /** All supported pronouns, in display order. */
 export const pronouns: Pronoun[] = ['m', 'i', 'o', 'anyi', 'unu', 'wa'];
 
-/** Human-readable labels for each pronoun. Tuned for Delta Igbo (the only
- *  currently-active dialect). When additional dialects ship, consider moving
- *  these into each dialect profile. */
-export const pronounLabels: Record<Pronoun, string> = {
-  m: 'A/E… m (I)',
-  i: 'I (You)',
-  o: 'O (He/She/It)',
-  anyi: 'Anyi (We)',
-  unu: 'Unu (You all)',
-  wa: 'Wa (They)',
-};
-
-/** Human-readable labels for each dialect. */
-export const dialectLabels: Record<Dialect, string> = {
-  central: 'Central Igbo',
-  delta: 'Delta Igbo',
-  anambra: 'Anambra Igbo',
-  imo: 'Imo Igbo',
-  abia: 'Abia Igbo',
-};
+/**
+ * Dialect-dependent labels live in `lib/grammarRules.ts`
+ * (`getPronounLabels`, `getTenseAnnotations`) and the dialect registry
+ * (`lib/dialects` — `dialectProfileList`), so that pronoun spellings,
+ * particle annotations and the dialect picker all follow the active dialect
+ * rather than being hardcoded to Delta.
+ */
