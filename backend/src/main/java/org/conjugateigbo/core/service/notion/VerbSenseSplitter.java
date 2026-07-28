@@ -34,14 +34,29 @@ import java.util.Set;
 public final class VerbSenseSplitter {
 
     /**
-     * Split fragments that carry no verbal sense on their own.
+     * Split fragments that carry no verbal sense on their own and are therefore
+     * dropped rather than turned into a standalone gloss.
      *
-     * <p>{@code "to hold/use/with"} is shorthand for "to hold, to use, to be
-     * with"; without this the split would coin {@code "to with"} as a
-     * standalone sense.
+     * <p>Two kinds appear in the source data:
+     * <ul>
+     *   <li><strong>Bare prepositions</strong> — {@code "to hold/use/with"} is
+     *       shorthand for "to hold, to use, to be with"; without dropping
+     *       {@code with} the split would coin {@code "to with"}.</li>
+     *   <li><strong>Bare modal auxiliaries</strong> — {@code "to be able to/can"}
+     *       lists {@code can} as a synonym of the whole phrase, not an adjective
+     *       completing "to be ___". Inheriting the {@code "to be "} marker would
+     *       coin the ungrammatical {@code "to be can"}; the infinitive
+     *       {@code "to be able to"} already carries the meaning, so {@code can}
+     *       is dropped.</li>
+     * </ul>
      */
     private static final Set<String> NON_VERBAL_FRAGMENTS =
-            Set.of("with", "of", "for", "at", "on", "in", "to", "by", "from");
+            Set.of(
+                    // Prepositions.
+                    "with", "of", "for", "at", "on", "in", "to", "by", "from",
+                    // Modal auxiliaries — never standalone infinitive glosses.
+                    "can", "could", "would", "should", "shall", "will",
+                    "may", "might", "must");
 
     private VerbSenseSplitter() {
         // Utility class — not instantiable.
@@ -60,8 +75,9 @@ public final class VerbSenseSplitter {
      *       {@code "to "} prefix</li>
      * </ul>
      *
-     * <p>Fragments that are only a preposition are dropped (see
-     * {@link #NON_VERBAL_FRAGMENTS}).
+     * <p>Fragments that are only a preposition or a bare modal auxiliary are
+     * dropped (see {@link #NON_VERBAL_FRAGMENTS}) — e.g. {@code "to be able
+     * to/can"} yields only {@code "to be able to"}.
      *
      * @param english the raw gloss.
      * @return one entry per sense; a single-element list when there is nothing

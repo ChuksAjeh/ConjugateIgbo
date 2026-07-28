@@ -100,6 +100,18 @@ class VerbCandidateExtractorTest {
     }
 
     @Test
+    void dropsSplitFragmentsThatAreOnlyAModalAuxiliary() {
+        // "to be able to/can" lists "can" as a synonym of the whole phrase, not
+        // an adjective completing "to be ___"; inheriting the "to be " marker
+        // would coin the ungrammatical "to be can". The infinitive already
+        // carries the meaning, so only it is kept.
+        var result = extractor.extract(page(true, row("to be able to/can", "", "ịnwe ike")));
+
+        assertThat(result).extracting(VerbCandidate::english)
+                .containsExactly("to be able to");
+    }
+
+    @Test
     void recordsTheOriginalEntryOnEverySplitDerivedRow() {
         var result = extractor.extract(page(true, row("to carry/take", "", "ịbùlù")));
 

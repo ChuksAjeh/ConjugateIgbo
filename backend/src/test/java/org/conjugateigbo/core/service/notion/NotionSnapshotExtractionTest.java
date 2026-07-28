@@ -150,6 +150,14 @@ class NotionSnapshotExtractionTest {
     }
 
     @Test
+    void dropsTheBareModalWhenSplittingToBeAbleToCan() {
+        // "to be able to/can" must not coin the ungrammatical "to be can".
+        assertThat(find("ịnwe ike", "to be able to")).isPresent();
+        assertThat(candidates).extracting(VerbCandidate::english)
+                .doesNotContain("to be can");
+    }
+
+    @Test
     void normalisesCasingSoTheSameVerbIsNotStoredTwice() {
         // The page writes both "To Finish"/"Iagwu" and lower-case variants.
         assertThat(candidates).extracting(VerbCandidate::igbo)
