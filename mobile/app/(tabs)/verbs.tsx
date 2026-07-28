@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import * as Sentry from '@sentry/react-native';
 import {
   View,
@@ -29,12 +29,8 @@ import { useTheme } from '@/components/ThemeProvider';
 import { getConjugatedForm } from '@/lib/conjugateVerbs';
 import { useSettings } from '@/hooks/useSettings';
 import { usePurchases } from '@/hooks/usePurchases';
-import {
-  pronounLabels,
-  pronouns,
-  tenseLabels,
-  tenseAnnotations,
-} from '@/models/interfaces';
+import { pronouns, tenseLabels } from '@/models/interfaces';
+import { getPronounLabels, getRuleExplanation, getTenseAnnotations } from '@/lib/grammarRules';
 import { WavePattern } from '@/components/SplashScreen';
 
 export default function VerbsScreen() {
@@ -393,129 +389,21 @@ const VerbDetailContent = ({
     setExpandedConjugation((prev) => (prev === id ? null : id));
   };
 
-  const getRuleData = (tense: Tense): { source: string; parts: string[]; text: string } => {
-    // Mirrors lib/conjugateVerbs.ts. Keep surface particles aligned with the
-    // active dialect profile so the worked example matches the output cell.
-    const igbo = typeof verb.igbo === 'string' ? verb.igbo : '';
-    const stem =
-      igbo.startsWith('i') || igbo.startsWith('ị') ? igbo.substring(1) : igbo;
-    const isHeavy = /[aọụịỌỤỊ]/.test(stem);
-    const vowelPrefix = isHeavy ? 'a' : 'e';
-    // Negative past (Notion Rule 5) uses the accented '-ná/né' suffix,
-    // while the negative imperative (Imperatives page, Rule 2) uses the
-    // unaccented '-na/ne'. The engine currently outputs unaccented for
-    // both — flagged as a known divergence from the Notion grammar.
-    const negPastSuffix = isHeavy ? 'ná' : 'né';
-    const negImpSuffix = isHeavy ? 'na' : 'ne';
-    const source = igbo;
-
-    const imperativeExceptions = new Set(['bia', 'je', 'nodu']);
-    const lastChar = stem.length ? stem[stem.length - 1] : '';
-    const imperativeForm = imperativeExceptions.has(stem)
-      ? stem
-      : stem + ('aịọụ'.includes(lastChar) ? 'a' : 'e');
-
-    switch (tense) {
-      case 'present':
-        return {
-          source,
-          parts: ['na', `${vowelPrefix}${stem}`],
-          text: `Remove the 'i' prefix and add the vowel-harmony prefix '${vowelPrefix}'. Pronoun + na + ${vowelPrefix}${stem}.`,
-        };
-      case 'past':
-        return {
-          source,
-          parts: [stem],
-          text: `Remove the 'i' prefix to form the past stem. Pronoun + ${stem}.`,
-        };
-      case 'future':
-        return {
-          source,
-          parts: ['ga', `${vowelPrefix}${stem}`],
-          text: `Same stem as present, with the 'ga' auxiliary. Pronoun + ga + ${vowelPrefix}${stem}.`,
-        };
-      case 'imperative':
-        return {
-          source,
-          parts: [imperativeForm],
-          text: imperativeExceptions.has(stem)
-            ? `${stem} is an imperative exception — the bare stem is used.`
-            : `Append '${isHeavy ? 'a' : 'e'}' to the stem by vowel harmony.`,
-        };
-      case 'presentPerfect':
-        return {
-          source,
-          parts: [`${vowelPrefix}${stem}`, 'ga'],
-          text: `Plural subjects: vowel-harmony prefix + stem + '-ga'. Singular pronouns (m/i/o) drop the suffix.`,
-        };
-      case 'habitualPresent':
-        return {
-          source,
-          parts: ['na', `${vowelPrefix}${stem}`, 'kari'],
-          text: `Present frame with the habitual suffix '-kari'. Pronoun + na + ${vowelPrefix}${stem}kari.`,
-        };
-      case 'negativePast':
-        return {
-          source,
-          parts: [stem, negPastSuffix],
-          text: `Stem + '-${negPastSuffix}' (vowel harmony). Plural subjects also insert the '${vowelPrefix}' linker.`,
-        };
-      case 'negativeFuture':
-        return {
-          source,
-          parts: ['ma', stem],
-          text: `Replace 'ga' with 'ma' and drop the harmony prefix. Pronoun + ma + ${stem}.`,
-        };
-      case 'negativeImperative':
-        return {
-          source,
-          parts: [`${vowelPrefix}${stem}`, negImpSuffix],
-          text: `Vowel-harmony prefix + stem + '-${negImpSuffix}'. Pronoun prepended (e.g. "Anyi ${vowelPrefix}${stem}${negImpSuffix}").`,
-        };
-      case 'negativePerfect':
-        return {
-          source,
-          parts: ['dika', `${vowelPrefix}${stem}`],
-          text: `Pronoun + dika + ${vowelPrefix}${stem}. Plural subjects prefix 'dika' with the harmony vowel.`,
-        };
-      case 'neverPerfect':
-        return {
-          source,
-          parts: [stem, 'nene'],
-          text: `Stem + '-nene'. The suffix does not take a verb-prefix linker on its own — only when combined with a tense that requires one.`,
-        };
-      case 'finished':
-        return {
-          source,
-          parts: [stem, 'si'],
-          text: `Derivational suffix for a completed action. Shown here in the present-perfect frame: plural subjects add '-ga'; singular pronouns use the bare derived stem.`,
-        };
-      case 'together':
-        return {
-          source,
-          parts: [stem, 'kota'],
-          text: `Derivational suffix meaning "together". Shown in the future frame (Pronoun + ga + ${vowelPrefix}${stem}kota).`,
-        };
-      case 'first':
-        return {
-          source,
-          parts: [stem, 'gode'],
-          text: `Derivational suffix meaning "do X first of all". Imperative only: 2sg / 1pl / 2pl carry forms.`,
-        };
-      case 'polite':
-        return {
-          source,
-          parts: [stem, 'nụ́'],
-          text: `Polite intensifier ("please"). Imperative-form base + '-nụ́'. Only 2sg / 1pl / 2pl carry forms.`,
-        };
-      default:
-        return {
-          source,
-          parts: [stem],
-          text: 'Follows the standard conjugation rule for this tense.',
-        };
-    }
-  };
+  // Rule explanations are derived from the active dialect profile and the
+  // shared morphology helpers (lib/grammarRules.ts), so an explanation can
+  // never describe a different form from the one rendered above it.
+  const pronounLabels = useMemo(
+    () => getPronounLabels(settings.dialect),
+    [settings.dialect],
+  );
+  const tenseAnnotations = useMemo(
+    () => getTenseAnnotations(settings.dialect),
+    [settings.dialect],
+  );
+  const getRuleData = useCallback(
+    (tense: Tense) => getRuleExplanation(verb, tense, settings.dialect),
+    [verb, settings.dialect],
+  );
 
   const isVerbEnabled = true; // Placeholder for enabled state
 

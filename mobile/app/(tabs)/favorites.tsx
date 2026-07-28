@@ -28,12 +28,8 @@ import { getConjugatedForm } from '@/lib/conjugateVerbs';
 import { useSettings } from '@/hooks/useSettings';
 import { usePurchases } from '@/hooks/usePurchases';
 import { useFavorites } from '@/hooks/useFavorites';
-import {
-  pronounLabels,
-  pronouns,
-  tenseLabels,
-  tenseAnnotations,
-} from '@/models/interfaces';
+import { pronouns, tenseLabels } from '@/models/interfaces';
+import { getPronounLabels, getTenseAnnotations } from '@/lib/grammarRules';
 
 export default function FavoritesScreen() {
   const { theme, isDark } = useTheme();
@@ -237,6 +233,17 @@ const VerbDetailContent = ({
   });
   const [expandedConjugation, setExpandedConjugation] = useState<string | null>(
     null,
+  );
+
+  // Pronoun spellings and particle annotations follow the active dialect, so
+  // switching dialect in Settings updates the labels as well as the forms.
+  const pronounLabels = useMemo(
+    () => getPronounLabels(settings.dialect),
+    [settings.dialect],
+  );
+  const tenseAnnotations = useMemo(
+    () => getTenseAnnotations(settings.dialect),
+    [settings.dialect],
   );
 
   const availableTensesInTab = useMemo(() => {

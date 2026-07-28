@@ -3,7 +3,10 @@ package org.conjugateigbo.core.controller;
 import lombok.RequiredArgsConstructor;
 import org.conjugateigbo.core.model.dto.VerbDTO;
 import org.conjugateigbo.core.model.enums.Dialect;
-import org.conjugateigbo.core.service.VerbServiceImpl;
+import org.conjugateigbo.core.model.dto.ImportResult;
+import org.conjugateigbo.core.service.VerbService;
+import org.conjugateigbo.core.service.notion.LegacyVerbReconciliationService;
+import org.conjugateigbo.core.service.notion.NotionVerbImportService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.io.IOException;
 import java.net.URI;
 import java.time.Duration;
 import java.util.List;
@@ -27,17 +31,18 @@ import java.util.Map;
  * <pre>{@code /api}</pre>
  *
  * <h2>Supported dialect slugs</h2>
- * <ul>
- *   <li>{@code delta-igbo} / {@code delta_igbo} / {@code deltaigbo}</li>
- *   <li>{@code central-igbo} / {@code central_igbo} / {@code centraligbo}</li>
- * </ul>
+ * <p>Every slug declared on {@link Dialect}, matched case-insensitively with
+ * hyphens, underscores or neither — currently {@code delta-igbo} and
+ * {@code central-igbo}.
  */
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
 class VerbController {
 
-    private final VerbServiceImpl service;
+    private final VerbService service;
+    private final NotionVerbImportService notionImportService;
+    private final LegacyVerbReconciliationService reconciliationService;
 
     /**
      * Returns a paginated, optionally filtered verb list for the given dialect.
@@ -120,17 +125,88 @@ class VerbController {
     }
 
     /**
+     * Ingests the verbs recorded on the configured Notion pages into the
+     * dialect's verb table.
+     *
+     * <p>Re-runnable: entries already present are skipped, and dual-meaning
+     * entries are split into one row per (form, sense) pair. Currently only
+     * {@code delta-igbo} has Notion source data.
+     *
+     * @param dialect dialect slug — must be {@code delta-igbo}.
+     * @param dryRun  when {@code true} (the default), the pipeline reports what
+     *                it would write without touching the database. Pass
+     *                {@code false} to commit the import.
+     * @return a summary map with keys {@code dialect}, {@code dryRun},
+     *         {@code totalRows}, {@code inserted} and {@code skipped}.
+     * @throws IOException if a Notion page cannot be read.
+     */
+    @PostMapping("/{dialect}/verbs/import/notion")
+    Map<String, Object> importFromNotion(@PathVariable String dialect,
+                                         @RequestParam(defaultValue = "true") boolean dryRun)
+            throws IOException {
+        Dialect resolved = dialectEnum(dialect);
+        ImportResult result;
+        try {
+            result = notionImportService.importVerbs(resolved, dryRun);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+        return Map.of(
+                "dialect",   resolved.slug(),
+                "dryRun",    dryRun,
+                "totalRows", result.totalRows(),
+                "inserted",  result.inserted(),
+                "skipped",   result.skipped()
+        );
+    }
+
+    /**
+     * Splits legacy "combined" rows — verbs entered before the pipeline that
+     * pack several senses or spellings into one row — into one row per
+     * (form, sense), then deletes the combined originals.
+     *
+     * <p>Idempotent and safe to run after {@code import/notion}: a sense the
+     * pipeline already stored is de-duplicated rather than doubled, and rows
+     * whose only slash sits inside brackets are left untouched.
+     *
+     * @param dialect dialect slug — must be {@code delta-igbo}.
+     * @param dryRun  when {@code true} (the default), reports what it would
+     *                change without writing. Pass {@code false} to apply.
+     * @return a summary map with keys {@code dialect}, {@code dryRun},
+     *         {@code combinedRows} (legacy rows found), {@code inserted} (split
+     *         senses written) and {@code skipped} (senses already present).
+     */
+    @PostMapping("/{dialect}/verbs/reconcile-legacy")
+    Map<String, Object> reconcileLegacy(@PathVariable String dialect,
+                                        @RequestParam(defaultValue = "true") boolean dryRun) {
+        Dialect resolved = dialectEnum(dialect);
+        ImportResult result;
+        try {
+            result = reconciliationService.reconcile(resolved, dryRun);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+        return Map.of(
+                "dialect",      resolved.slug(),
+                "dryRun",       dryRun,
+                "combinedRows", result.totalRows(),
+                "inserted",     result.inserted(),
+                "skipped",      result.skipped()
+        );
+    }
+
+    /**
      * Resolves a dialect path-variable string to the corresponding {@link Dialect} enum constant.
+     *
+     * <p>Slug matching lives on the enum itself, so adding a dialect needs no
+     * change here.
      *
      * @param s the raw path-variable value (case-insensitive; hyphens/underscores tolerated).
      * @return the matching {@link Dialect}.
      * @throws ResponseStatusException with HTTP 404 if no matching dialect exists.
      */
     private Dialect dialectEnum(String s) {
-        return switch (s.toLowerCase()) {
-            case "delta-igbo", "delta_igbo", "deltaigbo" -> Dialect.DELTA_IGBO;
-            case "central-igbo", "central_igbo", "centraligbo" -> Dialect.CENTRAL_IGBO;
-            default -> throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Unknown dialect");
-        };
+        return Dialect.fromSlug(s).orElseThrow(() ->
+                new ResponseStatusException(HttpStatus.NOT_FOUND, "Unknown dialect: " + s));
     }
 }

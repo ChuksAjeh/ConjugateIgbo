@@ -16,7 +16,8 @@ import { useTheme } from '@/components/ThemeProvider';
 import { createStyles } from '@/styles/settingsStyles';
 import { WavePattern } from '@/components/SplashScreen';
 import { Pronoun } from '@/models/verb';
-import { pronounLabels, pronouns } from '@/models/interfaces';
+import { pronouns } from '@/models/interfaces';
+import { getPronounLabels } from '@/lib/grammarRules';
 
 export default function VerbFiltersScreen() {
   const router = useRouter();
@@ -25,6 +26,11 @@ export default function VerbFiltersScreen() {
   const { isProUser } = usePurchases();
   const { theme, isDark } = useTheme();
   const styles = createStyles(theme, isDark);
+  // Pronoun spellings follow the active dialect (Delta "Wa" vs Central "Ha").
+  const pronounLabels = React.useMemo(
+    () => getPronounLabels(settings.dialect),
+    [settings.dialect],
+  );
 
   const verbLimitOptions: (100 | 250 | 500 | 1000)[] = [100, 250, 500, 1000];
 

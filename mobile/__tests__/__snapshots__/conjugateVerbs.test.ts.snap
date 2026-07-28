@@ -2,6 +2,14 @@
 
 exports[`generateConjugations — Central dialect ibia (ibia) 1`] = `
 {
+  "benefactive": {
+    "anyi": "Anyị biaye",
+    "i": "Ị biaye",
+    "m": "—",
+    "o": "—",
+    "unu": "Ụnụ biaye",
+    "wa": "—",
+  },
   "finished": {
     "anyi": "Anyị abiasiga",
     "i": "Ị biasi",
@@ -11,11 +19,11 @@ exports[`generateConjugations — Central dialect ibia (ibia) 1`] = `
     "wa": "Ha abiasiga",
   },
   "first": {
-    "anyi": "biagode",
-    "i": "biagode",
+    "anyi": "Anyị biagode",
+    "i": "Ị biagode",
     "m": "—",
     "o": "—",
-    "unu": "biagode",
+    "unu": "Ụnụ biagode",
     "wa": "—",
   },
   "future": {
@@ -59,12 +67,12 @@ exports[`generateConjugations — Central dialect ibia (ibia) 1`] = `
     "wa": "Ha abiana",
   },
   "negativePast": {
-    "anyi": "Anyị a biana",
-    "i": "Ị biana",
-    "m": "A biana m",
-    "o": "Ọ biana",
-    "unu": "Ụnụ a biana",
-    "wa": "Ha a biana",
+    "anyi": "Anyị a bianá",
+    "i": "Ị bianá",
+    "m": "A bianá m",
+    "o": "Ọ bianá",
+    "unu": "Ụnụ a bianá",
+    "wa": "Ha a bianá",
   },
   "negativePerfect": {
     "anyi": "Anyị adị́ká abia",
@@ -91,11 +99,11 @@ exports[`generateConjugations — Central dialect ibia (ibia) 1`] = `
     "wa": "Ha bia",
   },
   "polite": {
-    "anyi": "bianụ́",
-    "i": "bianụ́",
+    "anyi": "Anyị bianụ́",
+    "i": "Ị bianụ́",
     "m": "—",
     "o": "—",
-    "unu": "bianụ́",
+    "unu": "Ụnụ bianụ́",
     "wa": "—",
   },
   "present": {
@@ -127,6 +135,14 @@ exports[`generateConjugations — Central dialect ibia (ibia) 1`] = `
 
 exports[`generateConjugations — Central dialect ide (ide) 1`] = `
 {
+  "benefactive": {
+    "anyi": "Anyị deye",
+    "i": "Ị deye",
+    "m": "—",
+    "o": "—",
+    "unu": "Ụnụ deye",
+    "wa": "—",
+  },
   "finished": {
     "anyi": "Anyị edesiga",
     "i": "Ị desi",
@@ -136,11 +152,11 @@ exports[`generateConjugations — Central dialect ide (ide) 1`] = `
     "wa": "Ha edesiga",
   },
   "first": {
-    "anyi": "deegode",
-    "i": "deegode",
+    "anyi": "Anyị degode",
+    "i": "Ị degode",
     "m": "—",
     "o": "—",
-    "unu": "deegode",
+    "unu": "Ụnụ degode",
     "wa": "—",
   },
   "future": {
@@ -184,12 +200,12 @@ exports[`generateConjugations — Central dialect ide (ide) 1`] = `
     "wa": "Ha edene",
   },
   "negativePast": {
-    "anyi": "Anyị e dene",
-    "i": "Ị dene",
-    "m": "E dene m",
-    "o": "Ọ dene",
-    "unu": "Ụnụ e dene",
-    "wa": "Ha e dene",
+    "anyi": "Anyị e dené",
+    "i": "Ị dené",
+    "m": "E dené m",
+    "o": "Ọ dené",
+    "unu": "Ụnụ e dené",
+    "wa": "Ha e dené",
   },
   "negativePerfect": {
     "anyi": "Anyị edị́ká ede",
@@ -216,11 +232,11 @@ exports[`generateConjugations — Central dialect ide (ide) 1`] = `
     "wa": "Ha de",
   },
   "polite": {
-    "anyi": "deenụ́",
-    "i": "deenụ́",
+    "anyi": "Anyị denụ́",
+    "i": "Ị denụ́",
     "m": "—",
     "o": "—",
-    "unu": "deenụ́",
+    "unu": "Ụnụ denụ́",
     "wa": "—",
   },
   "present": {
@@ -252,20 +268,28 @@ exports[`generateConjugations — Central dialect ide (ide) 1`] = `
 
 exports[`generateConjugations — Central dialect igbaOso (igba ọsọ) 1`] = `
 {
-  "finished": {
-    "anyi": "Anyị agba ọsọsiga",
-    "i": "Ị gba ọsọsi",
-    "m": "A gba ọsọsi m",
-    "o": "Ọ gba ọsọsi",
-    "unu": "Ụnụ agba ọsọsiga",
-    "wa": "Ha agba ọsọsiga",
-  },
-  "first": {
-    "anyi": "gba ọsọagode",
-    "i": "gba ọsọagode",
+  "benefactive": {
+    "anyi": "Anyị gbaye ọsọ",
+    "i": "Ị gbaye ọsọ",
     "m": "—",
     "o": "—",
-    "unu": "gba ọsọagode",
+    "unu": "Ụnụ gbaye ọsọ",
+    "wa": "—",
+  },
+  "finished": {
+    "anyi": "Anyị agbasiga ọsọ",
+    "i": "Ị gbasi ọsọ",
+    "m": "A gbasi m ọsọ",
+    "o": "Ọ gbasi ọsọ",
+    "unu": "Ụnụ agbasiga ọsọ",
+    "wa": "Ha agbasiga ọsọ",
+  },
+  "first": {
+    "anyi": "Anyị gbagode ọsọ",
+    "i": "Ị gbagode ọsọ",
+    "m": "—",
+    "o": "—",
+    "unu": "Ụnụ gbagode ọsọ",
     "wa": "—",
   },
   "future": {
@@ -277,20 +301,20 @@ exports[`generateConjugations — Central dialect igbaOso (igba ọsọ) 1`] = `
     "wa": "Ha ga agba ọsọ",
   },
   "habitualPresent": {
-    "anyi": "Anyị na agba ọsọkari",
-    "i": "Ị na agba ọsọkari",
-    "m": "A na m agba ọsọkari",
-    "o": "Ọ na agba ọsọkari",
-    "unu": "Ụnụ na agba ọsọkari",
-    "wa": "Ha na agba ọsọkari",
+    "anyi": "Anyị na agbakari ọsọ",
+    "i": "Ị na agbakari ọsọ",
+    "m": "A na m agbakari ọsọ",
+    "o": "Ọ na agbakari ọsọ",
+    "unu": "Ụnụ na agbakari ọsọ",
+    "wa": "Ha na agbakari ọsọ",
   },
   "imperative": {
-    "anyi": "Anyị gba ọsọa",
-    "i": "Ị gba ọsọa",
-    "m": "M gba ọsọa",
-    "o": "Ọ gba ọsọa",
-    "unu": "Ụnụ gba ọsọa",
-    "wa": "Ha gba ọsọa",
+    "anyi": "Anyị gbaa ọsọ",
+    "i": "Ị gbaa ọsọ",
+    "m": "M gbaa ọsọ",
+    "o": "Ọ gbaa ọsọ",
+    "unu": "Ụnụ gbaa ọsọ",
+    "wa": "Ha gbaa ọsọ",
   },
   "negativeFuture": {
     "anyi": "Anyị ma gba ọsọ",
@@ -301,20 +325,20 @@ exports[`generateConjugations — Central dialect igbaOso (igba ọsọ) 1`] = `
     "wa": "Ha ma gba ọsọ",
   },
   "negativeImperative": {
-    "anyi": "Anyị agba ọsọna",
-    "i": "Ị agba ọsọna",
-    "m": "M agba ọsọna",
-    "o": "Ọ agba ọsọna",
-    "unu": "Ụnụ agba ọsọna",
-    "wa": "Ha agba ọsọna",
+    "anyi": "Anyị agbana ọsọ",
+    "i": "Ị agbana ọsọ",
+    "m": "M agbana ọsọ",
+    "o": "Ọ agbana ọsọ",
+    "unu": "Ụnụ agbana ọsọ",
+    "wa": "Ha agbana ọsọ",
   },
   "negativePast": {
-    "anyi": "Anyị a gba ọsọna",
-    "i": "Ị gba ọsọna",
-    "m": "A gba ọsọna m",
-    "o": "Ọ gba ọsọna",
-    "unu": "Ụnụ a gba ọsọna",
-    "wa": "Ha a gba ọsọna",
+    "anyi": "Anyị a gbaná ọsọ",
+    "i": "Ị gbaná ọsọ",
+    "m": "A gbaná m ọsọ",
+    "o": "Ọ gbaná ọsọ",
+    "unu": "Ụnụ a gbaná ọsọ",
+    "wa": "Ha a gbaná ọsọ",
   },
   "negativePerfect": {
     "anyi": "Anyị adị́ká agba ọsọ",
@@ -325,27 +349,27 @@ exports[`generateConjugations — Central dialect igbaOso (igba ọsọ) 1`] = `
     "wa": "Ha adị́ká agba ọsọ",
   },
   "neverPerfect": {
-    "anyi": "Anyị gba ọsọnene",
-    "i": "Ị gba ọsọnene",
-    "m": "A gba ọsọnene m",
-    "o": "Ọ gba ọsọnene",
-    "unu": "Ụnụ gba ọsọnene",
-    "wa": "Ha gba ọsọnene",
+    "anyi": "Anyị gbanene ọsọ",
+    "i": "Ị gbanene ọsọ",
+    "m": "A gbanene m ọsọ",
+    "o": "Ọ gbanene ọsọ",
+    "unu": "Ụnụ gbanene ọsọ",
+    "wa": "Ha gbanene ọsọ",
   },
   "past": {
     "anyi": "Anyị gba ọsọ",
     "i": "Ị gba ọsọ",
-    "m": "A gba ọsọ m",
+    "m": "A gba m ọsọ",
     "o": "Ọ gba ọsọ",
     "unu": "Ụnụ gba ọsọ",
     "wa": "Ha gba ọsọ",
   },
   "polite": {
-    "anyi": "gba ọsọanụ́",
-    "i": "gba ọsọanụ́",
+    "anyi": "Anyị gbanụ́ ọsọ",
+    "i": "Ị gbanụ́ ọsọ",
     "m": "—",
     "o": "—",
-    "unu": "gba ọsọanụ́",
+    "unu": "Ụnụ gbanụ́ ọsọ",
     "wa": "—",
   },
   "present": {
@@ -357,26 +381,34 @@ exports[`generateConjugations — Central dialect igbaOso (igba ọsọ) 1`] = `
     "wa": "Ha na agba ọsọ",
   },
   "presentPerfect": {
-    "anyi": "Anyị agba ọsọga",
+    "anyi": "Anyị agbaga ọsọ",
     "i": "Ị gba ọsọ",
-    "m": "A gba ọsọ m",
+    "m": "A gba m ọsọ",
     "o": "Ọ gba ọsọ",
-    "unu": "Ụnụ agba ọsọga",
-    "wa": "Ha agba ọsọga",
+    "unu": "Ụnụ agbaga ọsọ",
+    "wa": "Ha agbaga ọsọ",
   },
   "together": {
-    "anyi": "Anyị ga agba ọsọkota",
-    "i": "Ị ga agba ọsọkota",
-    "m": "M ga agba ọsọkota",
-    "o": "Ọ ga agba ọsọkota",
-    "unu": "Ụnụ ga agba ọsọkota",
-    "wa": "Ha ga agba ọsọkota",
+    "anyi": "Anyị ga agbakota ọsọ",
+    "i": "Ị ga agbakota ọsọ",
+    "m": "M ga agbakota ọsọ",
+    "o": "Ọ ga agbakota ọsọ",
+    "unu": "Ụnụ ga agbakota ọsọ",
+    "wa": "Ha ga agbakota ọsọ",
   },
 }
 `;
 
 exports[`generateConjugations — Central dialect ikwu (ikwu) 1`] = `
 {
+  "benefactive": {
+    "anyi": "Anyị kwuye",
+    "i": "Ị kwuye",
+    "m": "—",
+    "o": "—",
+    "unu": "Ụnụ kwuye",
+    "wa": "—",
+  },
   "finished": {
     "anyi": "Anyị ekwusiga",
     "i": "Ị kwusi",
@@ -386,11 +418,11 @@ exports[`generateConjugations — Central dialect ikwu (ikwu) 1`] = `
     "wa": "Ha ekwusiga",
   },
   "first": {
-    "anyi": "kwuegode",
-    "i": "kwuegode",
+    "anyi": "Anyị kwugode",
+    "i": "Ị kwugode",
     "m": "—",
     "o": "—",
-    "unu": "kwuegode",
+    "unu": "Ụnụ kwugode",
     "wa": "—",
   },
   "future": {
@@ -434,12 +466,12 @@ exports[`generateConjugations — Central dialect ikwu (ikwu) 1`] = `
     "wa": "Ha ekwune",
   },
   "negativePast": {
-    "anyi": "Anyị e kwune",
-    "i": "Ị kwune",
-    "m": "E kwune m",
-    "o": "Ọ kwune",
-    "unu": "Ụnụ e kwune",
-    "wa": "Ha e kwune",
+    "anyi": "Anyị e kwuné",
+    "i": "Ị kwuné",
+    "m": "E kwuné m",
+    "o": "Ọ kwuné",
+    "unu": "Ụnụ e kwuné",
+    "wa": "Ha e kwuné",
   },
   "negativePerfect": {
     "anyi": "Anyị edị́ká ekwu",
@@ -466,11 +498,11 @@ exports[`generateConjugations — Central dialect ikwu (ikwu) 1`] = `
     "wa": "Ha kwu",
   },
   "polite": {
-    "anyi": "kwuenụ́",
-    "i": "kwuenụ́",
+    "anyi": "Anyị kwunụ́",
+    "i": "Ị kwunụ́",
     "m": "—",
     "o": "—",
-    "unu": "kwuenụ́",
+    "unu": "Ụnụ kwunụ́",
     "wa": "—",
   },
   "present": {
@@ -502,6 +534,14 @@ exports[`generateConjugations — Central dialect ikwu (ikwu) 1`] = `
 
 exports[`generateConjugations — Central dialect iri (irị) 1`] = `
 {
+  "benefactive": {
+    "anyi": "Anyị rịye",
+    "i": "Ị rịye",
+    "m": "—",
+    "o": "—",
+    "unu": "Ụnụ rịye",
+    "wa": "—",
+  },
   "finished": {
     "anyi": "Anyị arịsiga",
     "i": "Ị rịsi",
@@ -511,11 +551,11 @@ exports[`generateConjugations — Central dialect iri (irị) 1`] = `
     "wa": "Ha arịsiga",
   },
   "first": {
-    "anyi": "rịagode",
-    "i": "rịagode",
+    "anyi": "Anyị rịgode",
+    "i": "Ị rịgode",
     "m": "—",
     "o": "—",
-    "unu": "rịagode",
+    "unu": "Ụnụ rịgode",
     "wa": "—",
   },
   "future": {
@@ -559,12 +599,12 @@ exports[`generateConjugations — Central dialect iri (irị) 1`] = `
     "wa": "Ha arịna",
   },
   "negativePast": {
-    "anyi": "Anyị a rịna",
-    "i": "Ị rịna",
-    "m": "A rịna m",
-    "o": "Ọ rịna",
-    "unu": "Ụnụ a rịna",
-    "wa": "Ha a rịna",
+    "anyi": "Anyị a rịná",
+    "i": "Ị rịná",
+    "m": "A rịná m",
+    "o": "Ọ rịná",
+    "unu": "Ụnụ a rịná",
+    "wa": "Ha a rịná",
   },
   "negativePerfect": {
     "anyi": "Anyị adị́ká arị",
@@ -591,11 +631,11 @@ exports[`generateConjugations — Central dialect iri (irị) 1`] = `
     "wa": "Ha rị",
   },
   "polite": {
-    "anyi": "rịanụ́",
-    "i": "rịanụ́",
+    "anyi": "Anyị rịnụ́",
+    "i": "Ị rịnụ́",
     "m": "—",
     "o": "—",
-    "unu": "rịanụ́",
+    "unu": "Ụnụ rịnụ́",
     "wa": "—",
   },
   "present": {
@@ -627,6 +667,14 @@ exports[`generateConjugations — Central dialect iri (irị) 1`] = `
 
 exports[`generateConjugations — Delta dialect ibia (ibia) 1`] = `
 {
+  "benefactive": {
+    "anyi": "Anyi biaye",
+    "i": "I biaye",
+    "m": "—",
+    "o": "—",
+    "unu": "Unu biaye",
+    "wa": "—",
+  },
   "finished": {
     "anyi": "Anyi abiasiga",
     "i": "I biasi",
@@ -636,11 +684,11 @@ exports[`generateConjugations — Delta dialect ibia (ibia) 1`] = `
     "wa": "Wa abiasiga",
   },
   "first": {
-    "anyi": "biagode",
-    "i": "biagode",
+    "anyi": "Anyi biagode",
+    "i": "I biagode",
     "m": "—",
     "o": "—",
-    "unu": "biagode",
+    "unu": "Unu biagode",
     "wa": "—",
   },
   "future": {
@@ -684,12 +732,12 @@ exports[`generateConjugations — Delta dialect ibia (ibia) 1`] = `
     "wa": "Wa abiana",
   },
   "negativePast": {
-    "anyi": "Anyi a biana",
-    "i": "I biana",
-    "m": "A biana m",
-    "o": "O biana",
-    "unu": "Unu a biana",
-    "wa": "Wa a biana",
+    "anyi": "Anyi a bianá",
+    "i": "I bianá",
+    "m": "A bianá m",
+    "o": "O bianá",
+    "unu": "Unu a bianá",
+    "wa": "Wa a bianá",
   },
   "negativePerfect": {
     "anyi": "Anyi adika abia",
@@ -716,11 +764,11 @@ exports[`generateConjugations — Delta dialect ibia (ibia) 1`] = `
     "wa": "Wa bia",
   },
   "polite": {
-    "anyi": "bianụ́",
-    "i": "bianụ́",
+    "anyi": "Anyi bianụ́",
+    "i": "I bianụ́",
     "m": "—",
     "o": "—",
-    "unu": "bianụ́",
+    "unu": "Unu bianụ́",
     "wa": "—",
   },
   "present": {
@@ -752,6 +800,14 @@ exports[`generateConjugations — Delta dialect ibia (ibia) 1`] = `
 
 exports[`generateConjugations — Delta dialect ide (ide) 1`] = `
 {
+  "benefactive": {
+    "anyi": "Anyi deye",
+    "i": "I deye",
+    "m": "—",
+    "o": "—",
+    "unu": "Unu deye",
+    "wa": "—",
+  },
   "finished": {
     "anyi": "Anyi edesiga",
     "i": "I desi",
@@ -761,11 +817,11 @@ exports[`generateConjugations — Delta dialect ide (ide) 1`] = `
     "wa": "Wa edesiga",
   },
   "first": {
-    "anyi": "deegode",
-    "i": "deegode",
+    "anyi": "Anyi degode",
+    "i": "I degode",
     "m": "—",
     "o": "—",
-    "unu": "deegode",
+    "unu": "Unu degode",
     "wa": "—",
   },
   "future": {
@@ -809,12 +865,12 @@ exports[`generateConjugations — Delta dialect ide (ide) 1`] = `
     "wa": "Wa edene",
   },
   "negativePast": {
-    "anyi": "Anyi e dene",
-    "i": "I dene",
-    "m": "E dene m",
-    "o": "O dene",
-    "unu": "Unu e dene",
-    "wa": "Wa e dene",
+    "anyi": "Anyi e dené",
+    "i": "I dené",
+    "m": "E dené m",
+    "o": "O dené",
+    "unu": "Unu e dené",
+    "wa": "Wa e dené",
   },
   "negativePerfect": {
     "anyi": "Anyi edika ede",
@@ -841,11 +897,11 @@ exports[`generateConjugations — Delta dialect ide (ide) 1`] = `
     "wa": "Wa de",
   },
   "polite": {
-    "anyi": "deenụ́",
-    "i": "deenụ́",
+    "anyi": "Anyi denụ́",
+    "i": "I denụ́",
     "m": "—",
     "o": "—",
-    "unu": "deenụ́",
+    "unu": "Unu denụ́",
     "wa": "—",
   },
   "present": {
@@ -877,20 +933,28 @@ exports[`generateConjugations — Delta dialect ide (ide) 1`] = `
 
 exports[`generateConjugations — Delta dialect igbaOso (igba ọsọ) 1`] = `
 {
-  "finished": {
-    "anyi": "Anyi agba ọsọsiga",
-    "i": "I gba ọsọsi",
-    "m": "A gba ọsọsi m",
-    "o": "O gba ọsọsi",
-    "unu": "Unu agba ọsọsiga",
-    "wa": "Wa agba ọsọsiga",
-  },
-  "first": {
-    "anyi": "gba ọsọagode",
-    "i": "gba ọsọagode",
+  "benefactive": {
+    "anyi": "Anyi gbaye ọsọ",
+    "i": "I gbaye ọsọ",
     "m": "—",
     "o": "—",
-    "unu": "gba ọsọagode",
+    "unu": "Unu gbaye ọsọ",
+    "wa": "—",
+  },
+  "finished": {
+    "anyi": "Anyi agbasiga ọsọ",
+    "i": "I gbasi ọsọ",
+    "m": "A gbasi m ọsọ",
+    "o": "O gbasi ọsọ",
+    "unu": "Unu agbasiga ọsọ",
+    "wa": "Wa agbasiga ọsọ",
+  },
+  "first": {
+    "anyi": "Anyi gbagode ọsọ",
+    "i": "I gbagode ọsọ",
+    "m": "—",
+    "o": "—",
+    "unu": "Unu gbagode ọsọ",
     "wa": "—",
   },
   "future": {
@@ -902,20 +966,20 @@ exports[`generateConjugations — Delta dialect igbaOso (igba ọsọ) 1`] = `
     "wa": "Wa ga agba ọsọ",
   },
   "habitualPresent": {
-    "anyi": "Anyi na agba ọsọkari",
-    "i": "I na agba ọsọkari",
-    "m": "A na m agba ọsọkari",
-    "o": "O na agba ọsọkari",
-    "unu": "Unu na agba ọsọkari",
-    "wa": "Wa na agba ọsọkari",
+    "anyi": "Anyi na agbakari ọsọ",
+    "i": "I na agbakari ọsọ",
+    "m": "A na m agbakari ọsọ",
+    "o": "O na agbakari ọsọ",
+    "unu": "Unu na agbakari ọsọ",
+    "wa": "Wa na agbakari ọsọ",
   },
   "imperative": {
-    "anyi": "Anyi gba ọsọa",
-    "i": "I gba ọsọa",
-    "m": "M gba ọsọa",
-    "o": "O gba ọsọa",
-    "unu": "Unu gba ọsọa",
-    "wa": "Wa gba ọsọa",
+    "anyi": "Anyi gbaa ọsọ",
+    "i": "I gbaa ọsọ",
+    "m": "M gbaa ọsọ",
+    "o": "O gbaa ọsọ",
+    "unu": "Unu gbaa ọsọ",
+    "wa": "Wa gbaa ọsọ",
   },
   "negativeFuture": {
     "anyi": "Anyi ma gba ọsọ",
@@ -926,20 +990,20 @@ exports[`generateConjugations — Delta dialect igbaOso (igba ọsọ) 1`] = `
     "wa": "Wa ma gba ọsọ",
   },
   "negativeImperative": {
-    "anyi": "Anyi agba ọsọna",
-    "i": "I agba ọsọna",
-    "m": "M agba ọsọna",
-    "o": "O agba ọsọna",
-    "unu": "Unu agba ọsọna",
-    "wa": "Wa agba ọsọna",
+    "anyi": "Anyi agbana ọsọ",
+    "i": "I agbana ọsọ",
+    "m": "M agbana ọsọ",
+    "o": "O agbana ọsọ",
+    "unu": "Unu agbana ọsọ",
+    "wa": "Wa agbana ọsọ",
   },
   "negativePast": {
-    "anyi": "Anyi a gba ọsọna",
-    "i": "I gba ọsọna",
-    "m": "A gba ọsọna m",
-    "o": "O gba ọsọna",
-    "unu": "Unu a gba ọsọna",
-    "wa": "Wa a gba ọsọna",
+    "anyi": "Anyi a gbaná ọsọ",
+    "i": "I gbaná ọsọ",
+    "m": "A gbaná m ọsọ",
+    "o": "O gbaná ọsọ",
+    "unu": "Unu a gbaná ọsọ",
+    "wa": "Wa a gbaná ọsọ",
   },
   "negativePerfect": {
     "anyi": "Anyi adika agba ọsọ",
@@ -950,27 +1014,27 @@ exports[`generateConjugations — Delta dialect igbaOso (igba ọsọ) 1`] = `
     "wa": "Wa adika agba ọsọ",
   },
   "neverPerfect": {
-    "anyi": "Anyi gba ọsọnene",
-    "i": "I gba ọsọnene",
-    "m": "A gba ọsọnene m",
-    "o": "O gba ọsọnene",
-    "unu": "Unu gba ọsọnene",
-    "wa": "Wa gba ọsọnene",
+    "anyi": "Anyi gbanene ọsọ",
+    "i": "I gbanene ọsọ",
+    "m": "A gbanene m ọsọ",
+    "o": "O gbanene ọsọ",
+    "unu": "Unu gbanene ọsọ",
+    "wa": "Wa gbanene ọsọ",
   },
   "past": {
     "anyi": "Anyi gba ọsọ",
     "i": "I gba ọsọ",
-    "m": "A gba ọsọ m",
+    "m": "A gba m ọsọ",
     "o": "O gba ọsọ",
     "unu": "Unu gba ọsọ",
     "wa": "Wa gba ọsọ",
   },
   "polite": {
-    "anyi": "gba ọsọanụ́",
-    "i": "gba ọsọanụ́",
+    "anyi": "Anyi gbanụ́ ọsọ",
+    "i": "I gbanụ́ ọsọ",
     "m": "—",
     "o": "—",
-    "unu": "gba ọsọanụ́",
+    "unu": "Unu gbanụ́ ọsọ",
     "wa": "—",
   },
   "present": {
@@ -982,26 +1046,34 @@ exports[`generateConjugations — Delta dialect igbaOso (igba ọsọ) 1`] = `
     "wa": "Wa na agba ọsọ",
   },
   "presentPerfect": {
-    "anyi": "Anyi agba ọsọga",
+    "anyi": "Anyi agbaga ọsọ",
     "i": "I gba ọsọ",
-    "m": "A gba ọsọ m",
+    "m": "A gba m ọsọ",
     "o": "O gba ọsọ",
-    "unu": "Unu agba ọsọga",
-    "wa": "Wa agba ọsọga",
+    "unu": "Unu agbaga ọsọ",
+    "wa": "Wa agbaga ọsọ",
   },
   "together": {
-    "anyi": "Anyi ga agba ọsọkota",
-    "i": "I ga agba ọsọkota",
-    "m": "M ga agba ọsọkota",
-    "o": "O ga agba ọsọkota",
-    "unu": "Unu ga agba ọsọkota",
-    "wa": "Wa ga agba ọsọkota",
+    "anyi": "Anyi ga agbakota ọsọ",
+    "i": "I ga agbakota ọsọ",
+    "m": "M ga agbakota ọsọ",
+    "o": "O ga agbakota ọsọ",
+    "unu": "Unu ga agbakota ọsọ",
+    "wa": "Wa ga agbakota ọsọ",
   },
 }
 `;
 
 exports[`generateConjugations — Delta dialect ikwu (ikwu) 1`] = `
 {
+  "benefactive": {
+    "anyi": "Anyi kwuye",
+    "i": "I kwuye",
+    "m": "—",
+    "o": "—",
+    "unu": "Unu kwuye",
+    "wa": "—",
+  },
   "finished": {
     "anyi": "Anyi ekwusiga",
     "i": "I kwusi",
@@ -1011,11 +1083,11 @@ exports[`generateConjugations — Delta dialect ikwu (ikwu) 1`] = `
     "wa": "Wa ekwusiga",
   },
   "first": {
-    "anyi": "kwuegode",
-    "i": "kwuegode",
+    "anyi": "Anyi kwugode",
+    "i": "I kwugode",
     "m": "—",
     "o": "—",
-    "unu": "kwuegode",
+    "unu": "Unu kwugode",
     "wa": "—",
   },
   "future": {
@@ -1059,12 +1131,12 @@ exports[`generateConjugations — Delta dialect ikwu (ikwu) 1`] = `
     "wa": "Wa ekwune",
   },
   "negativePast": {
-    "anyi": "Anyi e kwune",
-    "i": "I kwune",
-    "m": "E kwune m",
-    "o": "O kwune",
-    "unu": "Unu e kwune",
-    "wa": "Wa e kwune",
+    "anyi": "Anyi e kwuné",
+    "i": "I kwuné",
+    "m": "E kwuné m",
+    "o": "O kwuné",
+    "unu": "Unu e kwuné",
+    "wa": "Wa e kwuné",
   },
   "negativePerfect": {
     "anyi": "Anyi edika ekwu",
@@ -1091,11 +1163,11 @@ exports[`generateConjugations — Delta dialect ikwu (ikwu) 1`] = `
     "wa": "Wa kwu",
   },
   "polite": {
-    "anyi": "kwuenụ́",
-    "i": "kwuenụ́",
+    "anyi": "Anyi kwunụ́",
+    "i": "I kwunụ́",
     "m": "—",
     "o": "—",
-    "unu": "kwuenụ́",
+    "unu": "Unu kwunụ́",
     "wa": "—",
   },
   "present": {
@@ -1127,6 +1199,14 @@ exports[`generateConjugations — Delta dialect ikwu (ikwu) 1`] = `
 
 exports[`generateConjugations — Delta dialect iri (irị) 1`] = `
 {
+  "benefactive": {
+    "anyi": "Anyi rịye",
+    "i": "I rịye",
+    "m": "—",
+    "o": "—",
+    "unu": "Unu rịye",
+    "wa": "—",
+  },
   "finished": {
     "anyi": "Anyi arịsiga",
     "i": "I rịsi",
@@ -1136,11 +1216,11 @@ exports[`generateConjugations — Delta dialect iri (irị) 1`] = `
     "wa": "Wa arịsiga",
   },
   "first": {
-    "anyi": "rịagode",
-    "i": "rịagode",
+    "anyi": "Anyi rịgode",
+    "i": "I rịgode",
     "m": "—",
     "o": "—",
-    "unu": "rịagode",
+    "unu": "Unu rịgode",
     "wa": "—",
   },
   "future": {
@@ -1184,12 +1264,12 @@ exports[`generateConjugations — Delta dialect iri (irị) 1`] = `
     "wa": "Wa arịna",
   },
   "negativePast": {
-    "anyi": "Anyi a rịna",
-    "i": "I rịna",
-    "m": "A rịna m",
-    "o": "O rịna",
-    "unu": "Unu a rịna",
-    "wa": "Wa a rịna",
+    "anyi": "Anyi a rịná",
+    "i": "I rịná",
+    "m": "A rịná m",
+    "o": "O rịná",
+    "unu": "Unu a rịná",
+    "wa": "Wa a rịná",
   },
   "negativePerfect": {
     "anyi": "Anyi adika arị",
@@ -1216,11 +1296,11 @@ exports[`generateConjugations — Delta dialect iri (irị) 1`] = `
     "wa": "Wa rị",
   },
   "polite": {
-    "anyi": "rịanụ́",
-    "i": "rịanụ́",
+    "anyi": "Anyi rịnụ́",
+    "i": "I rịnụ́",
     "m": "—",
     "o": "—",
-    "unu": "rịanụ́",
+    "unu": "Unu rịnụ́",
     "wa": "—",
   },
   "present": {

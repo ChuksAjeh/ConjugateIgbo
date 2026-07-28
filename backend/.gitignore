@@ -37,3 +37,5 @@ build/
 /src/main/resources/*.properties
 
 */.env
+err.log
+reconcile-legacy-oneoff.sql

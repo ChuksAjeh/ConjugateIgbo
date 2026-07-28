@@ -3,6 +3,7 @@ package org.conjugateigbo.core.service;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.conjugateigbo.core.model.dto.ImportResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -92,16 +93,19 @@ public class ExcelVerbImportServiceImpl implements ExcelVerbImportService {
                 if (row == null) continue;
                 String igbo = formatter.formatCellValue(row.getCell(igboCol)).trim();
                 String english = formatter.formatCellValue(row.getCell(englishCol)).trim();
-                if (igbo.isBlank()) continue;
+                // verbs_delta_igbo.english is NOT NULL, so a row with no gloss
+                // would abort the whole batch. It also has nothing to teach —
+                // the app hides verbs without a translation — so skip it.
+                if (igbo.isBlank() || english.isBlank()) continue;
                 total++;
 
                 batch.add(new MapSqlParameterSource()
                         .addValue("igbo", igbo)
-                        .addValue("english", english.isBlank() ? null : english));
+                        .addValue("english", english));
             }
 
             if (batch.isEmpty()) {
-                return new ImportResult(0, 0, 0);
+                return ImportResult.empty();
             }
 
             String sql = "insert into verbs_delta_igbo (igbo, english) values (:igbo, :english) " +
@@ -148,16 +152,5 @@ public class ExcelVerbImportServiceImpl implements ExcelVerbImportService {
             }
         }
         return map;
-    }
-
-    /**
-     * Immutable summary of a single import operation.
-     *
-     * @param totalRows total data rows processed (excluding the header).
-     * @param inserted  rows actually written to the database.
-     * @param skipped   rows that conflicted with an existing {@code igbo} value
-     *                  and were silently ignored.
-     */
-    public record ImportResult(int totalRows, int inserted, int skipped) {
     }
 }

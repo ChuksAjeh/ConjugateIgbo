@@ -35,7 +35,8 @@ import { useFavorites } from '@/hooks/useFavorites';
 import { useTheme } from '@/components/ThemeProvider';
 import { WavePattern } from '@/components/SplashScreen';
 import { useResponsiveLayout } from '@/lib/responsive';
-import { pronounLabels, pronouns, tenses, tenseLabels } from '@/models/interfaces';
+import { pronouns, tenses, tenseLabels } from '@/models/interfaces';
+import { getPronounLabels } from '@/lib/grammarRules';
 
 import * as Sentry from '@sentry/react-native';
 
@@ -64,6 +65,12 @@ export default function PracticeScreen() {
   const actionLabelSize = layout.isLargeScreen ? 24 : isTabletLayout ? 20 : 12;
   const actionBoxRadius = layout.isLargeScreen ? 28 : isTabletLayout ? 24 : 15;
   const cardTopPadding = layout.isLargeScreen ? 96 : isTabletLayout ? 72 : 40;
+
+  // Pronoun spellings follow the active dialect (Delta "Wa" vs Central "Ha").
+  const pronounLabels = useMemo(
+    () => getPronounLabels(settings.dialect),
+    [settings.dialect],
+  );
 
   const availablePronouns: Pronoun[] = useMemo(() => {
     const list = pronouns.filter((p) => settings.enabledPronouns[p]);

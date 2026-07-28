@@ -97,6 +97,7 @@ const defaultSettings: AppSettings = {
     together: false,
     first: false,
     polite: false,
+    benefactive: false,
   },
   verbLimit: 100,
   enabledPronouns: {
