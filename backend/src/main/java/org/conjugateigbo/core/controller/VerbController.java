@@ -5,6 +5,7 @@ import org.conjugateigbo.core.model.dto.VerbDTO;
 import org.conjugateigbo.core.model.enums.Dialect;
 import org.conjugateigbo.core.model.dto.ImportResult;
 import org.conjugateigbo.core.service.VerbService;
+import org.conjugateigbo.core.service.notion.LegacyVerbReconciliationService;
 import org.conjugateigbo.core.service.notion.NotionVerbImportService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -41,6 +42,7 @@ class VerbController {
 
     private final VerbService service;
     private final NotionVerbImportService notionImportService;
+    private final LegacyVerbReconciliationService reconciliationService;
 
     /**
      * Returns a paginated, optionally filtered verb list for the given dialect.
@@ -155,6 +157,41 @@ class VerbController {
                 "totalRows", result.totalRows(),
                 "inserted",  result.inserted(),
                 "skipped",   result.skipped()
+        );
+    }
+
+    /**
+     * Splits legacy "combined" rows — verbs entered before the pipeline that
+     * pack several senses or spellings into one row — into one row per
+     * (form, sense), then deletes the combined originals.
+     *
+     * <p>Idempotent and safe to run after {@code import/notion}: a sense the
+     * pipeline already stored is de-duplicated rather than doubled, and rows
+     * whose only slash sits inside brackets are left untouched.
+     *
+     * @param dialect dialect slug — must be {@code delta-igbo}.
+     * @param dryRun  when {@code true} (the default), reports what it would
+     *                change without writing. Pass {@code false} to apply.
+     * @return a summary map with keys {@code dialect}, {@code dryRun},
+     *         {@code combinedRows} (legacy rows found), {@code inserted} (split
+     *         senses written) and {@code skipped} (senses already present).
+     */
+    @PostMapping("/{dialect}/verbs/reconcile-legacy")
+    Map<String, Object> reconcileLegacy(@PathVariable String dialect,
+                                        @RequestParam(defaultValue = "true") boolean dryRun) {
+        Dialect resolved = dialectEnum(dialect);
+        ImportResult result;
+        try {
+            result = reconciliationService.reconcile(resolved, dryRun);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+        return Map.of(
+                "dialect",      resolved.slug(),
+                "dryRun",       dryRun,
+                "combinedRows", result.totalRows(),
+                "inserted",     result.inserted(),
+                "skipped",      result.skipped()
         );
     }
 

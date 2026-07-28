@@ -279,12 +279,12 @@ class VerbCandidateExtractorTest {
 
     @Test
     void splitSensesReturnsTheWholeGlossWhenThereIsNothingToSplit() {
-        assertThat(VerbCandidateExtractor.splitSenses("to eat")).containsExactly("to eat");
+        assertThat(VerbSenseSplitter.splitSenses("to eat")).containsExactly("to eat");
     }
 
     @Test
     void splitFormsReturnsTheWholeFormWhenThereIsNothingToSplit() {
-        assertThat(VerbCandidateExtractor.splitForms("ịri")).containsExactly("ịri");
+        assertThat(VerbSenseSplitter.splitForms("ịri")).containsExactly("ịri");
     }
 
     @Test
