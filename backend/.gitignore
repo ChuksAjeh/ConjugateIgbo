@@ -38,3 +38,4 @@ build/
 
 */.env
 err.log
+reconcile-legacy-oneoff.sql
