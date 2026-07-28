@@ -1,0 +1,28 @@
+# Test-scoped configuration.
+#
+# Replaces the main application.yml when tests run (a same-named file on the
+# test classpath takes precedence). The one thing it deliberately drops is the
+# `spring.config.import: optional:file:.env` line: the developer .env holds the
+# Railway datasource credentials, and an integration test must never pick those
+# up — it runs against the throwaway database supplied by PostgresTestConfig,
+# whose URL/username/password arrive via @DynamicPropertySource.
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 1
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    baseline-version: 1.0.0
+    locations: classpath:db/migration,classpath:db/migration-test
+
+server:
+  port: 0

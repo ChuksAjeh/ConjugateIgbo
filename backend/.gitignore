@@ -37,3 +37,4 @@ build/
 /src/main/resources/*.properties
 
 */.env
+err.log
